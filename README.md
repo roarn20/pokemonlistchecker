@@ -49,6 +49,8 @@ The sources publish new prices about once a day (TCGdex around midnight UTC). Ev
 
 **Open it here (works on phones):** <https://raw.githack.com/roarn20/pokemonlistchecker/claude/pokemon-set-price-tracker-icxomp/index.html>
 
+The first time, that free mirror shows an "External Content Notice". Tap **Open the page** and it remembers that. For a cleaner permanent link, turn on GitHub Pages (below).
+
 Open it in Safari, Chrome or another real browser. App previews and file viewers (including GitHub's file view and the preview in the Claude app) block the page from going online, so the card data can't load there. The page tells you when that happens and offers an "Open in browser" button.
 
 It's a single static file, so any of these also work:
