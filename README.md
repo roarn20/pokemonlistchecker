@@ -47,7 +47,11 @@ The sources publish new prices about once a day (TCGdex around midnight UTC). Ev
 
 ## Running it
 
-It's a single static file. Any of these work:
+**Open it here (works on phones):** <https://raw.githack.com/roarn20/pokemonlistchecker/claude/pokemon-set-price-tracker-icxomp/index.html>
+
+Open it in Safari, Chrome or another real browser. App previews and file viewers (including GitHub's file view and the preview in the Claude app) block the page from going online, so the card data can't load there. The page tells you when that happens and offers an "Open in browser" button.
+
+It's a single static file, so any of these also work:
 
 - **GitHub Pages:** repo **Settings → Pages → Build and deployment → Deploy from a branch**, pick the branch and `/ (root)`. The app is then at `https://<your-user>.github.io/<repo>/`. This is the easiest way to use it on a phone.
 - **Locally:** open `index.html` in a browser, or run `python3 -m http.server` in this folder and go to <http://localhost:8000>.

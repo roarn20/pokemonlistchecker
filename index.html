@@ -235,7 +235,10 @@ button { cursor: pointer; }
 .banner.warn { background: var(--warn-bg); color: var(--warn-ink); }
 .banner.err { background: var(--err-bg); color: var(--err-ink); }
 .banner .grow { flex: 1; }
-.banner button { border: 0; background: transparent; text-decoration: underline; font-weight: 600; padding: 0; color: inherit; }
+.banner button { border: 0; background: transparent; text-decoration: underline; font-weight: 600; padding: 0; color: inherit; white-space: nowrap; }
+.banner { flex-wrap: wrap; align-items: center; }
+.banner .grow { flex: 1 1 240px; }
+.banner a.btn { height: 34px; font-size: 13px; }
 
 /* ---------- Panels ---------- */
 .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
@@ -693,6 +696,20 @@ footer p { margin: 4px 0; }
   }
   const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+
+  // The hosted copy of this page, for when it's opened somewhere that can't go online.
+  const HOSTED_URL = 'https://raw.githack.com/roarn20/pokemonlistchecker/claude/pokemon-set-price-tracker-icxomp/index.html';
+  // File viewers and in-app HTML previews often block a page from loading anything online.
+  let blockedByViewer = false;
+  document.addEventListener('securitypolicyviolation', (e) => {
+    if (/connect-src|default-src/.test(e.effectiveDirective || e.violatedDirective || '')) blockedByViewer = true;
+  });
+  function inPreview() {
+    let framed = false;
+    try { framed = window.self !== window.top; } catch { framed = true; }
+    return blockedByViewer || framed;
+  }
+  const onHostedCopy = () => location.href.split('#')[0] === HOSTED_URL || /\.github\.io$/.test(location.hostname);
   const todayISO = () => new Date().toISOString().slice(0, 10);
 
   async function getJSON(url, { timeout = 15000, headers, cache = 'default', retries = 1 } = {}) {
@@ -1394,9 +1411,9 @@ footer p { margin: 4px 0; }
     const el = $('#statusline');
     const parts = [];
     let dotClass = 'dot';
-    if (state.lastError && state.cards.length) dotClass += ' err';
+    if ((state.lastError && state.cards.length) || state.listError) dotClass += ' err';
     else if (!state.auto) dotClass += ' off';
-    const live = state.auto ? `Live · checks every ${state.settings.interval >= 60 ? state.settings.interval / 60 + ' min' : state.settings.interval + ' s'}` : 'Auto-refresh paused';
+    const live = state.listError ? 'Not connected' : state.auto ? `Live · checks every ${state.settings.interval >= 60 ? state.settings.interval / 60 + ' min' : state.settings.interval + ' s'}` : 'Auto-refresh paused';
     parts.push(h('span', null, h('span', { class: dotClass, 'aria-hidden': 'true' }), live));
     if (state.lastChecked) parts.push(h('span', { text: `Last checked ${timeStr(state.lastChecked)}` }));
     if (state.provider) {
@@ -1414,7 +1431,18 @@ footer p { margin: 4px 0; }
   function renderBanners() {
     const out = [];
     if (state.listError) {
-      out.push({ kind: 'err', text: `Couldn't load the ${state.lang === 'ja' ? 'Japanese' : 'English'} set list. Check your connection and try again. Details: ${state.listError.message}`, action: ['Try again', () => chooseLanguage(state.lang)] });
+      const offlineLike = /blocked or offline|timed out/.test(state.listError.message);
+      const retry = ['Try again', () => chooseLanguage(state.lang)];
+      const openLink = onHostedCopy() ? null : { text: 'Open in browser', href: HOSTED_URL };
+      if (offlineLike && inPreview()) {
+        out.push({ kind: 'err', text: 'This viewer won’t let the page go online, so the card data can’t load. It looks like a preview rather than a web browser. Open the page in Safari or Chrome instead.', link: openLink, action: retry });
+      } else if (offlineLike && !navigator.onLine) {
+        out.push({ kind: 'err', text: 'You seem to be offline. Connect to the internet and try again.', action: retry });
+      } else if (offlineLike) {
+        out.push({ kind: 'err', text: `Couldn’t reach the card databases (${state.listError.message}). If you opened this file in an app or file viewer, open it in Safari or Chrome instead. Otherwise check your connection, or turn off a VPN or content blocker, and try again.`, link: openLink, action: retry });
+      } else {
+        out.push({ kind: 'err', text: `Couldn't load the ${state.lang === 'ja' ? 'Japanese' : 'English'} set list. Details: ${state.listError.message}`, action: retry });
+      }
     }
     if (state.set && state.cards.length && !state.loading) {
       const st = stats();
@@ -1437,6 +1465,7 @@ footer p { margin: 4px 0; }
     }
     $('#banners').replaceChildren(...out.map((b) => h('div', { class: 'banner ' + b.kind, role: b.kind === 'err' ? 'alert' : null },
       h('span', { class: 'grow', text: b.text }),
+      b.link ? h('a', { class: 'btn primary', href: b.link.href, target: '_blank', rel: 'noopener', text: b.link.text }) : null,
       b.action ? h('button', { type: 'button', onclick: b.action[1], text: b.action[0] }) : null)));
   }
 
