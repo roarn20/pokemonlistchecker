@@ -19,6 +19,7 @@ Also included:
 - **Value history**: the total is saved in your browser each time it changes, and shown as a sparkline with the change since you started tracking.
 - Light and dark themes, and a layout that works on phones.
 - The URL remembers the language and set, so a refresh or a shared link opens the same set.
+- **English names for Japanese cards and sets**, in brackets after the Japanese name, for example "リザードン (Charizard)". Search and name sorting use them too.
 
 ## Data sources
 
@@ -31,6 +32,14 @@ Also included:
 | [open.er-api.com](https://open.er-api.com), with [Frankfurter](https://frankfurter.app) as backup | Exchange rates | No |
 
 The **Market price** setting uses the TCGplayer market price when there is one, and the Cardmarket trend price (converted from euros) when there isn't. **Cardmarket only** uses Cardmarket for every card.
+
+### English names for Japanese cards
+
+TCGdex only has Japanese names for Japanese cards. TCGplayer lists the same cards under English names. `tools/build_japanese_names.py` matches the two by set code and card number, and writes small files to `data/ja/` that the app loads. These files also give Japanese cards their TCGplayer picture and direct product link when TCGdex doesn't have them.
+
+The files cover every Japanese set from about 2017 on (91 sets at the moment). Older sets, and a few starter decks TCGplayer doesn't list, show the Japanese name only.
+
+A GitHub Actions workflow (`.github/workflows/japanese-names.yml`) re-runs the script every Monday and commits any changes, so new sets get English names. You can also run it from the repo's **Actions** tab, or locally with `python3 tools/build_japanese_names.py`.
 
 ### How the 30-second refresh works
 

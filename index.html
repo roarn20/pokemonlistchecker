@@ -268,7 +268,8 @@ button { cursor: pointer; }
 .tile .t-value { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; margin-top: 4px; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tile.hero .t-value { font-size: clamp(34px, 4.6vw, 48px); }
 .tile .t-sub { font-size: 13px; color: var(--muted); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.tile .t-sub button { border: 0; background: none; padding: 0; color: var(--text-2); text-decoration: underline; text-decoration-color: var(--border-strong); text-underline-offset: 2px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tile .t-sub:has(button) { white-space: normal; }
+.tile .t-sub button { border: 0; background: none; padding: 0; color: var(--text-2); text-decoration: underline; text-decoration-color: var(--border-strong); text-underline-offset: 2px; max-width: 100%; text-align: left; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .tile.hero { overflow: hidden; }
 .tile.hero::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 3px; background: var(--holo); }
 .delta { font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
@@ -357,6 +358,7 @@ svg.chart .hit { fill: transparent; cursor: crosshair; }
 .thumb .ph { font-size: 10px; color: var(--muted); text-align: center; padding: 4px; line-height: 1.2; }
 .num { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--text-2); font-size: 14px; }
 .name { font-weight: 600; font-size: 15px; min-width: 0; overflow-wrap: break-word; }
+.en-name { font-weight: 500; color: var(--text-2); }
 .name-sub { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; align-items: center; }
 .rarity { font-size: 11.5px; font-weight: 600; padding: 1px 8px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border); color: var(--text-2); white-space: nowrap; }
 .rarity.special { border-color: transparent; background: linear-gradient(var(--surface), var(--surface)) padding-box, var(--holo) border-box; border: 1.5px solid transparent; color: var(--text); }
@@ -850,6 +852,7 @@ footer p { margin: 4px 0; }
       const cdn = tpId ? `https://tcgplayer-cdn.tcgplayer.com/product/${encodeURIComponent(tpId)}` : null;
       return {
         id: String(b.id),
+        localId: String(b.localId || c.localId || ''),
         name: String(c.name || b.name || b.id),
         number: padNumber(b.localId || c.localId, official),
         rarity: c.rarity && c.rarity !== 'None' ? String(c.rarity) : '',
@@ -926,6 +929,52 @@ footer p { margin: 4px 0; }
   const PROVIDERS = [TCGDEX, PTCG];
 
   /* =========================================================
+     English names for Japanese cards and sets. TCGdex only has Japanese
+     names; data/ja/ holds TCGplayer's English names, matched by set and
+     card number (built by tools/build_japanese_names.py).
+     ========================================================= */
+  const JA = { sets: null, setsPromise: null, cards: new Map() };
+  async function getStatic(path) {
+    const urls = [];
+    if (/^https?:$/.test(location.protocol)) urls.push(new URL(path, location.href).href);
+    const hosted = HOSTED_URL.replace(/[^/]*$/, '') + path;
+    if (!urls.includes(hosted)) urls.push(hosted);
+    for (const u of urls) {
+      try { return await getJSON(u, { retries: 0, timeout: 10000 }); } catch { /* try the next copy */ }
+    }
+    return null;
+  }
+  function jaSetNames() {
+    if (!JA.setsPromise) JA.setsPromise = getStatic('data/ja/sets.json').then((d) => { JA.sets = d && typeof d === 'object' ? d : {}; return JA.sets; });
+    return JA.setsPromise;
+  }
+  async function jaCardNames(setId) {
+    const sets = await jaSetNames();
+    if (!sets[setId]) return null;
+    if (!JA.cards.has(setId)) JA.cards.set(setId, getStatic(`data/ja/${encodeURIComponent(setId)}.json`));
+    return JA.cards.get(setId);
+  }
+  const enSetName = (set) => (state.lang === 'ja' && set && JA.sets && JA.sets[set.id]) || '';
+  function applyJaNames(cards, data) {
+    const map = data && data.cards;
+    if (!map) return;
+    for (const c of cards) {
+      const hit = map[c.localId];
+      if (!Array.isArray(hit)) continue;
+      if (hit[0]) c.enName = String(hit[0]);
+      const pid = hit[1];
+      if (pid && !c.tcgplayerUrl) c.tcgplayerUrl = `https://www.tcgplayer.com/product/${encodeURIComponent(pid)}`;
+      if (pid && !c.img) {
+        const cdn = `https://tcgplayer-cdn.tcgplayer.com/product/${encodeURIComponent(pid)}`;
+        c.img = cdn + '_200w.jpg';
+        c.imgLarge = cdn + '_in_1000x1000.jpg';
+      }
+    }
+  }
+  // "メガリザードンXex (Mega Charizard X ex)"
+  const fullName = (c) => (c.enName && c.enName !== c.name ? `${c.name} (${c.enName})` : c.name);
+
+  /* =========================================================
      PriceCharting (optional, needs the user's own API token)
      ========================================================= */
   const PC = {
@@ -945,14 +994,14 @@ footer p { margin: 4px 0; }
       if (fresh || this.running === key) return;
       this.running = key; this.error = null;
       const map = (cached && cached.map) || {};
-      const setName = shortSetName(state.set.name);
+      const setName = enSetName(state.set) || shortSetName(state.set.name);
       const cards = state.cards.slice();
       let failures = 0, lastErr = null, stop = false;
       const cents = (v) => (isNum(v) && v > 0 ? v / 100 : null);
       await mapLimit(cards, 2, async (c) => {
         if (stop || this.running !== key) return;
         const n = numShort(c.number);
-        const q = `${c.name} ${n} ${state.lang === 'ja' ? 'japanese ' : ''}${setName}`;
+        const q = `${c.enName || c.name} ${n} ${state.lang === 'ja' ? 'japanese ' : ''}${setName}`;
         try {
           const j = await getJSON(`https://www.pricecharting.com/api/products?t=${encodeURIComponent(token)}&q=${encodeURIComponent(q)}`, { timeout: 20000 });
           if (j.status && j.status !== 'success') throw new Error(j['error-message'] || 'PriceCharting refused the request');
@@ -1171,6 +1220,7 @@ footer p { margin: 4px 0; }
       state.sets = provider === TCGDEX ? sets : sets.slice().sort((a, b) => (b.releaseDate || '').localeCompare(a.releaseDate || ''));
       state.setsLoadedAt = Date.now();
       renderSetSelect();
+      if (lang === 'ja') jaSetNames().then(() => { if (state.lang === 'ja') { renderSetSelect(); renderSetHero(); } });
       const wanted = setId && (!src || src === provider.id) ? state.sets.find((s) => s.id === setId) : null;
       await selectSet((wanted || newestSet(state.sets)).id);
     } catch (e) {
@@ -1219,11 +1269,13 @@ footer p { margin: 4px 0; }
           return;
         }
       }
+      const namesP = state.lang === 'ja' ? jaCardNames(set.id) : null;
       const { cards, meta } = await state.provider.loadSet(state.lang, set, {
         fresh,
         stale: () => id !== state.reqId,
         onProgress: (done, total) => { if (id === state.reqId) { state.progress = done < total ? done / total : null; renderProgress(); } },
       });
+      if (namesP) applyJaNames(cards, await namesP);
       if (id !== state.reqId) return;
       const before = new Map(state.cards.map((c) => [c.id, priceUSD(c)]));
       const pcBefore = new Map(state.cards.filter((c) => c.pc).map((c) => [c.id, c.pc]));
@@ -1391,8 +1443,9 @@ footer p { margin: 4px 0; }
     for (const [g, list] of groups) {
       frag.push(h('optgroup', { label: g }, list.map((s) => {
         const date = s.releaseDate ? ' · ' + formatDate(s.releaseDate, true) : '';
-        const code = s.code && !s.name.toUpperCase().startsWith(s.code.toUpperCase()) ? ` (${s.code})` : '';
-        return h('option', { value: s.id, text: `${s.name}${code}${date}` });
+        const code = s.code && !s.name.toUpperCase().startsWith(s.code.toUpperCase()) ? ` · ${s.code}` : '';
+        const en = enSetName(s);
+        return h('option', { value: s.id, text: `${s.name}${en && en.toLowerCase() !== s.name.toLowerCase() ? ` (${en})` : ''}${code}${date}` });
       })));
     }
     sel.replaceChildren(...frag);
@@ -1487,7 +1540,10 @@ footer p { margin: 4px 0; }
     const count = state.cards.length || s.total;
     if (count) meta.push(h('span', { text: `${count} cards${s.official && count > s.official ? ` (${s.official} + ${count - s.official} secret)` : ''}` }));
     if (state.set === newestSet(state.sets)) meta.push(h('span', null, h('span', { class: 'chip', text: '★ Newest set' })));
-    el.replaceChildren(art, h('div', { class: 'set-info' }, h('h2', { text: s.name }), h('div', { class: 'set-meta' }, meta)));
+    const en = enSetName(s);
+    el.replaceChildren(art, h('div', { class: 'set-info' },
+      h('h2', null, s.name, en && en.toLowerCase() !== s.name.toLowerCase() ? h('span', { class: 'en-name', text: ` (${en})` }) : null),
+      h('div', { class: 'set-meta' }, meta)));
   }
   function codeBadge(s) {
     const code = (s.code || s.name.split(/[:\s]/)[0] || '?').slice(0, 7);
@@ -1526,7 +1582,7 @@ footer p { margin: 4px 0; }
         }
       }
     }
-    const jump = (x) => h('button', { type: 'button', onclick: () => jumpToCard(x.c.id), title: 'Show in the list', text: `${x.c.name} · #${numKey(x.c.number)}` });
+    const jump = (x) => h('button', { type: 'button', onclick: () => jumpToCard(x.c.id), title: 'Show in the list', text: `${fullName(x.c)} · #${numKey(x.c.number)}` });
     const labelFor = sourceLabel(st.priced);
     el.replaceChildren(
       tile('hero', h('span', null, 'Total set cost ', h('span', { class: 'muted', style: 'font-weight:500', text: `· ${labelFor}` })),
@@ -1652,7 +1708,7 @@ footer p { margin: 4px 0; }
       if (cx == null) { const r = svg.getBoundingClientRect(); cx = r.left + (px / W) * r.width; cy = r.top + (py / H) * r.height; }
       showTip(cx, cy, fmt(p.cum), [
         { key: true, text: `Running total · ${(p.cum / total * 100).toFixed(1)}% of set` },
-        { text: `#${cur + 1} ${p.c.name} (${numKey(p.c.number)})` },
+        { text: `#${cur + 1} ${fullName(p.c)} · ${numKey(p.c.number)}` },
         { muted: true, text: `This card ${fmt(p.p)}` },
       ]);
     };
@@ -1678,14 +1734,14 @@ footer p { margin: 4px 0; }
     const max = top[0].p;
     const rows = top.map((x, i) => {
       const pct = Math.max(0.01, x.p / max);
-      const row = h('button', { class: 'bar-row', type: 'button', 'aria-label': `${x.c.name}, number ${x.c.number}, ${fmt(x.p)}. Show in list.`, onclick: () => jumpToCard(x.c.id) },
-        h('span', { class: 'bar-name' }, x.c.name, h('small', { text: '#' + numKey(x.c.number) })),
+      const row = h('button', { class: 'bar-row', type: 'button', 'aria-label': `${fullName(x.c)}, number ${x.c.number}, ${fmt(x.p)}. Show in list.`, onclick: () => jumpToCard(x.c.id) },
+        h('span', { class: 'bar-name' }, x.c.enName || x.c.name, h('small', { text: '#' + numKey(x.c.number) })),
         h('span', { class: 'bar-track' },
           h('span', { class: 'bar', style: `width: calc((100% - 78px) * ${pct.toFixed(4)})` }),
           h('span', { class: 'bar-val', text: fmt(x.p, { compact: true }) })));
       const tip = (cx, cy) => {
         const pi = priceInfo(x.c);
-        showTip(cx, cy, fmt(x.p), [{ key: true, text: `${x.c.name} · #${numKey(x.c.number)}` }, { muted: true, text: `${pi ? shortVariant(pi.variant) : ''}${x.c.rarity ? ' · ' + x.c.rarity : ''} · rank ${i + 1}` }]);
+        showTip(cx, cy, fmt(x.p), [{ key: true, text: `${fullName(x.c)} · #${numKey(x.c.number)}` }, { muted: true, text: `${pi ? shortVariant(pi.variant) : ''}${x.c.rarity ? ' · ' + x.c.rarity : ''} · rank ${i + 1}` }]);
       };
       row.addEventListener('pointermove', (e) => tip(e.clientX, e.clientY));
       row.addEventListener('pointerleave', hideTip);
@@ -1704,11 +1760,12 @@ footer p { margin: 4px 0; }
   function tcgSearchUrl(card) {
     const line = state.lang === 'ja' ? 'pokemon-japan' : 'pokemon';
     // Japanese products on TCGplayer have English names, so search by the printed number instead.
-    const q = state.lang === 'ja' ? card.number : `${card.name} ${numKey(card.number)}`;
+    const q = state.lang === 'ja' ? (card.enName ? `${card.enName} ${card.number}` : card.number) : `${card.name} ${numKey(card.number)}`;
     return `https://www.tcgplayer.com/search/${line}/product?productLineName=${line}&q=${encodeURIComponent(q)}&view=grid`;
   }
   function pcSearchUrl(card) {
-    const q = `${card.name} ${numShort(card.number)} ${state.lang === 'ja' ? 'japanese ' : ''}${shortSetName(state.set ? state.set.name : '')}`;
+    const setName = enSetName(state.set) || shortSetName(state.set ? state.set.name : '');
+    const q = `${card.enName || card.name} ${numShort(card.number)} ${state.lang === 'ja' ? 'japanese ' : ''}${setName}`;
     return `https://www.pricecharting.com/search-products?type=prices&q=${encodeURIComponent(q)}`;
   }
 
@@ -1722,7 +1779,7 @@ footer p { margin: 4px 0; }
   }
 
   function makeThumb(card) {
-    const btn = h('button', { class: 'thumb', type: 'button', 'aria-label': `View ${card.name} larger`, onclick: () => openCard(card.id) });
+    const btn = h('button', { class: 'thumb', type: 'button', 'aria-label': `View ${fullName(card)} larger`, onclick: () => openCard(card.id) });
     if (card.img) {
       const img = h('img', { src: card.img, alt: '', loading: 'lazy', decoding: 'async', referrerpolicy: 'no-referrer' });
       img.addEventListener('error', () => img.replaceWith(h('span', { class: 'ph', text: 'No image' })), { once: true });
@@ -1741,7 +1798,7 @@ footer p { margin: 4px 0; }
       makeThumb(card),
       h('div', { class: 'num', text: card.number }),
       h('div', { class: 'name-cell' },
-        h('div', { class: 'name', text: card.name }),
+        h('div', { class: 'name' }, card.name, card.enName && card.enName !== card.name ? h('span', { class: 'en-name', text: ` (${card.enName})` }) : null),
         h('div', { class: 'name-sub' },
           h('span', { class: 'm-num num', text: '#' + card.number }),
           card.rarity ? h('span', { class: 'rarity' + (SPECIAL_RARITY.test(card.rarity) && !/^common$|^uncommon$|^rare$/i.test(card.rarity) ? ' special' : ''), text: card.rarity }) : null)),
@@ -1796,11 +1853,12 @@ footer p { margin: 4px 0; }
   function sortedFiltered() {
     const q = state.query.trim().toLowerCase();
     let list = state.cards;
-    if (q) list = list.filter((c) => `${c.name} ${c.number} ${c.rarity}`.toLowerCase().includes(q));
+    if (q) list = list.filter((c) => `${c.name} ${c.enName || ''} ${c.number} ${c.rarity}`.toLowerCase().includes(q));
     const dir = state.sort.dir === 'asc' ? 1 : -1;
     const byNum = (a, b) => collator.compare(numKey(a.number), numKey(b.number)) || collator.compare(a.name, b.name);
     const arr = list.slice();
-    if (state.sort.key === 'name') arr.sort((a, b) => dir * (collator.compare(a.name, b.name) || byNum(a, b)));
+    // Japanese cards sort by their English name when there is one.
+    if (state.sort.key === 'name') arr.sort((a, b) => dir * (collator.compare(a.enName || a.name, b.enName || b.name) || byNum(a, b)));
     else if (state.sort.key === 'price') {
       const pm = new Map(arr.map((c) => [c.id, priceUSD(c)]));
       arr.sort((a, b) => {
@@ -1878,7 +1936,7 @@ footer p { margin: 4px 0; }
     const img = $('#cardDlgImg');
     img.onerror = () => { if (card.img && img.src !== card.img) img.src = card.img; else img.removeAttribute('src'); };
     if (card.imgLarge || card.img) img.src = card.imgLarge || card.img; else img.removeAttribute('src');
-    img.alt = card.name;
+    img.alt = fullName(card);
     const pi = priceInfo(card);
     const kv = [];
     const add = (k, v) => { if (v) kv.push(h('dt', { text: k }), h('dd', { text: v })); };
@@ -1896,8 +1954,8 @@ footer p { margin: 4px 0; }
       add('PriceCharting', [['Ungraded', card.pc.ungraded], ['Grade 9', card.pc.grade9], ['PSA 10', card.pc.psa10]].filter(([, x]) => isNum(x)).map(([k, x]) => `${k} ${fmt(x)}`).join(' · '));
     }
     add('Rarity', card.rarity);
-    add('Set', state.set.name);
-    $('#cardDlgInfo').replaceChildren(h('h3', { text: card.name }), h('dl', { class: 'kv' }, kv), linkBtns(card));
+    add('Set', state.set.name + (enSetName(state.set) ? ` (${enSetName(state.set)})` : ''));
+    $('#cardDlgInfo').replaceChildren(h('h3', null, card.name, card.enName && card.enName !== card.name ? h('span', { class: 'en-name', text: ` (${card.enName})` }) : null), h('dl', { class: 'kv' }, kv), linkBtns(card));
     dlg.showModal();
   }
   $('#cardDlgClose').addEventListener('click', () => $('#cardDlg').close());
