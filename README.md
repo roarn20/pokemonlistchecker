@@ -24,21 +24,26 @@ Also included:
 
 | Source | Used for | Key needed |
 |---|---|---|
-| [TCGCSV](https://tcgcsv.com) (a free daily copy of TCGplayer's catalog and prices) | English and Japanese sets, cards, images, TCGplayer prices, direct TCGplayer product links | No |
-| [pokemontcg.io](https://pokemontcg.io) | English backup source (TCGplayer + Cardmarket prices) | Optional |
-| [TCGdex](https://tcgdex.dev) | English and Japanese backup source (Japanese card names and images) | No |
+| [TCGdex](https://tcgdex.dev) | Sets and cards for English and Japanese, card pictures, **TCGplayer** prices (English cards), **Cardmarket** prices (Japanese and English cards), TCGplayer product numbers for direct buy links | No |
+| [pokemontcg.io](https://pokemontcg.io) | English backup if TCGdex can't be reached | Optional |
+| TCGplayer image server | Pictures for cards TCGdex has no scan of yet (common for brand-new sets) | No |
 | [PriceCharting API](https://www.pricecharting.com/api-documentation) | Optional ungraded / PSA 10 prices | Yes (paid PriceCharting subscription) |
 | [open.er-api.com](https://open.er-api.com), with [Frankfurter](https://frankfurter.app) as backup | Exchange rates | No |
 
-In **Automatic** mode the app tries TCGCSV first, then pokemontcg.io (English only), then TCGdex. You can force one source in **Settings**.
+The **Market price** setting uses the TCGplayer market price when there is one, and the Cardmarket trend price (converted from euros) when there isn't. **Cardmarket only** uses Cardmarket for every card.
+
+### How the 30-second refresh works
+
+The sources publish new prices about once a day (TCGdex around midnight UTC). Every 30 seconds the app re-reads the most valuable card. If that card's price timestamp has changed, it reloads the whole set. It also does a full reload every 15 minutes, and whenever you press **Refresh**. New prices show up within about 30 seconds of being published, without sending a request for every card every 30 seconds. Cards whose price changed flash and show ▲ or ▼.
 
 ### Limits
 
-- **Prices update about once a day at the source.** TCGplayer data (via TCGCSV, pokemontcg.io or TCGdex) is refreshed by those services roughly daily. The app checks every 30 seconds, so new data shows up soon after it's published, but prices won't change every 30 seconds.
-- **TCGplayer's own API is closed to new developers**, so TCGplayer prices come through the free services above rather than straight from TCGplayer.
-- **PriceCharting** needs your own API token (Settings → PriceCharting API token). The app looks up each card by name, number and set, so a few cards may not match. PriceCharting lookups are cached for an hour, because PriceCharting updates daily and a set means one request per card. If PriceCharting blocks requests made from a browser page, the app tells you. Every card always has a PriceCharting button that opens a search for it.
-- **Japanese prices** come from TCGplayer's Japanese catalog (via TCGCSV). If you switch to TCGdex, Japanese cards mostly have no prices.
-- The set total is one copy of each card at the chosen price. Special pattern variants that TCGplayer lists as separate products are counted as separate cards.
+- **TCGplayer's own API is closed to new developers**, and the free TCGplayer data dump (TCGCSV) can't be read from a web page. TCGplayer prices come through TCGdex instead.
+- **Japanese cards don't have TCGplayer prices** in any free source a web page can use. They show Cardmarket (European market) prices converted to your currency. Their TCGplayer button opens the exact Japanese product on TCGplayer when TCGdex knows it, and a search by card number otherwise.
+- **Pictures:** TCGdex doesn't have scans for some recent sets. English cards fall back to TCGplayer's photo. Japanese cards do too when TCGdex has the TCGplayer product number, otherwise they show "No image".
+- **PriceCharting** needs your own API token (Settings → PriceCharting API token). The app looks up each card by name, number and set, so a few cards may not match. Japanese cards rarely match, because their names come in Japanese. Lookups are cached for an hour, because PriceCharting updates daily and a set means one request per card. If PriceCharting blocks requests made from a browser page, the app tells you. Every card always has a PriceCharting button that opens a search for it.
+- The set total is one copy of each card at the chosen price.
+- Converted prices use live exchange rates. If no rate service can be reached, the app uses built-in approximate rates and says so.
 
 ## Running it
 
