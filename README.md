@@ -10,7 +10,8 @@ A single-page HTML app (`index.html`, no build step) that shows every card in a 
 
 Also included:
 
-- **Sorting** by card number, name or price (tap a column header, or use the sort menu on phones). There's also a search box.
+- **Search every card** in the chosen language from the search bar at the top. For example, "Charizard" lists every Charizard card from every set with its price. Japanese cards can be searched by English name ("Charizard") or Japanese name ("リザードン"). Results start with the newest sets and can be sorted by price or name. **Open set** jumps to the card inside its set.
+- **Sorting** by card number, name or price (tap a column header, or use the sort menu on phones). A filter box narrows the current set's list.
 - **Set totals**: total cost of the set (one copy of each card), highest card, lowest card, average and median.
 - **Charts**: the running total of the set cost card by card, and the top 10 most valuable cards. Hover or tap for details.
 - **Auto-refresh** every 30 seconds (15 s, 1 min or 5 min in Settings), with a countdown ring and a manual **Refresh** button. Prices that changed since the last check flash and show ▲/▼.
@@ -38,6 +39,8 @@ The **Market price** setting uses the TCGplayer market price when there is one, 
 TCGdex only has Japanese names for Japanese cards. TCGplayer lists the same cards under English names. `tools/build_japanese_names.py` matches the two by set code and card number, and writes small files to `data/ja/` that the app loads. These files also give Japanese cards their TCGplayer picture and direct product link when TCGdex doesn't have them.
 
 The files cover every Japanese set from about 2017 on (91 sets at the moment). Older sets, and a few starter decks TCGplayer doesn't list, show the Japanese name only.
+
+The script also writes `data/ja/search.json`, one list of every Japanese card with an English name. That's what lets the search find Japanese cards by English name.
 
 A GitHub Actions workflow (`.github/workflows/japanese-names.yml`) re-runs the script every Monday and commits any changes, so new sets get English names. You can also run it from the repo's **Actions** tab, or locally with `python3 tools/build_japanese_names.py`.
 

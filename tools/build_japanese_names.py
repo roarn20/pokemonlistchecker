@@ -8,6 +8,10 @@ card number and writes small JSON files the app loads:
 
   data/ja/sets.json        {"M2": "Inferno X", ...}
   data/ja/<set id>.json    {"set": "Inferno X", "cards": {"110": ["Mega Charizard X ex", 655892], ...}}
+  data/ja/search.json      every card above in one compact list, so the app can
+                           search Japanese cards by English name:
+                           {"sets": [set ids], "names": [English names],
+                            "cards": [name index, set index, local id, TCGplayer id, ...]}
 
 Card keys are TCGdex local ids. The number after each name is the TCGplayer
 product id, which the app uses for pictures and direct buy links.
@@ -120,15 +124,26 @@ def main():
 
     os.makedirs(OUT_DIR, exist_ok=True)
     index = {}
+    search = {"sets": [], "names": [], "cards": []}
+    name_ids = {}
     with cf.ThreadPoolExecutor(6) as ex:
         for sid, data, note in ex.map(build, sets):
             if data:
                 index[sid] = data["set"]
+                set_idx = len(search["sets"])
+                search["sets"].append(sid)
+                for local_id, (name, pid) in sorted(data["cards"].items()):
+                    if name not in name_ids:
+                        name_ids[name] = len(search["names"])
+                        search["names"].append(name)
+                    search["cards"] += [name_ids[name], set_idx, local_id, pid]
                 with open(os.path.join(OUT_DIR, f"{sid}.json"), "w", encoding="utf-8") as f:
                     json.dump(data, f, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
             print(f"  {sid:10} {'OK  ' if data else 'skip'} {note}")
     with open(os.path.join(OUT_DIR, "sets.json"), "w", encoding="utf-8") as f:
         json.dump(index, f, ensure_ascii=False, indent=0, sort_keys=True)
+    with open(os.path.join(OUT_DIR, "search.json"), "w", encoding="utf-8") as f:
+        json.dump(search, f, ensure_ascii=False, separators=(",", ":"))
     print(f"Wrote English names for {len(index)} Japanese sets to data/ja/")
     if not index:
         sys.exit("No sets matched; something is wrong with the sources.")

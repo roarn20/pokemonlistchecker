@@ -227,6 +227,16 @@ button { cursor: pointer; }
 .switch input:checked + .knob::after { transform: translateX(14px); }
 .switch input:focus-visible + .knob { outline: 2px solid var(--accent); outline-offset: 2px; }
 
+.gsearch { position: relative; display: flex; gap: 8px; align-items: center; margin: 4px 0 12px; }
+.gsearch svg { position: absolute; left: 13px; top: 50%; width: 18px; height: 18px; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+.gsearch .input { height: 46px; padding-left: 40px; font-size: 16px; border-radius: 12px; }
+.gsearch .btn { height: 46px; border-radius: 12px; padding: 0 18px; }
+#app.searching #setHero, #app.searching #stats, #app.searching #charts, #app.searching #listPanel { display: none; }
+.set-chip { font-size: 11.5px; font-weight: 600; padding: 1px 8px; border-radius: 999px; background: var(--series-1-wash); color: var(--text); white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.open-set { border: 0; background: none; padding: 0; font-size: 12px; font-weight: 700; color: var(--text-2); text-decoration: underline; text-underline-offset: 2px; white-space: nowrap; }
+.gs-more { padding: 14px 16px; text-align: center; border-top: 1px solid var(--border); }
+.gs-empty { padding: 36px 16px; text-align: center; color: var(--muted); }
+.gs-empty b { color: var(--text); }
 .statusline { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; font-size: 12.5px; color: var(--muted); padding: 2px 0 14px; }
 .statusline .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--good); display: inline-block; margin-right: 6px; box-shadow: 0 0 0 3px color-mix(in srgb, var(--good) 22%, transparent); }
 .statusline .dot.off { background: var(--axis); box-shadow: none; }
@@ -422,6 +432,7 @@ footer p { margin: 4px 0; }
   .controls { gap: 10px; }
   .field.lang, .field.grow { flex: 1 1 100%; }
   .field.small { flex: 1 1 calc(50% - 5px); }
+  .input, .select { font-size: 16px; } /* stops iPhones zooming in on focus */
   .refresh-group { flex: 1 1 100%; justify-content: space-between; }
   .set-hero { padding: 14px 16px; gap: 14px; }
   .set-logo { width: 84px; height: 48px; }
@@ -538,8 +549,33 @@ footer p { margin: 4px 0; }
         </div>
       </div>
     </div>
+    <form class="gsearch" id="gsForm" role="search" autocomplete="off">
+      <label class="sr-only" for="gsInput">Search all cards</label>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="gsInput" class="input" type="search" enterkeyhint="search" placeholder="Search every card, e.g. Charizard">
+      <button class="btn primary" type="submit">Search</button>
+    </form>
     <div class="statusline" id="statusline" aria-live="polite"></div>
     <div id="banners"></div>
+
+    <section class="panel list-panel" id="searchView" hidden>
+      <div class="list-toolbar">
+        <h3><span id="gsTitle">Search results</span> <span class="count" id="gsCount"></span></h3>
+        <div class="sort-group">
+          <label class="sr-only" for="gsSort">Sort results</label>
+          <select id="gsSort" class="select">
+            <option value="new">Newest sets first</option>
+            <option value="price-desc">Price: high to low</option>
+            <option value="price-asc">Price: low to high</option>
+            <option value="name">Name</option>
+          </select>
+          <button class="btn" type="button" id="gsBack">Back to set</button>
+        </div>
+      </div>
+      <div class="progress" id="gsProgress" hidden><div></div></div>
+      <div class="rows" id="gsRows" aria-live="polite"></div>
+      <div class="gs-more" id="gsMoreWrap" hidden><button class="btn" type="button" id="gsMore">Show more</button></div>
+    </section>
 
     <section class="panel set-hero loading-dim" id="setHero" aria-live="polite"></section>
 
@@ -563,7 +599,7 @@ footer p { margin: 4px 0; }
         <h3>Card list <span class="count" id="cardCount"></span></h3>
         <div class="search">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-          <input id="searchInput" class="input" type="search" placeholder="Search name, number, rarity" aria-label="Search cards">
+          <input id="searchInput" class="input" type="search" placeholder="Filter this set" aria-label="Filter this set by name, number or rarity">
         </div>
         <div class="sort-group">
           <label class="sr-only" for="sortSelect">Sort by</label>
@@ -781,7 +817,14 @@ footer p { margin: 4px 0; }
 
   const TCGDEX = {
     id: 'tcgdex', label: 'TCGdex', langs: ['en', 'ja'],
+    pocket: {},
+    // Pokémon TCG Pocket (the phone game) sets are in TCGdex too, but their cards can't be bought.
+    isPocket(lang, setId) {
+      return (this.pocket[lang] && this.pocket[lang].has(setId)) || (lang === 'en' && /^(?:[AB]\d+[a-z]?|P-[A-Z])$/.test(setId));
+    },
     async listSets(lang) {
+      const pocketP = getJSON(`https://api.tcgdex.net/v2/${lang}/series/tcgp`, { retries: 0, timeout: 8000 })
+        .then((d) => new Set(((d && d.sets) || []).map((x) => x.id))).catch(() => new Set());
       // Ask for newest first. If sorting isn't supported, fall back to the plain list reversed.
       let list = null;
       try { list = await getJSON(`https://api.tcgdex.net/v2/${lang}/sets?sort:field=releaseDate&sort:order=DESC`); } catch { list = null; }
@@ -789,7 +832,8 @@ footer p { margin: 4px 0; }
         list = await getJSON(`https://api.tcgdex.net/v2/${lang}/sets`);
         list = Array.isArray(list) ? list.slice().reverse() : [];
       }
-      const sets = list.filter((s) => s && s.id && (!s.cardCount || s.cardCount.total !== 0)).map((s) => ({
+      this.pocket[lang] = await pocketP;
+      const sets = list.filter((s) => s && s.id && (!s.cardCount || s.cardCount.total !== 0) && !this.isPocket(lang, s.id)).map((s) => ({
         id: String(s.id),
         name: String(s.name || s.id),
         code: String(s.id).toUpperCase(),
@@ -954,21 +998,37 @@ footer p { margin: 4px 0; }
     if (!JA.cards.has(setId)) JA.cards.set(setId, getStatic(`data/ja/${encodeURIComponent(setId)}.json`));
     return JA.cards.get(setId);
   }
+  // One list of every Japanese card with an English name, for searching.
+  let jaIndexP = null;
+  function jaSearchIndex() {
+    if (!jaIndexP) {
+      jaIndexP = getStatic('data/ja/search.json').then((d) => {
+        if (!d || !Array.isArray(d.cards) || !Array.isArray(d.names) || !Array.isArray(d.sets)) return null;
+        const byId = new Map();
+        for (let i = 0; i + 3 < d.cards.length; i += 4) {
+          byId.set(`${d.sets[d.cards[i + 1]]}-${d.cards[i + 2]}`, { name: d.names[d.cards[i]], setId: d.sets[d.cards[i + 1]], localId: d.cards[i + 2], pid: d.cards[i + 3] });
+        }
+        return { names: d.names, byId };
+      });
+    }
+    return jaIndexP;
+  }
   const enSetName = (set) => (state.lang === 'ja' && set && JA.sets && JA.sets[set.id]) || '';
   function applyJaNames(cards, data) {
     const map = data && data.cards;
     if (!map) return;
     for (const c of cards) {
       const hit = map[c.localId];
-      if (!Array.isArray(hit)) continue;
-      if (hit[0]) c.enName = String(hit[0]);
-      const pid = hit[1];
-      if (pid && !c.tcgplayerUrl) c.tcgplayerUrl = `https://www.tcgplayer.com/product/${encodeURIComponent(pid)}`;
-      if (pid && !c.img) {
-        const cdn = `https://tcgplayer-cdn.tcgplayer.com/product/${encodeURIComponent(pid)}`;
-        c.img = cdn + '_200w.jpg';
-        c.imgLarge = cdn + '_in_1000x1000.jpg';
-      }
+      if (Array.isArray(hit)) applyEnglish(c, hit[0], hit[1]);
+    }
+  }
+  function applyEnglish(c, name, pid) {
+    if (name) c.enName = String(name);
+    if (pid && !c.tcgplayerUrl) c.tcgplayerUrl = `https://www.tcgplayer.com/product/${encodeURIComponent(pid)}`;
+    if (pid && !c.img) {
+      const cdn = `https://tcgplayer-cdn.tcgplayer.com/product/${encodeURIComponent(pid)}`;
+      c.img = cdn + '_200w.jpg';
+      c.imgLarge = cdn + '_in_1000x1000.jpg';
     }
   }
   // "メガリザードンXex (Mega Charizard X ex)"
@@ -1200,6 +1260,8 @@ footer p { margin: 4px 0; }
   async function chooseLanguage(lang, { setId = null, src = null } = {}) {
     state.lang = lang;
     LS.set('lang', lang);
+    closeSearch();
+    $('#gsInput').placeholder = lang === 'ja' ? 'Search every Japanese card, e.g. Charizard or リザードン' : 'Search every English card, e.g. Charizard';
     $('#welcome').hidden = true;
     $('#app').hidden = false;
     $$('.seg button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
@@ -1395,6 +1457,7 @@ footer p { margin: 4px 0; }
     renderCharts();
     renderList();
     renderRing();
+    if (SEARCH.active) renderSearch();
     const hasData = state.cards.length > 0;
     $$('.loading-dim').forEach((el) => el.classList.toggle('has-data', hasData));
   }
@@ -1764,7 +1827,7 @@ footer p { margin: 4px 0; }
     return `https://www.tcgplayer.com/search/${line}/product?productLineName=${line}&q=${encodeURIComponent(q)}&view=grid`;
   }
   function pcSearchUrl(card) {
-    const setName = enSetName(state.set) || shortSetName(state.set ? state.set.name : '');
+    const setName = card.setEnName || (card.setName ? shortSetName(card.setName) : '') || enSetName(state.set) || shortSetName(state.set ? state.set.name : '');
     const q = `${card.enName || card.name} ${numShort(card.number)} ${state.lang === 'ja' ? 'japanese ' : ''}${setName}`;
     return `https://www.pricecharting.com/search-products?type=prices&q=${encodeURIComponent(q)}`;
   }
@@ -1779,7 +1842,7 @@ footer p { margin: 4px 0; }
   }
 
   function makeThumb(card) {
-    const btn = h('button', { class: 'thumb', type: 'button', 'aria-label': `View ${fullName(card)} larger`, onclick: () => openCard(card.id) });
+    const btn = h('button', { class: 'thumb', type: 'button', 'aria-label': `View ${fullName(card)} larger`, onclick: () => openCard(state.cards.find((c) => c.id === card.id && !card.setName) || card) });
     if (card.img) {
       const img = h('img', { src: card.img, alt: '', loading: 'lazy', decoding: 'async', referrerpolicy: 'no-referrer' });
       img.addEventListener('error', () => img.replaceWith(h('span', { class: 'ph', text: 'No image' })), { once: true });
@@ -1790,7 +1853,7 @@ footer p { margin: 4px 0; }
     return btn;
   }
 
-  function buildRow(card) {
+  function buildRow(card, opts = {}) {
     const priceMain = h('div', { class: 'p-main' });
     const priceVar = h('div', { class: 'p-var' });
     const priceAlt = h('div', { class: 'p-alt' });
@@ -1801,7 +1864,9 @@ footer p { margin: 4px 0; }
         h('div', { class: 'name' }, card.name, card.enName && card.enName !== card.name ? h('span', { class: 'en-name', text: ` (${card.enName})` }) : null),
         h('div', { class: 'name-sub' },
           h('span', { class: 'm-num num', text: '#' + card.number }),
-          card.rarity ? h('span', { class: 'rarity' + (SPECIAL_RARITY.test(card.rarity) && !/^common$|^uncommon$|^rare$/i.test(card.rarity) ? ' special' : ''), text: card.rarity }) : null)),
+          card.rarity ? h('span', { class: 'rarity' + (SPECIAL_RARITY.test(card.rarity) && !/^common$|^uncommon$|^rare$/i.test(card.rarity) ? ' special' : ''), text: card.rarity }) : null,
+          opts.search && card.setName ? h('span', { class: 'set-chip', title: 'Set', text: card.setName + (card.setEnName && card.setEnName !== card.setName ? ` (${card.setEnName})` : '') }) : null,
+          opts.search && state.sets.some((x) => x.id === card.setId) ? h('button', { class: 'open-set', type: 'button', onclick: () => openSetFromSearch(card), text: 'Open set ›' }) : null)),
       h('div', { class: 'price' }, priceMain, priceVar, priceAlt),
       linkBtns(card));
     const entry = { row, card, priceMain, priceVar, priceAlt };
@@ -1927,9 +1992,184 @@ footer p { margin: 4px 0; }
     e.row.classList.remove('flash'); void e.row.offsetWidth; e.row.classList.add('flash');
   }
 
+  /* ---------- Search every card in the chosen language ---------- */
+  const PAGE = 30;
+  const MAX_FOR_PRICE_SORT = 400;
+  const SEARCH = { token: 0, active: false, q: '', lang: null, items: [], shown: 0, sort: 'new', loading: false, error: null, progress: null, progressText: '' };
+  const gsRowCache = new Map();
+  const isAscii = (q) => /^[\x00-\x7F]*$/.test(q);
+
+  // Matching cards without prices yet: [{ id, setId, localId, name, enName?, pid? }]
+  async function searchBriefs(lang, q) {
+    const ja = lang === 'ja';
+    const index = ja ? await jaSearchIndex() : null;
+    let briefs = [];
+    if (ja && index && isAscii(q)) {
+      // Japanese cards by English name, from the English-name index.
+      const needle = q.toLowerCase();
+      for (const [id, x] of index.byId) if (x.name.toLowerCase().includes(needle)) briefs.push({ id, setId: x.setId, localId: x.localId, name: x.name, enName: x.name, pid: x.pid });
+    } else {
+      const list = await getJSON(`https://api.tcgdex.net/v2/${lang}/cards?name=${encodeURIComponent(q)}`, { timeout: 20000 });
+      briefs = (Array.isArray(list) ? list : []).filter((c) => c && c.id && c.localId != null).map((c) => {
+        const localId = String(c.localId);
+        const setId = c.id.endsWith('-' + localId) ? c.id.slice(0, -localId.length - 1) : c.id.split('-')[0];
+        const hit = index && index.byId.get(c.id);
+        return { id: c.id, setId, localId, name: String(c.name || ''), image: c.image, enName: hit ? hit.name : '', pid: hit ? hit.pid : null };
+      });
+    }
+    return briefs.filter((b) => !TCGDEX.isPocket(lang, b.setId));
+  }
+
+  function rankSearch() {
+    const rank = new Map(state.sets.map((x, i) => [x.id, i]));
+    const r = (x) => (rank.has(x.brief.setId) ? rank.get(x.brief.setId) : 1e6);
+    const items = SEARCH.items;
+    if (SEARCH.sort === 'name') items.sort((a, b) => collator.compare(a.brief.enName || a.brief.name, b.brief.enName || b.brief.name) || r(a) - r(b));
+    else if (SEARCH.sort === 'new') items.sort((a, b) => r(a) - r(b) || collator.compare(a.brief.localId, b.brief.localId));
+    else {
+      const dir = SEARCH.sort === 'price-asc' ? 1 : -1;
+      items.sort((a, b) => {
+        const pa = a.card ? priceUSD(a.card) : null, pb = b.card ? priceUSD(b.card) : null;
+        if (pa == null && pb == null) return r(a) - r(b);
+        if (pa == null) return 1;
+        if (pb == null) return -1;
+        return dir * (pa - pb);
+      });
+    }
+  }
+
+  async function runSearch(raw) {
+    const q = String(raw || '').trim();
+    if (!state.lang) return;
+    if (q.length < 2) { $('#gsInput').focus(); return; }
+    const token = ++SEARCH.token;
+    Object.assign(SEARCH, { active: true, q, lang: state.lang, items: [], shown: PAGE, loading: true, error: null, progress: null, progressText: '' });
+    gsRowCache.clear();
+    renderSearch();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    try {
+      const briefs = await searchBriefs(SEARCH.lang, q);
+      if (token !== SEARCH.token) return;
+      SEARCH.items = briefs.map((brief) => ({ brief, card: null, failed: false }));
+      rankSearch();
+      await loadSearchDetails(token);
+    } catch (e) {
+      if (token !== SEARCH.token) return;
+      SEARCH.error = e;
+      SEARCH.loading = false;
+      renderSearch();
+    }
+  }
+
+  // Prices live on each card's page: fetch the cards being shown (all of them for a price sort).
+  async function loadSearchDetails(token) {
+    const lang = SEARCH.lang;
+    const upto = SEARCH.sort.startsWith('price') ? Math.min(SEARCH.items.length, MAX_FOR_PRICE_SORT) : SEARCH.shown;
+    const todo = SEARCH.items.slice(0, upto).filter((x) => !x.card && !x.failed);
+    SEARCH.loading = todo.length > 0;
+    renderSearch();
+    if (todo.length) {
+      await mapLimit(todo, 8, async (x) => {
+        if (token !== SEARCH.token) return;
+        try {
+          const d = await getJSON(`https://api.tcgdex.net/v2/${lang}/cards/${encodeURIComponent(x.brief.id)}`);
+          x.card = toSearchCard(lang, x.brief, d);
+        } catch { x.failed = true; }
+      }, (done, total) => {
+        if (token !== SEARCH.token) return;
+        SEARCH.progress = done < total ? done / total : null;
+        SEARCH.progressText = done < total ? `getting prices ${done}/${total}` : '';
+        renderSearchProgress();
+        if (done % 10 === 0) renderSearch();
+      });
+    }
+    if (token !== SEARCH.token) return;
+    if (SEARCH.sort.startsWith('price')) rankSearch();
+    SEARCH.loading = false;
+    SEARCH.progress = null;
+    SEARCH.progressText = '';
+    renderSearch();
+  }
+
+  function toSearchCard(lang, brief, d) {
+    const set = (d && d.set) || {};
+    const official = set.cardCount && isNum(set.cardCount.official) ? set.cardCount.official : null;
+    const card = TCGDEX.toCard({ id: brief.id, localId: brief.localId, name: brief.name, image: brief.image }, d || {}, official);
+    card.setId = set.id || brief.setId;
+    card.setName = String(set.name || brief.setId);
+    if (lang === 'ja') {
+      card.setEnName = (JA.sets && JA.sets[card.setId]) || '';
+      applyEnglish(card, brief.enName, brief.pid);
+    }
+    return card;
+  }
+
+  function renderSearchProgress() {
+    const el = $('#gsProgress');
+    el.hidden = SEARCH.progress == null;
+    if (SEARCH.progress != null) el.firstElementChild.style.width = (SEARCH.progress * 100).toFixed(1) + '%';
+    const n = SEARCH.items.length;
+    if (n && !SEARCH.error) $('#gsCount').textContent = `${n} card${n === 1 ? '' : 's'}${SEARCH.progressText ? ' · ' + SEARCH.progressText : ''}`;
+  }
+
+  function renderSearch() {
+    $('#app').classList.toggle('searching', SEARCH.active);
+    const view = $('#searchView');
+    view.hidden = !SEARCH.active;
+    if (!SEARCH.active) return;
+    $('#gsSort').value = SEARCH.sort;
+    $('#gsTitle').textContent = `Results for “${SEARCH.q}”`;
+    const box = $('#gsRows');
+    const total = SEARCH.items.length;
+    $('#gsCount').textContent = SEARCH.error ? '' : SEARCH.loading && !total ? 'searching…' : `${total} card${total === 1 ? '' : 's'}`;
+    renderSearchProgress();
+    const more = $('#gsMoreWrap');
+    if (SEARCH.error) {
+      more.hidden = true;
+      box.replaceChildren(h('div', { class: 'gs-empty' }, `Search failed (${SEARCH.error.message}). `, h('button', { class: 'open-set', type: 'button', onclick: () => runSearch(SEARCH.q), text: 'Try again' })));
+      return;
+    }
+    if (!total) {
+      more.hidden = true;
+      if (SEARCH.loading) { box.replaceChildren(...Array.from({ length: 4 }, () => h('div', { class: 'skel' }))); return; }
+      const tip = SEARCH.lang === 'ja'
+        ? 'Try the English name (Charizard) or the Japanese name (リザードン). English names cover Japanese sets from about 2017 on.'
+        : 'Check the spelling, or try part of the name (for example “char”).';
+      box.replaceChildren(h('div', { class: 'gs-empty' }, h('div', null, 'No cards found for ', h('b', { text: `“${SEARCH.q}”` }), '.'), h('div', { text: tip })));
+      return;
+    }
+    const limit = SEARCH.sort.startsWith('price') ? Math.min(total, MAX_FOR_PRICE_SORT) : total;
+    const visible = SEARCH.items.slice(0, Math.min(SEARCH.shown, limit));
+    const rows = [];
+    for (const x of visible) {
+      if (x.failed) continue;
+      if (!x.card) { rows.push(h('div', { class: 'skel' })); continue; }
+      let e = gsRowCache.get(x.card.id);
+      if (!e) { e = buildRow(x.card, { search: true }); gsRowCache.set(x.card.id, e); } else updateRow(e, x.card);
+      rows.push(e.row);
+    }
+    box.replaceChildren(...rows);
+    const left = limit - visible.length;
+    more.hidden = left <= 0;
+    $('#gsMore').textContent = `Show more (${left} left)`;
+    $('#gsMore').disabled = SEARCH.loading;
+  }
+
+  function closeSearch() {
+    SEARCH.token++;
+    SEARCH.active = false;
+    renderSearch();
+  }
+
+  async function openSetFromSearch(card) {
+    closeSearch();
+    window.scrollTo({ top: 0 });
+    if (!state.set || state.set.id !== card.setId) await selectSet(card.setId);
+    jumpToCard(card.id);
+  }
+
   /* ---------- Card dialog ---------- */
-  function openCard(id) {
-    const card = state.cards.find((c) => c.id === id);
+  function openCard(card) {
     if (!card) return;
     const dlg = $('#cardDlg');
     $('#cardDlgTitle').textContent = `#${card.number}`;
@@ -1954,7 +2194,8 @@ footer p { margin: 4px 0; }
       add('PriceCharting', [['Ungraded', card.pc.ungraded], ['Grade 9', card.pc.grade9], ['PSA 10', card.pc.psa10]].filter(([, x]) => isNum(x)).map(([k, x]) => `${k} ${fmt(x)}`).join(' · '));
     }
     add('Rarity', card.rarity);
-    add('Set', state.set.name + (enSetName(state.set) ? ` (${enSetName(state.set)})` : ''));
+    if (card.setName) add('Set', card.setName + (card.setEnName && card.setEnName !== card.setName ? ` (${card.setEnName})` : ''));
+    else add('Set', state.set.name + (enSetName(state.set) ? ` (${enSetName(state.set)})` : ''));
     $('#cardDlgInfo').replaceChildren(h('h3', null, card.name, card.enName && card.enName !== card.name ? h('span', { class: 'en-name', text: ` (${card.enName})` }) : null), h('dl', { class: 'kv' }, kv), linkBtns(card));
     dlg.showModal();
   }
@@ -2046,7 +2287,16 @@ footer p { margin: 4px 0; }
   $$('.lang-card').forEach((b) => b.addEventListener('click', () => chooseLanguage(b.dataset.lang)));
   $$('.seg button').forEach((b) => b.addEventListener('click', () => { if (b.dataset.lang !== state.lang) chooseLanguage(b.dataset.lang); }));
   $('#brandBtn').addEventListener('click', showWelcome);
-  $('#setSelect').addEventListener('change', (e) => selectSet(e.target.value));
+  $('#setSelect').addEventListener('change', (e) => { closeSearch(); selectSet(e.target.value); });
+  $('#gsForm').addEventListener('submit', (e) => { e.preventDefault(); $('#gsInput').blur(); runSearch($('#gsInput').value); });
+  $('#gsBack').addEventListener('click', () => { closeSearch(); window.scrollTo({ top: 0 }); });
+  $('#gsMore').addEventListener('click', () => { SEARCH.shown += PAGE; loadSearchDetails(SEARCH.token); });
+  $('#gsSort').addEventListener('change', (e) => {
+    SEARCH.sort = e.target.value;
+    rankSearch();
+    SEARCH.shown = PAGE;
+    loadSearchDetails(SEARCH.token);
+  });
   $('#currencySelect').addEventListener('change', (e) => { state.currency = e.target.value; LS.set('currency', state.currency); renderAll(); });
   $('#priceSelect').addEventListener('change', (e) => { state.priceType = e.target.value; LS.set('priceType', state.priceType); state.changes = new Map(); recordHistory(); renderAll(); });
   $('#autoToggle').addEventListener('change', (e) => { state.auto = e.target.checked; LS.set('auto', state.auto); state.remaining = state.settings.interval; renderAll(); });
