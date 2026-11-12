@@ -10,7 +10,7 @@ A single-page HTML app (`index.html`, no build step) that shows every card in a 
 
 Also included:
 
-- **Four tabs**: Sets, Master set, Collection and Wishlist.
+- **Five tabs**: Sets, Master set, Collection, Wishlist and Updates.
 - **Search every card** in the chosen language from the search bar at the top. For example, "Charizard" lists every Charizard card from every set with its price. Japanese and Chinese cards can be searched by English name or in their own language. Results start with the newest sets and can be sorted by price or name, and **Open set** jumps to the card inside its set.
 - **Sorting** by card number, name or price, a filter box, **Cards I have / Cards I need**, and a **List / Binder** switch. Binder view shows card pictures in a grid with the ones you don't have greyed out.
 - **Set totals**: total cost of the set (one copy of each card), highest card, lowest card, average and median. The set header also shows how many cards you have, what they're worth, and what the missing ones cost.
@@ -26,7 +26,15 @@ Also included:
   - The Collection tab shows total worth with a history line, **gain / loss** against what you paid, and the most valuable card.
   - **Biggest movers** shows the cards that rose or fell most over about a week.
   - Graded copies are valued at their graded price (PriceCharting key needed; otherwise the ungraded price is used and labelled).
-- **Master set** tab: every print of every card in the set (normal, reverse holo, holo, 1st edition) as its own tick box, with "X of Y prints" and the cost to finish. It's the same record as your collection: ticking a print adds that copy, and copies you add anywhere else show up as ticked.
+- **Master set** tab: every print of every card in the set as its own tick box, with "X of Y prints" and the cost to finish:
+  - Normal, reverse holo, holo and 1st edition prints.
+  - **Special prints**: Poké Ball and Master Ball patterns, the newer Love Ball, Friend Ball, Quick Ball, Dusk Ball, Team Rocket and Energy Symbol patterns, stamped promos, Cosmos and Cracked Ice holos, metal cards and so on. Each has its own price.
+  - A switch leaves the special prints out if you only want the regular master set.
+  - It's the same record as your collection: ticking a print adds that copy, and copies you add anywhere else show up as ticked.
+- **Updates** tab: a running log of what changed in the card lists:
+  - New sets, cards added to a set's list, and new kinds of special print, from TCGplayer's catalog (checked every day).
+  - New sets on TCGdex, newly published prices for the sets you open (with the set total before and after), price changes in your collection, and wishlist cards that hit your target. These are noticed by your browser while the app is open.
+  - The bell shows how many are new since you last looked, and the app pops up a note when the daily check finds something. **Open set** jumps straight to the set.
 - **Wishlist**: tap ☆ Want on any card, set a target price, and the app highlights cards at or below their target. When you open the app it tells you how many have hit their target. **Got it** moves a card to your collection with today's price as what you paid.
 - **Camera scanner**: line a card up in the frame and the app reads its number (and name on English cards), then shows the matching cards to add. Photos stay on your device.
 - **Cloud sync** (optional): keeps your collection and wishlist in a private file in your GitHub account and in sync across devices. See below.
@@ -57,7 +65,23 @@ The files cover every Japanese set from about 2017 on (91 sets at the moment). O
 
 The script also writes `data/ja/search.json`, one list of every Japanese card with an English name. That's what lets the search find Japanese cards by English name.
 
-A GitHub Actions workflow (`.github/workflows/japanese-names.yml`) re-runs the script every Monday and commits any changes, so new sets get English names. You can also run it from the repo's **Actions** tab, or locally with `python3 tools/build_japanese_names.py`.
+### Special prints and the catalog log
+
+TCGplayer lists special prints (Poké Ball pattern, Master Ball pattern, stamps and so on) as separate products named like `Pikachu (Master Ball Pattern) - 025/131`. `tools/build_variants.py` reads TCGplayer's English and Japanese catalog through TCGCSV. For each card number, the product without the extra label is the card, and every other product of the same card counts as a special print, named by its label.
+
+That's what makes it future-proof: nothing in the code names the patterns, so a new kind (like the Love Ball and Team Rocket patterns that arrived with Ascended Heroes) is picked up the first day TCGplayer lists it.
+
+The script writes:
+
+- `data/variants/`: the special prints of each set, with today's TCGplayer prices.
+- `data/catalog.json`: a snapshot of every set's card count and print kinds.
+- `data/changelog.json`: what changed since the previous run. The Updates tab shows it.
+
+Japanese "Mirror" prints are the regular reverse holo and are merged with it. When TCGplayer lists a Japanese card's prints, those decide whether it has a reverse holo, because TCGdex marks Poké Ball and Master Ball mirrors (as in 151) as reverse holos.
+
+### Daily refresh
+
+A GitHub Actions workflow (`.github/workflows/refresh-data.yml`) runs both scripts every day at 21:41 UTC, after TCGplayer's daily price update. It commits any changes, and Cloudflare redeploys the site. You can also run it from the repo's **Actions** tab, or locally with `python3 tools/build_japanese_names.py` and `python3 tools/build_variants.py`.
 
 ### Cloud sync
 
@@ -103,7 +127,13 @@ The sources publish new prices about once a day (TCGdex around midnight UTC). Ev
 
 ### Master set
 
-Prints come from TCGdex's list of which versions exist, plus any version TCGplayer has a price for (TCGdex's list misses reverse holos on brand-new sets). Special patterns, like Poké Ball or Master Ball reverse holos, aren't listed separately.
+Prints come from:
+
+- TCGdex's list of which versions exist.
+- Any version TCGplayer has a price for (TCGdex's list misses reverse holos on brand-new sets).
+- TCGplayer's special print products, refreshed daily. A brand-new pattern shows up after the next daily run.
+
+Chinese sets have no special print data.
 
 ## Running it
 
@@ -117,7 +147,7 @@ The app is deployed by Cloudflare straight from this repo:
 
 - Cloudflare **Workers & Pages** is connected to GitHub, with access to this repo only.
 - It deploys the `claude/pokemon-set-price-tracker-icxomp` branch. There's no build step: the repo folder is the website.
-- Every push to that branch redeploys it automatically, including the weekly English-names update.
+- Every push to that branch redeploys it automatically, including the daily card data update.
 - `.assetsignore` lists repo files the website doesn't need (README, tools, workflow), so Cloudflare leaves them out.
 - If the address ever changes, update `HOSTED_URL` near the top of the script in `index.html`. The app uses it for its "Open in browser" button.
 

@@ -8,3 +8,5 @@ README.md
 wrangler.jsonc
 wrangler.toml
 node_modules
+data/catalog.json
+.gitignore

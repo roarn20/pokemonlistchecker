@@ -437,6 +437,25 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.55); backdrop-filter: blur(3px); 
 @media (max-width: 430px) { .tab-long { display: none; } .tabs button { font-size: 13px; padding: 0 6px; gap: 5px; } .tab-count { min-width: 18px; height: 18px; font-size: 11px; } }
 .tab-count.neutral { background: var(--surface-3); color: var(--text-2); }
 .tab-count.deal { background: var(--good); color: #fff; }
+.tab-ico { width: 17px; height: 17px; flex: none; }
+.tab-count:empty { display: none; }
+@media (max-width: 520px) { .tab-word { display: none; } }
+.upd-list { display: flex; flex-direction: column; }
+.upd-day { font-size: 12px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); padding: 14px 16px 6px; }
+.upd-item { display: grid; grid-template-columns: 34px 1fr auto; gap: 12px; align-items: center; padding: 12px 16px; border-top: 1px solid var(--border); }
+.upd-day + .upd-item { border-top: 0; }
+.upd-item.unread { background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.upd-item.unread .upd-text::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin: 0 7px 1px 0; }
+.upd-ico { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; font-weight: 800; font-size: 15px; background: var(--surface-3); color: var(--text-2); }
+.upd-ico.k-new-set { background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent); }
+.upd-ico.k-new-cards { background: color-mix(in srgb, var(--good) 16%, transparent); color: var(--good); }
+.upd-ico.k-new-variants { background: color-mix(in srgb, #a855f7 16%, transparent); color: #a855f7; }
+.upd-ico.k-prices { background: color-mix(in srgb, #f59e0b 18%, transparent); color: #d97706; }
+.upd-text { font-size: 14px; line-height: 1.4; overflow-wrap: anywhere; }
+.upd-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 3px; font-size: 12px; color: var(--muted); }
+.upd-item .btn { height: 32px; padding: 0 12px; font-size: 13px; white-space: nowrap; }
+.upd-empty { padding: 28px 16px; text-align: center; color: var(--text-2); font-size: 14px; }
+@media (max-width: 520px) { .upd-item { grid-template-columns: 30px 1fr; gap: 10px; padding: 12px; } .upd-ico { width: 30px; height: 30px; } .upd-item .btn { grid-column: 2; justify-self: start; } }
 #app.master #stats, #app.master #charts, #app.master #listPanel, #app.master #searchView, #app.master .gsearch, #app.master .own { display: none; }
 #app:not(.master) #masterPanel { display: none; }
 .master-head { padding: 16px; border-bottom: 1px solid var(--border); display: grid; gap: 8px; }
@@ -445,6 +464,9 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.55); backdrop-filter: blur(3px); 
 .prints { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
 .print-chip { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 10px; border-radius: 9px; border: 1px solid var(--border-strong); background: var(--surface); font-size: 12.5px; font-weight: 700; color: var(--text-2); white-space: nowrap; }
 .print-chip .pp { font-weight: 500; color: var(--muted); font-variant-numeric: tabular-nums; }
+.check-row { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; cursor: pointer; }
+.check-row input { width: 18px; height: 18px; margin: 1px 0 0; accent-color: var(--good); flex: none; }
+.print-chip.special:not(.on) { border-style: dashed; }
 .print-chip.on { background: var(--good); border-color: transparent; color: #fff; }
 .print-chip.on .pp { color: rgba(255, 255, 255, 0.85); }
 .wish-btn { border: 1px solid var(--border-strong); background: var(--surface); border-radius: 999px; height: 24px; padding: 0 9px; font-size: 11.5px; font-weight: 700; color: var(--text-2); white-space: nowrap; }
@@ -665,6 +687,7 @@ footer p { margin: 4px 0; }
     <button type="button" data-tab="master" aria-current="false">Master<span class="tab-long"> set</span></button>
     <button type="button" data-tab="collection" aria-current="false">Collection <span class="tab-count" id="collCount"></span></button>
     <button type="button" data-tab="wishlist" aria-current="false">Wishlist <span class="tab-count neutral" id="wishCount"></span></button>
+    <button type="button" data-tab="updates" aria-current="false" aria-label="Updates"><svg class="tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="tab-word">Updates</span> <span class="tab-count" id="updCount"></span></button>
   </nav>
   <!-- Step 1: language -->
   <section class="welcome" id="welcome" hidden>
@@ -939,6 +962,48 @@ footer p { margin: 4px 0; }
         </div>
       </div>
       <div class="rows" id="wishRows"></div>
+    </section>
+  </section>
+
+  <!-- Updates -->
+  <section id="updView" hidden>
+    <div class="coll-head">
+      <div>
+        <h1>Updates</h1>
+        <p class="muted">New sets, cards added to a set's list, new special prints and new prices. TCGplayer's card lists are checked every day, and this page checks again whenever it's open.</p>
+      </div>
+    </div>
+    <div class="controls" role="group" aria-label="Update filters">
+      <div class="field small">
+        <label for="updLang">Language</label>
+        <select id="updLang" class="select">
+          <option value="all">All languages</option>
+          <option value="en">English</option>
+          <option value="ja">Japanese</option>
+          <option value="zh-tw">Chinese</option>
+        </select>
+      </div>
+      <div class="field">
+        <span class="label">Card lists</span>
+        <div class="refresh-group"><button class="btn btn-refresh" type="button" id="updCheck"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg> Check now</button></div>
+      </div>
+    </div>
+    <div class="statusline" id="updStatus" aria-live="polite"></div>
+    <section class="panel list-panel">
+      <div class="list-toolbar">
+        <h3>What changed <span class="count" id="updCountLabel"></span></h3>
+        <div class="sort-group">
+          <label class="sr-only" for="updFilter">Show</label>
+          <select id="updFilter" class="select">
+            <option value="all">Show: Everything</option>
+            <option value="cards">Show: New sets &amp; cards</option>
+            <option value="new-variants">Show: Special prints</option>
+            <option value="prices">Show: Prices</option>
+            <option value="mine">Show: My cards &amp; sets</option>
+          </select>
+        </div>
+      </div>
+      <div id="updRows" class="upd-list"></div>
     </section>
   </section>
 
@@ -1388,6 +1453,34 @@ footer p { margin: 4px 0; }
     }
     return jaIndexP;
   }
+  /* Special prints (Poké Ball / Master Ball patterns, stamps, metal cards...) from TCGplayer's
+     catalog, built daily by tools/build_variants.py into data/variants/. */
+  const VAR = { indexP: null, sets: new Map() };
+  function variantIndex() {
+    if (!VAR.indexP) VAR.indexP = getStatic('data/variants/index.json').then((d) => (d && typeof d === 'object' ? d : {}));
+    return VAR.indexP;
+  }
+  async function variantsFor(lang, setId) {
+    if (lang !== 'en' && lang !== 'ja') return null;
+    const idx = await variantIndex();
+    if (!idx[lang] || !idx[lang][setId]) return null;
+    const k = `${lang}:${setId}`;
+    if (!VAR.sets.has(k)) VAR.sets.set(k, getStatic(`data/variants/${lang}/${encodeURIComponent(setId)}.json`));
+    return VAR.sets.get(k);
+  }
+  // card.specials = { "Poke Ball Pattern": { market, low, mid, high, productId } }
+  function applySpecials(card, data) {
+    const rows = data && data.cards && data.cards[card.localId];
+    if (!Array.isArray(rows)) return;
+    const sp = {};
+    for (const r of rows) {
+      if (!Array.isArray(r) || typeof r[0] !== 'string') continue;
+      const num = (v) => (isNum(v) && v > 0 ? v : null);
+      sp[r[0].slice(0, 60)] = { productId: r[1], market: num(r[2]), low: num(r[3]), mid: num(r[4]), high: num(r[5]) };
+    }
+    if (Object.keys(sp).length) card.specials = sp;
+  }
+  const specialNames = (card) => Object.keys(card.specials || {});
   const enSetName = (set) => (usesJaNames(state.lang) && set && JA.sets && JA.sets[set.id]) || '';
   // withIds: also use the TCGplayer product ids (Japanese only; Chinese cards are different products).
   function applyJaNames(cards, data, withIds = true) {
@@ -1600,10 +1693,11 @@ footer p { margin: 4px 0; }
   function variantRank(name) {
     const i = VARIANT_ORDER.indexOf(String(name).toLowerCase());
     if (i !== -1) return i;
-    return /reverse/i.test(name) ? 90 : 50;
+    return /reverse/i.test(name) ? 90 : 95; // special prints (patterns, stamps...) last
   }
   const VARIANT_SHORT = { 'Normal': 'Normal', 'Holofoil': 'Holo', 'Reverse Holofoil': 'Reverse holo', '1st Edition Holofoil': '1st Ed. holo', '1st Edition Normal': '1st Ed.', 'Unlimited Holofoil': 'Unlimited holo' };
-  const shortVariant = (n) => VARIANT_SHORT[n] || n;
+  // "Poke Ball Pattern" -> "Poké Ball", "Master Ball Pattern" -> "Master Ball"
+  const shortVariant = (n) => VARIANT_SHORT[n] || String(n).replace(/\s*Pattern$/i, '').replace(/\bPoke(mon)?\b/g, 'Poké$1');
   function pick(v, type) {
     const order = type === 'low' ? ['low', 'market', 'mid'] : type === 'mid' ? ['mid', 'market', 'low'] : ['market', 'mid', 'low'];
     for (const k of order) if (isNum(v[k]) && v[k] > 0) return v[k];
@@ -1733,6 +1827,7 @@ footer p { margin: 4px 0; }
       // TCGdex keeps its own order (only its newest sets have dates).
       state.sets = provider === TCGDEX ? sets : sets.slice().sort((a, b) => (b.releaseDate || '').localeCompare(a.releaseDate || ''));
       state.setsLoadedAt = Date.now();
+      noteSetList(provider.id, lang, state.sets);
       renderSetSelect();
       if (usesJaNames(lang)) jaSetNames().then(() => { if (state.lang === lang) { renderSetSelect(); renderSetHero(); } });
       const wanted = setId && (!src || src === provider.id) ? state.sets.find((s) => s.id === setId) : null;
@@ -1790,6 +1885,8 @@ footer p { margin: 4px 0; }
         onProgress: (done, total) => { if (id === state.reqId) { state.progress = done < total ? done / total : null; renderProgress(); } },
       });
       if (namesP) applyJaNames(cards, await namesP, state.lang === 'ja');
+      const varData = await variantsFor(state.lang, set.id).catch(() => null);
+      if (varData) for (const c of cards) applySpecials(c, varData);
       if (id !== state.reqId) return;
       const before = new Map(state.cards.map((c) => [c.id, priceUSD(c)]));
       const pcBefore = new Map(state.cards.filter((c) => c.pc).map((c) => [c.id, c.pc]));
@@ -1810,6 +1907,7 @@ footer p { margin: 4px 0; }
       state.lastFull = Date.now();
       state.lastError = null;
       recordHistory();
+      noteSetLoad(state.lang, set);
       renderAll();
       PC.enrich();
     } catch (e) {
@@ -1836,6 +1934,7 @@ footer p { margin: 4px 0; }
       const sets = await state.provider.listSets(state.lang);
       if (!sets.length) return;
       state.sets = state.provider === TCGDEX ? sets : sets.slice().sort((a, b) => (b.releaseDate || '').localeCompare(a.releaseDate || ''));
+      noteSetList(state.provider.id, state.lang, state.sets);
       const cur = state.sets.find((s) => s.id === state.set.id);
       if (cur) { Object.assign(cur, { total: state.set.total, official: state.set.official, logo: state.set.logo || cur.logo, series: state.set.series || cur.series }); state.set = cur; }
       renderSetSelect();
@@ -2368,7 +2467,12 @@ footer p { margin: 4px 0; }
       const val = pick(v, tpType);
       if (val != null) alts.push(`${shortVariant(n)} ${fmt(val)}`);
     }
-    if (card.cm && pi && pi.src === 'Cardmarket' && isNum(card.cm.trend) && card.cm.trend > 0 && isNum(card.cm.trendHolo) && card.cm.trendHolo > 0) {
+    for (const [n, v] of Object.entries(card.specials || {})) {
+      if (card.variants && card.variants[n]) continue;
+      const val = pick(v, tpType);
+      if (val != null) alts.push(`${shortVariant(n)} ${fmt(val)}`);
+    }
+    if (card.cm && pi && pi.src === 'Cardmarket' && !card.specials && isNum(card.cm.trend) && card.cm.trend > 0 && isNum(card.cm.trendHolo) && card.cm.trendHolo > 0) {
       alts.push(`Reverse holo ${fmt(card.cm.trendHolo / eurPerUsd())}`);
     } else if (card.cm && (!pi || pi.src !== 'Cardmarket')) {
       const e = cmPrice(card.cm, tpType);
@@ -2542,7 +2646,7 @@ footer p { margin: 4px 0; }
     return n ? { paid, value, gain: value - paid } : null;
   }
   const hasGraded = (e) => e.lots.some((l) => l.grade && l.grade !== 'raw');
-  const primaryPrint = (card) => printsOf(card)[0];
+  const primaryPrint = (card) => printsOf(card, false)[0];
   // Which prints of a card you have (copies without a print count as its main print).
   function ownedPrints(e, card) {
     const main = primaryPrint(card || e);
@@ -2582,6 +2686,7 @@ footer p { margin: 4px 0; }
         if (!e) continue;
         Object.assign(e, { variants: c.variants || {}, cm: c.cm || null, updated: c.updated || e.updated, pricedAt: Date.now() });
         if (c.prints) e.prints = c.prints;
+        if (c.specials) e.specials = c.specials;
         if (c.pc) e.pc = c.pc;
         if (c.enName) e.enName = c.enName;
         if (c.img) { e.img = c.img; e.imgLarge = c.imgLarge; }
@@ -2659,7 +2764,7 @@ footer p { margin: 4px 0; }
       setEnName: card.setEnName || (set && usesJaNames(lang) && JA.sets ? JA.sets[set.id] || '' : ''),
       name: card.name, enName: card.enName || '', number: card.number || '', localId: card.localId || '', rarity: card.rarity || '',
       img: card.img || null, imgLarge: card.imgLarge || null, tcgplayerUrl: card.tcgplayerUrl || null,
-      variants: card.variants || {}, cm: card.cm || null, prints: card.prints || null, pc: card.pc || null, updated: card.updated || null,
+      variants: card.variants || {}, cm: card.cm || null, prints: card.prints || null, specials: card.specials || null, pc: card.pc || null, updated: card.updated || null,
       addedAt: Date.now(), updatedAt: Date.now(), pricedAt: Date.now(),
     };
   }
@@ -2668,6 +2773,11 @@ footer p { margin: 4px 0; }
   }
   // Price of one copy of a particular print (e.g. the reverse holo), falling back to the card's main price.
   function priceFor(card, variant) {
+    const sp = variant && card.specials && card.specials[variant];
+    if (sp && !isPC() && !(card.variants && card.variants[variant])) {
+      const val = pick(sp, state.priceType === 'cm' ? 'market' : state.priceType);
+      if (val != null) return { usd: val, src: 'TCGplayer', variant };
+    }
     if (variant && !isPC()) {
       const v = card.variants && card.variants[variant];
       if (v && state.priceType !== 'cm') { const val = pick(v, state.priceType); if (val != null) return { usd: val, src: 'TCGplayer', variant }; }
@@ -2679,12 +2789,19 @@ footer p { margin: 4px 0; }
   }
   // Every print a card comes in. TCGdex's list misses prints on new sets, so prints that
   // TCGplayer prices count too ("Unlimited Holofoil" and "Holofoil" are the same print).
-  function printsOf(card) {
+  function printsOf(card, withSpecials = true) {
     const norm = (n) => String(n).replace(/^Unlimited\s*/i, '') || 'Normal';
     const seen = new Map();
     for (const n of Object.keys(card.variants || {})) seen.set(norm(n), n);
-    for (const n of card.prints || []) if (!seen.has(norm(n))) seen.set(norm(n), n);
-    if (!Object.keys(card.variants || {}).length && card.cm && card.cm.trend > 0 && card.cm.trendHolo > 0 && !seen.has('Reverse Holofoil')) seen.set('Reverse Holofoil', 'Reverse Holofoil');
+    // Japanese cards: when TCGplayer's catalog lists the card's prints, its own reverse holo entry
+    // decides (TCGdex marks Poké Ball / Master Ball mirrors, as in 151, as a reverse holo).
+    const catalog = card.specials && !Object.keys(card.variants || {}).length;
+    for (const n of card.prints || []) if (!seen.has(norm(n)) && !(catalog && /reverse/i.test(n))) seen.set(norm(n), n);
+    // A special print named "Reverse Holofoil" (Japanese "Mirror Foil") is the regular reverse holo.
+    for (const n of specialNames(card)) if ((withSpecials || n === 'Reverse Holofoil') && !seen.has(norm(n))) seen.set(norm(n), n);
+    // Cardmarket's separate "holo" price hints at a reverse holo, unless TCGplayer's catalog lists the
+    // card's special prints (Japanese 151, for one, has only Poké Ball / Master Ball mirrors).
+    if (!Object.keys(card.variants || {}).length && !card.specials && card.cm && card.cm.trend > 0 && card.cm.trendHolo > 0 && !seen.has('Reverse Holofoil')) seen.set('Reverse Holofoil', 'Reverse Holofoil');
     const list = [...seen.values()].sort((a, b) => variantRank(a) - variantRank(b));
     return list.length ? list : ['Normal'];
   }
@@ -2788,11 +2905,11 @@ footer p { margin: 4px 0; }
      as its own checkbox. Ticking one adds that copy to your collection, so
      it stays in step with everything else.
      ========================================================= */
-  const MASTER = { filter: 'all', q: '' };
+  const MASTER = { filter: 'all', q: '', specials: LS.get('masterSpecials', true) !== false };
   function masterStats() {
     let total = 0, have = 0, cost = 0, unpriced = 0, cards = 0, complete = 0;
     for (const c of state.cards) {
-      const prints = printsOf(c);
+      const prints = printsOf(c, MASTER.specials);
       const e = Coll.get(state.lang, c.id);
       const owned = e ? ownedPrints(e, c) : new Set();
       let all = true;
@@ -2841,7 +2958,16 @@ footer p { margin: 4px 0; }
       h('div', { class: 'own-text' },
         st.have < st.total ? `The ${st.total - st.have} prints you need cost ${fmt(st.cost)}${st.unpriced ? '+' : ''} · ` : 'Master set complete! · ',
         `${st.complete} of ${st.cards} cards have every print`),
-      h('p', { class: 'dlg-note', text: 'Tap a print to tick it off. It goes into your collection as that copy, and anything you add elsewhere shows up here too. Prints come from TCGdex; special patterns (like Poké Ball reverses) aren’t listed.' }));
+      h('p', { class: 'dlg-note', text: 'Tap a print to tick it off. It goes into your collection as that copy, and anything you add elsewhere shows up here too.' }),
+      (() => {
+        const nSpecial = state.cards.reduce((t, c) => t + specialNames(c).filter((n) => n !== 'Reverse Holofoil').length, 0);
+        if (!nSpecial) return h('p', { class: 'dlg-note', text: 'No special prints (Poké Ball patterns, stamps…) are listed for this set on TCGplayer.' });
+        const box = h('input', { type: 'checkbox', id: 'masterSpecials' });
+        box.checked = MASTER.specials;
+        box.addEventListener('change', () => { MASTER.specials = box.checked; LS.set('masterSpecials', MASTER.specials); renderMaster(); });
+        return h('label', { class: 'check-row', for: 'masterSpecials' }, box,
+          h('span', null, h('b', { text: 'Include special prints' }), h('span', { class: 'muted', text: nSpecial ? ` · ${nSpecial} in this set (Poké Ball, Master Ball and other patterns, stamps…), from TCGplayer’s catalog` : '' })));
+      })());
     const q = MASTER.q.trim().toLowerCase();
     let list = state.cards.slice().sort((a, b) => collator.compare(numKey(a.number), numKey(b.number)));
     if (q) list = list.filter((c) => `${c.name} ${c.enName || ''} ${c.number} ${c.rarity}`.toLowerCase().includes(q));
@@ -2849,7 +2975,7 @@ footer p { margin: 4px 0; }
       list = list.filter((c) => {
         const e = Coll.get(state.lang, c.id);
         const owned = e ? ownedPrints(e, c) : new Set();
-        const done = printsOf(c).every((pr) => owned.has(pr));
+        const done = printsOf(c, MASTER.specials).every((pr) => owned.has(pr));
         return MASTER.filter === 'complete' ? done : !done;
       });
     }
@@ -2858,11 +2984,11 @@ footer p { margin: 4px 0; }
     fill(box, list.map((c) => {
       const e = Coll.get(state.lang, c.id);
       const owned = e ? ownedPrints(e, c) : new Set();
-      const chips = printsOf(c).map((pr) => {
+      const chips = printsOf(c, MASTER.specials).map((pr) => {
         const on = owned.has(pr);
         const p = priceFor(c, pr);
         return h('button', {
-          class: 'print-chip' + (on ? ' on' : ''), type: 'button', 'aria-pressed': String(on),
+          class: 'print-chip' + (on ? ' on' : '') + (c.specials && c.specials[pr] && pr !== 'Reverse Holofoil' ? ' special' : ''), type: 'button', 'aria-pressed': String(on),
           'aria-label': `${shortVariant(pr)}${p ? ', ' + fmt(p.usd) : ''}: ${on ? 'you have it, tap to remove' : 'tap to add'}`,
           onclick: () => togglePrint(c, pr),
         }, `${on ? '✓' : '＋'} ${shortVariant(pr)}`, p ? h('span', { class: 'pp', text: fmt(p.usd, { compact: true }) }) : null);
@@ -3098,12 +3224,17 @@ footer p { margin: 4px 0; }
     $$('#tabs button').forEach((b) => b.setAttribute('aria-current', b.dataset.tab === tab ? 'page' : 'false'));
     $('#collectionView').hidden = tab !== 'collection';
     $('#wishView').hidden = tab !== 'wishlist';
+    $('#updView').hidden = tab !== 'updates';
     $('#app').classList.toggle('master', tab === 'master');
   }
   function showTab(tab) {
     setTabUI(tab);
     hideTip();
-    if (tab === 'collection' || tab === 'wishlist') {
+    if (tab === 'updates') {
+      $('#welcome').hidden = true;
+      $('#app').hidden = true;
+      openUpdates();
+    } else if (tab === 'collection' || tab === 'wishlist') {
       $('#welcome').hidden = true;
       $('#app').hidden = true;
       if (tab === 'collection') { renderCollection(); refreshCollection(); } else { renderWishlist(); refreshWishlist(); }
@@ -3326,6 +3457,8 @@ footer p { margin: 4px 0; }
     COLL.refreshing = true;
     COLL.error = null;
     renderCollection();
+    const valueBefore = collTotal();
+    const before = new Map(todo.map((e) => [e, withCollPrice(() => entryValue(e))]));
     let fails = 0;
     await mapLimit(todo, 8, async (e) => {
       try {
@@ -3335,6 +3468,8 @@ footer p { margin: 4px 0; }
         Object.assign(e, { variants: fresh.variants, cm: fresh.cm, updated: fresh.updated, pricedAt: Date.now() });
         if (fresh.img && !e.img) { e.img = fresh.img; e.imgLarge = fresh.imgLarge; }
         if (fresh.tcgplayerUrl && !e.tcgplayerUrl) e.tcgplayerUrl = fresh.tcgplayerUrl;
+        const vd = await variantsFor(e.lang, e.setId).catch(() => null);
+        if (vd) applySpecials(Object.assign(e, { localId: e.localId || fresh.localId }), vd);
         PH.record(e.lang, e);
       } catch { fails++; }
     }, (done, total) => {
@@ -3349,6 +3484,7 @@ footer p { margin: 4px 0; }
     Coll.save();
     PH.save();
     recordCollHistory();
+    noteCollectionValue(valueBefore, collTotal(), todo.filter((e) => { const a = before.get(e), b = withCollPrice(() => entryValue(e)); return isNum(a) && isNum(b) && Math.abs(a - b) >= 0.005; }).length);
     renderCollection();
   }
 
@@ -3414,7 +3550,7 @@ footer p { margin: 4px 0; }
     },
     // What gets synced: your cards and choices, not the prices (each device fetches those).
     payload() {
-      const strip = (x) => { const o = Object.assign({}, x); delete o.variants; delete o.cm; delete o.pc; delete o.pricedAt; return o; };
+      const strip = (x) => { const o = Object.assign({}, x); delete o.variants; delete o.cm; delete o.pc; delete o.specials; delete o.pricedAt; return o; };
       const map = (items) => Object.fromEntries(Object.entries(items).map(([k, v]) => [k, strip(v)]));
       return { app: 'pokemon-set-price-tracker', version: 2, updated: new Date().toISOString(), collection: map(Coll.items), collectionDeleted: Coll.deleted, wishlist: map(Wish.items), wishlistDeleted: Wish.deleted };
     },
@@ -3428,7 +3564,7 @@ footer p { margin: 4px 0; }
         if ((localDel[k] || 0) >= (r.updatedAt || 0)) continue;
         const l = local[k];
         if (!l || (r.updatedAt || 0) > (l.updatedAt || 0)) {
-          if (l) Object.assign(r, { variants: l.variants, cm: l.cm, pc: l.pc, pricedAt: l.pricedAt, img: r.img || l.img, imgLarge: r.imgLarge || l.imgLarge });
+          if (l) Object.assign(r, { variants: l.variants, cm: l.cm, pc: l.pc, specials: l.specials, pricedAt: l.pricedAt, img: r.img || l.img, imgLarge: r.imgLarge || l.imgLarge });
           local[k] = r;
           changed = true;
         }
@@ -3610,6 +3746,10 @@ footer p { margin: 4px 0; }
   }
   // A heads-up (once per visit) when wishlist cards reach their target price.
   function checkDeals() {
+    for (const [k, w] of Object.entries(Wish.items)) {
+      if (!isDeal(w)) continue;
+      UpdLog.add({ kind: 'deal', lang: w.lang, item: k, name: fullName(w), price: wishPrice(w), target: w.target, key: `deal:${k}:${todayISO()}` });
+    }
     if (WISHV.notified) return;
     const n = Object.values(Wish.items).filter(isDeal).length;
     if (!n) return;
@@ -4164,6 +4304,11 @@ footer p { margin: 4px 0; }
         .filter(([, x]) => isNum(x) && x > 0).map(([k, x]) => `${k} ${fmt(x / eurPerUsd())}`);
       if (parts.length) add('Cardmarket', parts.join(' · '));
     }
+    const specials = Object.entries(card.specials || {}).filter(([n]) => !(card.variants && card.variants[n]));
+    for (const [n, v] of specials) {
+      const parts = [['Market', v.market], ['Low', v.low], ['Mid', v.mid], ['High', v.high]].filter(([, x]) => isNum(x) && x > 0).map(([k, x]) => `${k} ${fmt(x)}`);
+      add(`TCGplayer ${shortVariant(n)}`, parts.length ? parts.join(' · ') : 'No price yet');
+    }
     add('Rarity', card.rarity);
     if (card.setName) add('Set', card.setName + (card.setEnName && card.setEnName !== card.setName ? ` (${card.setEnName})` : ''));
     else if (state.set) add('Set', state.set.name + (enSetName(state.set) ? ` (${enSetName(state.set)})` : ''));
@@ -4182,7 +4327,8 @@ footer p { margin: 4px 0; }
       graded,
       recentSalesSection(card),
       historySection(card, lang),
-      h('section', { class: 'dlg-sec' }, h('h4', { text: 'Buy or check' }), linkBtns(card, lang)));
+      h('section', { class: 'dlg-sec' }, h('h4', { text: 'Buy or check' }), linkBtns(card, lang),
+        specials.length ? h('div', { class: 'dlg-links' }, specials.filter(([, v]) => v.productId).map(([n, v]) => extLink(`https://www.tcgplayer.com/product/${encodeURIComponent(v.productId)}`, `${shortVariant(n)} on TCGplayer`))) : null));
     dlg.showModal();
     $('#cardDlg').scrollTop = 0;
     renderGraded(graded, card, lang);
@@ -4205,6 +4351,7 @@ footer p { margin: 4px 0; }
       }
       const changed = () => { normEntry(touch(e)); afterCollectionChange(); draw(); };
       const opts = printsOf(card.variants && Object.keys(card.variants).length ? card : e);
+      for (const n of specialNames(card)) if (!opts.includes(n)) opts.push(n);
       const value = entryValue(e), gain = entryGain(e);
       const rows = e.lots.map((lot) => lotRow(e, lot, opts, changed, () => {
         if (e.lots.length > 1) { e.lots = e.lots.filter((l) => l !== lot); changed(); return; }
@@ -4501,6 +4648,253 @@ footer p { margin: 4px 0; }
     applyTheme(theme);
   });
 
+  /* =========================================================
+     Updates: what changed in the card lists and prices.
+     Two sources: data/changelog.json, built every day from TCGplayer's catalog by
+     tools/build_variants.py (new sets, cards added to a set, new special prints), and
+     what this browser notices while the app is open (new sets on TCGdex, a set's list
+     growing, newly published prices, collection value, wishlist targets).
+     ========================================================= */
+  const UPD_KIND = {
+    'new-set': { icon: '✦', label: 'New set', group: 'cards' },
+    'new-cards': { icon: '＋', label: 'New cards', group: 'cards' },
+    'new-variants': { icon: '◎', label: 'Special prints', group: 'new-variants' },
+    prices: { icon: '$', label: 'Prices', group: 'prices' },
+    collection: { icon: '★', label: 'Your collection', group: 'mine' },
+    deal: { icon: '🎯', label: 'Wishlist', group: 'mine' },
+    start: { icon: 'i', label: 'Info', group: 'cards' },
+  };
+  const UPD = {
+    server: LS.get('updServer', null), serverAt: 0, setsAt: LS.get('updSetsAt', 0), checkedAt: LS.get('updChecked', 0),
+    checking: false, error: null, seen: LS.get('updSeen', 0), viewSeen: 0,
+    filter: LS.get('updFilter', 'all'), lang: 'all',
+  };
+  if (!UPD.seen) { UPD.seen = Date.now(); LS.set('updSeen', UPD.seen); } // first visit: nothing is "new" yet
+  if (!UPD_KIND[UPD.filter] && !['all', 'cards', 'new-variants', 'prices', 'mine'].includes(UPD.filter)) UPD.filter = 'all';
+  const UpdLog = {
+    items: (() => { const v = LS.get('updLog', []); return Array.isArray(v) ? v : []; })(),
+    add(ev) {
+      if (ev.key && this.items.some((x) => x.key === ev.key)) return;
+      this.items.unshift(Object.assign({ t: new Date().toISOString(), src: 'device' }, ev));
+      this.items = this.items.slice(0, 250);
+      LS.set('updLog', this.items);
+      renderUpdCount();
+      if (COLL.tab === 'updates') renderUpdates();
+    },
+  };
+  const ts = (t) => { const v = typeof t === 'number' ? t : Date.parse(t); return Number.isFinite(v) ? v : 0; };
+  const setTitle = (lang, s) => {
+    const en = usesJaNames(lang) && JA.sets && JA.sets[s.id];
+    return en && en !== s.name ? `${s.name} (${en})` : s.name;
+  };
+  const pricesComparable = () => ['market', 'low', 'mid', 'cm'].includes(state.priceType);
+
+  // A provider's set list: anything not seen before for that language is a new set.
+  function noteSetList(provId, lang, sets) {
+    if (!Array.isArray(sets) || !sets.length) return;
+    const k = `${provId}:${lang}`;
+    const known = LS.get('updSets', {});
+    const prev = Array.isArray(known[k]) ? known[k] : null;
+    if (prev) {
+      const old = new Set(prev);
+      const added = sets.filter((s) => s && s.id && !old.has(s.id));
+      const label = (PROVIDERS.find((p) => p.id === provId) || {}).label || provId;
+      if (added.length <= 10) {
+        for (const s of added.slice().reverse()) {
+          UpdLog.add({
+            kind: 'new-set', lang, set: s.id, src: provId, key: `set:${k}:${s.id}`,
+            text: `New ${LANG_NAME[lang] || lang} set on ${label}: ${setTitle(lang, s)}${isNum(s.total) && s.total ? ` (${s.total} cards)` : ''}${s.releaseDate ? `, release date ${s.releaseDate}` : ''}.`,
+          });
+        }
+      }
+      known[k] = [...new Set([...prev, ...sets.map((s) => s.id)])];
+    } else {
+      known[k] = sets.map((s) => s.id);
+    }
+    LS.set('updSets', known);
+  }
+
+  // After a full set load: did the list grow, and were new prices published?
+  function noteSetLoad(lang, set) {
+    if (!state.provider || !state.cards.length) return;
+    const k = `${state.provider.id}:${lang}:${set.id}`;
+    const snaps = LS.get('updSnap', {});
+    const prev = snaps[k];
+    const n = state.cards.length;
+    const stamp = state.cards.reduce((m, c) => (c.updated && String(c.updated) > m ? String(c.updated) : m), '');
+    const total = pricesComparable() ? stats().total : null;
+    const name = setTitle(lang, set);
+    const base = { lang, set: set.id, src: state.provider.id, setName: name };
+    if (prev) {
+      if (n > prev.n) {
+        const added = n - prev.n;
+        UpdLog.add(Object.assign({}, base, { kind: 'new-cards', key: `cards:${k}:${n}`, text: `${name}: ${added} new card${added === 1 ? '' : 's'} on the list (now ${n}).` }));
+      }
+      const newPrices = stamp ? stamp !== prev.stamp : Date.now() - (prev.at || 0) > 6 * 60 * 60 * 1000;
+      if (newPrices && prev.pt === state.priceType && isNum(prev.total) && isNum(total) && Math.abs(total - prev.total) >= 0.01) {
+        UpdLog.add(Object.assign({}, base, { kind: 'prices', from: prev.total, to: total, pt: state.priceType, key: `prices:${k}:${stamp || Date.now()}` }));
+      }
+    }
+    snaps[k] = { n, total: isNum(total) ? total : (prev && prev.pt === state.priceType ? prev.total : null), pt: state.priceType, stamp, at: Date.now() };
+    const keys = Object.keys(snaps);
+    if (keys.length > 80) keys.sort((a, b) => (snaps[a].at || 0) - (snaps[b].at || 0)).slice(0, keys.length - 80).forEach((x) => delete snaps[x]);
+    LS.set('updSnap', snaps);
+  }
+
+  function noteCollectionValue(from, to, changed) {
+    if (!changed || !isNum(from) || !isNum(to) || from <= 0) return;
+    if (Math.abs(to - from) < Math.max(0.5, from * 0.005)) return;
+    UpdLog.add({ kind: 'collection', from, to, n: changed, key: `coll:${Date.now()}` });
+  }
+
+  function updText(ev) {
+    const pct = (a, b) => { const p = ((b - a) / a) * 100; return `${p > 0 ? '+' : ''}${Math.abs(p) >= 10 ? Math.round(p) : p.toFixed(1)}%`; };
+    if (ev.kind === 'prices') return `${ev.setName}: new prices. Set total ${fmt(ev.from)} → ${fmt(ev.to)} (${pct(ev.from, ev.to)}).`;
+    if (ev.kind === 'collection') return `Your collection: ${ev.n} card price${ev.n === 1 ? '' : 's'} changed. Value ${fmt(ev.from)} → ${fmt(ev.to)} (${pct(ev.from, ev.to)}).`;
+    if (ev.kind === 'deal') return `${ev.name} is ${fmt(ev.price)}, at or below your target of ${fmt(ev.target)}.`;
+    return String(ev.text || '');
+  }
+
+  function updEntries() {
+    const server = (UPD.server && Array.isArray(UPD.server.entries) ? UPD.server.entries : [])
+      .filter((e) => e && typeof e.text === 'string' && UPD_KIND[e.kind])
+      .map((e) => Object.assign({}, e, { src: 'catalog', lang: LANGS.includes(e.lang) ? e.lang : '' }));
+    return server.concat(UpdLog.items.filter((e) => e && UPD_KIND[e.kind])).sort((a, b) => ts(b.t) - ts(a.t));
+  }
+  const isUnread = (ev, since) => ev.kind !== 'start' && ts(ev.t) > since;
+
+  function renderUpdCount() {
+    const n = updEntries().filter((e) => isUnread(e, UPD.seen)).length;
+    const el = $('#updCount');
+    el.textContent = n ? (n > 99 ? '99+' : String(n)) : '';
+    el.title = n ? `${n} new since you last looked` : '';
+    $('#tabs button[data-tab="updates"]').setAttribute('aria-label', n ? `Updates, ${n} new` : 'Updates');
+  }
+
+  function openSetFrom(ev) {
+    const src = ev.src === 'catalog' ? 'tcgdex' : ev.src;
+    showTab('sets');
+    if (state.lang === ev.lang && state.provider && state.provider.id === src && state.sets.some((s) => s.id === ev.set)) { closeSearch(); selectSet(ev.set); }
+    else chooseLanguage(ev.lang, { setId: ev.set, src });
+  }
+
+  function updRow(ev, unread) {
+    const k = UPD_KIND[ev.kind];
+    let action = null;
+    if (ev.lang && ev.set) action = h('button', { class: 'btn', type: 'button', text: 'Open set', onclick: () => openSetFrom(ev) });
+    else if (ev.kind === 'deal') action = h('button', { class: 'btn', type: 'button', text: 'Wishlist', onclick: () => showTab('wishlist') });
+    else if (ev.kind === 'collection') action = h('button', { class: 'btn', type: 'button', text: 'Collection', onclick: () => showTab('collection') });
+    const when = new Date(ts(ev.t)).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    return h('div', { class: 'upd-item' + (unread ? ' unread' : '') },
+      h('span', { class: `upd-ico k-${ev.kind}`, 'aria-hidden': 'true', text: k.icon }),
+      h('div', { class: 'upd-main' },
+        h('div', { class: 'upd-text', text: updText(ev) }),
+        h('div', { class: 'upd-meta' },
+          ev.lang ? h('span', { class: 'lang-tag', text: LANG_TAG[ev.lang] || ev.lang }) : null,
+          h('span', { text: `${k.label} · ${when} · ${ev.src === 'catalog' ? 'TCGplayer catalog' : 'noticed by this device'}` }))),
+      action);
+  }
+
+  function renderUpdates() {
+    if ($('#updView').hidden) return;
+    $('#updFilter').value = UPD.filter;
+    $('#updLang').value = UPD.lang;
+    $('#updCheck').classList.toggle('busy-btn', UPD.checking);
+    const when = (t) => new Date(t).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    const st = [];
+    if (UPD.checking) st.push(h('span', null, h('span', { class: 'dot', 'aria-hidden': 'true' }), 'Checking for changes…'));
+    if (UPD.server && UPD.server.checked) st.push(h('span', { text: `TCGplayer card lists checked ${when(ts(UPD.server.checked))}` }));
+    if (UPD.checkedAt && !UPD.checking) st.push(h('span', { text: `This device checked ${when(UPD.checkedAt)}` }));
+    if (UPD.error) st.push(h('span', { text: UPD.error }));
+    fill($('#updStatus'), ...st);
+
+    const mine = new Set(Object.values(Coll.items).concat(Object.values(Wish.items)).map((e) => `${e.lang}:${e.setId}`));
+    const list = updEntries().filter((e) => {
+      if (UPD.lang !== 'all' && e.lang !== UPD.lang) return false;
+      if (UPD.filter === 'all') return true;
+      if (UPD.filter === 'mine') return UPD_KIND[e.kind].group === 'mine' || (e.lang && e.set && mine.has(`${e.lang}:${e.set}`));
+      return UPD_KIND[e.kind].group === UPD.filter;
+    });
+    $('#updCountLabel').textContent = list.length ? String(list.length) : '';
+    if (!list.length) {
+      fill($('#updRows'), h('div', { class: 'upd-empty', text: updEntries().length
+        ? 'Nothing matches this filter yet.'
+        : 'Nothing yet. New sets, cards added to a set’s list, new special prints and new prices will show up here as they happen.' }));
+      return;
+    }
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const dayName = (t) => {
+      const d = new Date(t); d.setHours(0, 0, 0, 0);
+      const diff = Math.round((today - d) / 86400000);
+      return diff === 0 ? 'Today' : diff === 1 ? 'Yesterday' : d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: d.getFullYear() === today.getFullYear() ? undefined : 'numeric' });
+    };
+    const out = [];
+    let lastDay = null;
+    for (const ev of list.slice(0, 200)) {
+      const day = dayName(ts(ev.t));
+      if (day !== lastDay) { out.push(h('div', { class: 'upd-day', text: day })); lastDay = day; }
+      out.push(updRow(ev, isUnread(ev, UPD.viewSeen)));
+    }
+    fill($('#updRows'), ...out);
+  }
+
+  function markUpdatesSeen() {
+    UPD.seen = Date.now();
+    LS.set('updSeen', UPD.seen);
+    renderUpdCount();
+  }
+  function openUpdates() {
+    UPD.viewSeen = UPD.seen; // highlight what's new on this visit
+    renderUpdates();
+    markUpdatesSeen();
+    checkUpdates();
+  }
+
+  // The daily catalog log published next to this page.
+  async function checkServerLog(force) {
+    if (!force && Date.now() - UPD.serverAt < 10 * 60 * 1000) return;
+    const d = await getStatic('data/changelog.json');
+    if (!d || !Array.isArray(d.entries)) throw new Error('changelog unavailable');
+    UPD.serverAt = Date.now();
+    UPD.server = { checked: d.checked || d.updated || null, updated: d.updated || null, entries: d.entries.slice(0, 300) };
+    LS.set('updServer', UPD.server);
+    const since = Math.max(UPD.seen, LS.get('updToastAt', 0));
+    const fresh = UPD.server.entries.filter((e) => e && UPD_KIND[e.kind] && isUnread(e, since));
+    if (fresh.length && COLL.tab !== 'updates') {
+      LS.set('updToastAt', Date.now());
+      toast(fresh.length === 1 ? `🔔 ${fresh[0].text}` : `🔔 ${fresh.length} card list updates since you last looked`, () => showTab('updates'), null, 'View');
+    }
+  }
+  // New sets on TCGdex, for every language you've opened.
+  async function checkSetLists(force) {
+    if (!force && Date.now() - UPD.setsAt < 30 * 60 * 1000) return;
+    UPD.setsAt = Date.now();
+    LS.set('updSetsAt', UPD.setsAt);
+    const langs = [...new Set(Object.keys(LS.get('updSets', {})).filter((k) => k.startsWith('tcgdex:')).map((k) => k.slice(7)))].filter((l) => LANGS.includes(l));
+    let ok = 0;
+    for (const lang of langs) {
+      if (lang === state.lang && state.provider === TCGDEX && state.set) { state.setsLoadedAt = 0; await maybeRefreshSetList(); ok++; continue; }
+      try { noteSetList('tcgdex', lang, await TCGDEX.listSets(lang)); ok++; } catch { /* try again later */ }
+    }
+    if (langs.length && !ok) throw new Error('set lists unavailable');
+  }
+  async function checkUpdates({ manual = false } = {}) {
+    if (UPD.checking || (!manual && document.hidden)) return;
+    UPD.checking = true;
+    UPD.error = null;
+    renderUpdates();
+    const before = updEntries().length;
+    const results = await Promise.allSettled([checkServerLog(manual), checkSetLists(manual)]);
+    if (manual && state.set && !state.loading) await refreshPrices({ reason: 'auto' }); // picks up newly published prices
+    UPD.checking = false;
+    if (results.every((r) => r.status === 'rejected')) UPD.error = 'Couldn’t check right now (offline?). Showing what was saved.';
+    else { UPD.checkedAt = Date.now(); LS.set('updChecked', UPD.checkedAt); }
+    if (COLL.tab === 'updates') markUpdatesSeen();
+    renderUpdCount();
+    renderUpdates();
+    if (manual) { const n = updEntries().length - before; toast(UPD.error ? UPD.error : n > 0 ? `${n} new update${n === 1 ? '' : 's'}` : 'Up to date: no new changes'); }
+  }
+
   /* ---------- URL hash (so a refresh or shared link keeps your set) ---------- */
   function updateHash() {
     if (!state.lang || !state.set) return;
@@ -4540,6 +4934,9 @@ footer p { margin: 4px 0; }
   $('#wishCurrency').addEventListener('change', (e) => { state.currency = e.target.value; LS.set('currency', state.currency); renderWishlist(); });
   $('#wishSort').addEventListener('change', (e) => { WISHV.sort = e.target.value; LS.set('wishSort', WISHV.sort); renderWishlist(); });
   $('#wishRefresh').addEventListener('click', () => { loadRates(true); refreshWishlist({ force: true }); });
+  $('#updCheck').addEventListener('click', () => checkUpdates({ manual: true }));
+  $('#updFilter').addEventListener('change', (e) => { UPD.filter = e.target.value; LS.set('updFilter', UPD.filter); renderUpdates(); });
+  $('#updLang').addEventListener('change', (e) => { UPD.lang = e.target.value; renderUpdates(); });
   $('#scanBtn').addEventListener('click', openScanner);
   $('#collScan').addEventListener('click', openScanner);
   $('#scanClose').addEventListener('click', () => { $('#scanDlg').close(); });
@@ -4600,6 +4997,12 @@ footer p { margin: 4px 0; }
 
   /* ---------- Start ---------- */
   renderTabCount();
+  renderUpdCount();
+  // Look for card list changes a few seconds after opening, then every minute (each source
+  // has its own pace: the daily catalog log every 10 minutes, set lists every 30).
+  setTimeout(() => checkUpdates(), 4000);
+  setInterval(() => checkUpdates(), 60 * 1000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) checkUpdates(); });
   loadRates();
   if (Sync.on()) { Sync.status = 'idle'; Sync.run(); }
   setTimeout(() => refreshWishlist(), 1500); // update wishlist prices, then say if any hit their target
@@ -4613,7 +5016,7 @@ footer p { margin: 4px 0; }
   else showWelcome();
 
   // Exposed for debugging in the browser console.
-  window.__pst = { state, PROVIDERS, Coll, Wish, Sync, SCAN, PH, parseCardText };
+  window.__pst = { state, PROVIDERS, Coll, Wish, Sync, SCAN, PH, UPD, UpdLog, parseCardText };
 })();
 </script>
 </body>

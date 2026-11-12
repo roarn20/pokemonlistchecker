@@ -1,0 +1,45 @@
+# Every day: refresh the card data this site serves from data/ (Cloudflare redeploys on push).
+#  - tools/build_japanese_names.py: English names for Japanese cards, so new sets get them.
+#  - tools/build_variants.py: special prints (Poké Ball / Master Ball patterns, stamps...) with
+#    today's prices, and the catalog log the Updates tab shows (new sets, new cards, new prints).
+name: Refresh card data
+
+on:
+  schedule:
+    - cron: "41 21 * * *" # daily, 21:41 UTC (after TCGplayer's daily price update)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-data
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: English names for Japanese cards
+        run: python3 tools/build_japanese_names.py
+
+      - name: Special prints and catalog changes
+        if: ${{ !cancelled() }} # still runs if the names step failed
+        run: python3 tools/build_variants.py
+
+      - name: Commit changes
+        if: ${{ !cancelled() }}
+        run: |
+          if [ -z "$(git status --porcelain data)" ]; then
+            echo "No changes."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data
+          git commit -m "Refresh card data"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push
