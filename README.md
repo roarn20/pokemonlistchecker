@@ -10,26 +10,32 @@ A single-page HTML app (`index.html`, no build step) that shows every card in a 
 
 Also included:
 
-- **Search every card** in the chosen language from the search bar at the top. For example, "Charizard" lists every Charizard card from every set with its price. Japanese cards can be searched by English name ("Charizard") or Japanese name ("リザードン"). Results start with the newest sets and can be sorted by price or name. **Open set** jumps to the card inside its set.
-- **My collection** tab: tap ＋ on any card (in a set, in search results or in a card's window) to add it. Owned cards get a green ✓ in set lists, and each set shows how many you have, what they're worth, and what the missing cards would cost. The collection tab shows the total worth (with a history line), card count, most valuable card, and every card with its quantity, which print you have (e.g. reverse holo) and its value. Sort and filter it, and tap a set name to jump to that card in its set.
-- **Scan a card with the camera** (camera button next to Search, or in My collection). Line the card up in the frame and tap Capture. The app reads the card number (and the name on English cards) and shows the matching cards to pick from, so you can scan card after card. You can also use a photo from your library.
+- **Four tabs**: Sets, Master set, Collection and Wishlist.
+- **Search every card** in the chosen language from the search bar at the top. For example, "Charizard" lists every Charizard card from every set with its price. Japanese and Chinese cards can be searched by English name or in their own language. Results start with the newest sets and can be sorted by price or name, and **Open set** jumps to the card inside its set.
+- **Sorting** by card number, name or price, a filter box, **Cards I have / Cards I need**, and a **List / Binder** switch. Binder view shows card pictures in a grid with the ones you don't have greyed out.
+- **Set totals**: total cost of the set (one copy of each card), highest card, lowest card, average and median. The set header also shows how many cards you have, what they're worth, and what the missing ones cost.
+- **Charts**: the running total of the set cost card by card, and the top 10 most valuable cards.
 - **Card window** (tap a card's picture):
-  - TCGplayer and Cardmarket prices for each print.
-  - **PSA and other graded prices**, with a price-by-grade chart from Ungraded through Grade 7, 8, 9 and 9.5 to PSA 10, plus BGS, CGC, SGC, TAG and ACE 10. These need a PriceCharting key.
-  - A **recent sales chart** of Cardmarket's 30-day, 7-day and 1-day averages, with a rising/falling note.
-  - **Your price history** chart, recorded day by day in your browser.
-  - Links to recent PSA 10 and PSA 9 sales on eBay, TCGplayer and PriceCharting.
-  - Collection controls.
-- **Sorting** by card number, name or price (tap a column header, or use the sort menu on phones). A filter box narrows the current set's list.
-- **Set totals**: total cost of the set (one copy of each card), highest card, lowest card, average and median.
-- **Charts**: the running total of the set cost card by card, and the top 10 most valuable cards. Hover or tap for details.
-- **Auto-refresh** every 30 seconds (15 s, 1 min or 5 min in Settings), with a countdown ring and a manual **Refresh** button. Prices that changed since the last check flash and show ▲/▼.
+  - TCGplayer and Cardmarket prices.
+  - **PSA and other graded prices** with a price-by-grade chart (needs a PriceCharting key).
+  - A recent-sales chart and your price-history chart.
+  - eBay sold-listing links.
+  - **My copies**: how many, which print, which grade and what you paid for each copy.
+- **My collection**:
+  - Tap ＋ to add a card, then use the card window for extra copies, prints, grades and prices paid.
+  - The Collection tab shows total worth with a history line, **gain / loss** against what you paid, and the most valuable card.
+  - **Biggest movers** shows the cards that rose or fell most over about a week.
+  - Graded copies are valued at their graded price (PriceCharting key needed; otherwise the ungraded price is used and labelled).
+- **Master set** tab: every print of every card in the set (normal, reverse holo, holo, 1st edition) as its own tick box, with "X of Y prints" and the cost to finish. It's the same record as your collection: ticking a print adds that copy, and copies you add anywhere else show up as ticked.
+- **Wishlist**: tap ☆ Want on any card, set a target price, and the app highlights cards at or below their target. When you open the app it tells you how many have hit their target. **Got it** moves a card to your collection with today's price as what you paid.
+- **Camera scanner**: line a card up in the frame and the app reads its number (and name on English cards), then shows the matching cards to add. Photos stay on your device.
+- **Cloud sync** (optional): keeps your collection and wishlist in a private file in your GitHub account and in sync across devices. See below.
+- **Backups**: Save backup / Load backup (a file), and **Spreadsheet** (a CSV of every copy with prices, paid and gain/loss).
+- **Auto-refresh** every 30 seconds (15 s, 1 min or 5 min in Settings), with a countdown ring and a manual **Refresh** button. Prices that changed flash and show ▲/▼.
 - **Currencies**: USD, JPY, EUR, GBP, CAD and AUD, using live exchange rates.
-- **Price type**: TCGplayer market, low or mid. PriceCharting ungraded or PSA 10 if you add a PriceCharting token.
-- **Value history**: the total is saved in your browser each time it changes, and shown as a sparkline with the change since you started tracking.
-- Light and dark themes, and a layout that works on phones.
-- The URL remembers the language and set, so a refresh or a shared link opens the same set.
-- **English names for Japanese cards and sets**, in brackets after the Japanese name, for example "リザードン (Charizard)". Search and name sorting use them too.
+- **Languages**: English, Japanese and Traditional Chinese. Chinese sets match the Japanese ones card for card, so they get English names too.
+- **Installs on your home screen** like an app (from your own GitHub Pages link), with offline viewing of your collection.
+- Light and dark themes, a phone layout, and the URL remembers your language and set.
 
 ## Data sources
 
@@ -52,6 +58,16 @@ The files cover every Japanese set from about 2017 on (91 sets at the moment). O
 The script also writes `data/ja/search.json`, one list of every Japanese card with an English name. That's what lets the search find Japanese cards by English name.
 
 A GitHub Actions workflow (`.github/workflows/japanese-names.yml`) re-runs the script every Monday and commits any changes, so new sets get English names. You can also run it from the repo's **Actions** tab, or locally with `python3 tools/build_japanese_names.py`.
+
+### Cloud sync
+
+1. Go to <https://github.com/settings/personal-access-tokens> and create a **fine-grained token**. Under permissions choose **Gists → Read and write**, and nothing else.
+2. In the app, open Settings, paste it into **Cloud sync: GitHub key** and save. The app creates a private ("secret") gist called `pokemon-set-tracker.json` in your account and keeps it up to date.
+3. On your other devices, paste the same key. The app finds the gist and merges it with what's already there.
+
+Every card and wishlist entry records when it was last changed. When two devices change things, the newest change to each card wins, and deletions are kept. Prices aren't synced, because each device fetches its own.
+
+Use this from your own GitHub Pages link rather than the raw.githack.com mirror. The mirror is shared by many websites, and any of them could read keys saved in your browser there. The app warns about this in Settings.
 
 ### My collection: where it's saved
 
@@ -85,6 +101,10 @@ The sources publish new prices about once a day (TCGdex around midnight UTC). Ev
 - The set total is one copy of each card at the chosen price.
 - Converted prices use live exchange rates. If no rate service can be reached, the app uses built-in approximate rates and says so.
 
+### Master set
+
+Prints come from TCGdex's list of which versions exist, plus any version TCGplayer has a price for (TCGdex's list misses reverse holos on brand-new sets). Special patterns, like Poké Ball or Master Ball reverse holos, aren't listed separately.
+
 ## Running it
 
 **Open it here (works on phones):** <https://raw.githack.com/roarn20/pokemonlistchecker/claude/pokemon-set-price-tracker-icxomp/index.html>
@@ -95,7 +115,7 @@ Open it in Safari, Chrome or another real browser. App previews and file viewers
 
 It's a single static file, so any of these also work:
 
-- **GitHub Pages:** repo **Settings → Pages → Build and deployment → Deploy from a branch**, pick the branch and `/ (root)`. The app is then at `https://<your-user>.github.io/<repo>/`. This is the easiest way to use it on a phone.
+- **GitHub Pages (recommended):** repo **Settings → Pages → Build and deployment → Deploy from a branch**, pick `claude/pokemon-set-price-tracker-icxomp` and `/ (root)`, then Save. After a minute the app is at <https://roarn20.github.io/pokemonlistchecker/>. This link has no notice page, keeps saved keys private to your site, and can be installed: in Safari tap **Share → Add to Home Screen**, or in Chrome tap **⋮ → Add to Home screen**. Your collection on the mirror link doesn't move over by itself, so use cloud sync or Save backup / Load backup to bring it across.
 - **Locally:** open `index.html` in a browser, or run `python3 -m http.server` in this folder and go to <http://localhost:8000>.
 
 Settings, API keys and price history are kept in your browser's local storage only. **Settings → Clear saved data** removes them.

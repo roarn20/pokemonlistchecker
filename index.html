@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pokémon Set Price Tracker</title>
 <meta name="description" content="Every card in the newest Pokémon TCG sets (English and Japanese) with TCGplayer prices, set totals, charts and auto-refresh.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Set Tracker">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f4f4f1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0d0d" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ff7aa8'/%3E%3Cstop offset='.5' stop-color='%23ffd36b'/%3E%3Cstop offset='1' stop-color='%236bc8ff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='7' y='3' width='18' height='26' rx='3' fill='url(%23g)'/%3E%3Crect x='10' y='6' width='12' height='9' rx='1.5' fill='%23fff' opacity='.85'/%3E%3C/svg%3E">
 <style>
 /* ---------- Tokens ---------- */
@@ -157,7 +165,7 @@ button { cursor: pointer; }
 .welcome h1 { font-size: clamp(28px, 5vw, 44px); line-height: 1.1; letter-spacing: -0.02em; margin: 18px 0 10px; }
 .holo-text { background: var(--holo); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .welcome p.lead { color: var(--text-2); max-width: 560px; margin: 0 auto 32px; }
-.lang-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 260px)); gap: 16px; justify-content: center; }
+.lang-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 250px)); gap: 16px; justify-content: center; }
 .lang-card {
   position: relative; text-align: left; padding: 22px; border-radius: 18px; border: 1px solid var(--border);
   display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start;
@@ -348,6 +356,7 @@ svg.chart .hit { fill: transparent; cursor: crosshair; }
 .list-head, .row {
   display: grid; grid-template-columns: 64px 84px minmax(0, 1fr) 150px 282px; gap: 14px; align-items: center; padding: 0 16px;
 }
+.binder-mode .list-head { display: none; }
 .list-head { height: 40px; background: var(--surface-2); border-bottom: 1px solid var(--border); font-size: 11.5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
 .list-head button { border: 0; background: none; padding: 0; font: inherit; color: inherit; letter-spacing: inherit; text-transform: inherit; display: inline-flex; align-items: center; gap: 4px; }
 .list-head button:hover, .list-head button.active { color: var(--text); }
@@ -404,6 +413,11 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.55); backdrop-filter: blur(3px); 
 .dlg-head h2 { margin: 0; font-size: 17px; }
 .dlg-body { padding: 16px 18px; display: grid; gap: 16px; max-height: 70vh; overflow: auto; }
 .dlg-body .field .hint { font-size: 12.5px; color: var(--muted); }
+.warn-hint { color: var(--warn-ink) !important; background: var(--warn-bg); padding: 8px 10px; border-radius: 8px; }
+.sync-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.sync-chip { display: inline-flex; align-items: center; gap: 5px; }
+.sync-chip.err { color: var(--bad); }
+.deal-banner { background: color-mix(in srgb, var(--good) 14%, var(--surface)); color: var(--text); font-weight: 600; }
 .dlg-foot { display: flex; justify-content: space-between; gap: 10px; padding: 14px 18px; border-top: 1px solid var(--border); }
 .card-dlg { max-width: min(460px, calc(100vw - 32px)); }
 .card-dlg .big { padding: 16px; display: grid; place-items: center; background: var(--surface-2); }
@@ -416,6 +430,61 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.55); backdrop-filter: blur(3px); 
 .card-dlg .links { justify-content: flex-start; margin-top: 6px; }
 
 /* Tabs */
+.tabs { overflow-x: auto; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tabs button { white-space: nowrap; padding: 0 10px; }
+@media (max-width: 430px) { .tab-long { display: none; } .tabs button { font-size: 13px; padding: 0 6px; gap: 5px; } .tab-count { min-width: 18px; height: 18px; font-size: 11px; } }
+.tab-count.neutral { background: var(--surface-3); color: var(--text-2); }
+.tab-count.deal { background: var(--good); color: #fff; }
+#app.master #stats, #app.master #charts, #app.master #listPanel, #app.master #searchView, #app.master .gsearch, #app.master .own { display: none; }
+#app:not(.master) #masterPanel { display: none; }
+.master-head { padding: 16px; border-bottom: 1px solid var(--border); display: grid; gap: 8px; }
+.master-head .big { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+.row.master-row { grid-template-columns: 64px 84px minmax(0, 1fr) minmax(0, 1.2fr); }
+.prints { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.print-chip { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 10px; border-radius: 9px; border: 1px solid var(--border-strong); background: var(--surface); font-size: 12.5px; font-weight: 700; color: var(--text-2); white-space: nowrap; }
+.print-chip .pp { font-weight: 500; color: var(--muted); font-variant-numeric: tabular-nums; }
+.print-chip.on { background: var(--good); border-color: transparent; color: #fff; }
+.print-chip.on .pp { color: rgba(255, 255, 255, 0.85); }
+.wish-btn { border: 1px solid var(--border-strong); background: var(--surface); border-radius: 999px; height: 24px; padding: 0 9px; font-size: 11.5px; font-weight: 700; color: var(--text-2); white-space: nowrap; }
+.wish-btn.on { border-color: #d4a017; color: #8a6400; background: #fff6d6; }
+:root[data-theme="dark"] .wish-btn.on { color: #f5d58a; background: #3a2e10; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .wish-btn.on { color: #f5d58a; background: #3a2e10; } }
+.copy-actions .wish-btn { height: 36px; padding: 0 14px; font-size: 13px; }
+.view-seg { height: 40px; }
+.binder { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 12px; padding: 14px; }
+.bind { position: relative; border: 0; background: none; padding: 0; text-align: left; display: grid; gap: 4px; color: inherit; }
+.bind img, .bind .ph { width: 100%; aspect-ratio: 63 / 88; object-fit: cover; border-radius: 7px; background: var(--surface-2); display: grid; place-items: center; font-size: 11px; color: var(--muted); padding: 0; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); }
+.bind:not(.owned) img { filter: grayscale(1); opacity: 0.42; }
+.bind:hover img { transform: translateY(-2px); transition: transform 0.15s; }
+.bind-badge { position: absolute; top: 5px; right: 5px; min-width: 22px; height: 22px; padding: 0 5px; border-radius: 999px; background: var(--good); color: #fff; font-size: 12px; font-weight: 800; display: grid; place-items: center; box-shadow: 0 0 0 2px var(--surface); }
+.bind-cap { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.movers { padding: 16px 18px; margin-bottom: 14px; display: grid; gap: 10px; }
+.movers h3 { margin: 0; font-size: 15px; }
+.movers-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.mover { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; gap: 8px; align-items: center; border: 0; background: none; padding: 4px; border-radius: 8px; text-align: left; width: 100%; color: inherit; }
+.mover:hover { background: var(--surface-2); }
+.mover img, .mover .ph { width: 36px; height: 50px; object-fit: cover; border-radius: 4px; background: var(--surface-2); }
+.mover .m-name { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mover .m-sub { font-size: 11.5px; color: var(--muted); }
+.mover .m-ch { font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.mover .m-ch.up { color: var(--good); }
+.mover .m-ch.down { color: var(--bad); }
+.row.wish-row { grid-template-columns: 64px minmax(0, 1fr) auto 150px; }
+.wish-row.deal { background: color-mix(in srgb, var(--good) 8%, transparent); }
+.target-box { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.deal-tag { font-size: 12px; font-weight: 800; color: var(--good); }
+.over-tag { font-size: 12px; color: var(--muted); }
+@media (max-width: 760px) {
+  .lang-cards { grid-template-columns: 1fr; }
+  .row.master-row { grid-template-columns: 60px minmax(0, 1fr); grid-template-areas: "img name" "img prints"; }
+  .master-row .prints { grid-area: prints; justify-content: flex-start; }
+  .master-row .num:not(.m-num) { display: none; }
+  .row.wish-row { grid-template-columns: 60px minmax(0, 1fr) minmax(0, 42%); }
+  .wish-row .target-box { grid-area: links; justify-content: flex-start; }
+  .movers-cols { grid-template-columns: 1fr; }
+  .binder { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; padding: 12px; }
+}
 .tabs { display: flex; gap: 4px; padding: 4px; margin: 14px 0 0; background: var(--surface-2); border: 1px solid var(--border); border-radius: 13px; }
 .tabs button { flex: 1; height: 40px; border: 0; background: transparent; border-radius: 10px; font-weight: 700; font-size: 14px; color: var(--text-2); display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
 .tabs button[aria-current="page"] { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12); }
@@ -441,7 +510,7 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.55); backdrop-filter: blur(3px); 
 .coll-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; padding: 22px 0 4px; flex-wrap: wrap; }
 .coll-head h1 { margin: 0; font-size: clamp(26px, 4vw, 34px); letter-spacing: -0.02em; }
 .coll-head p { margin: 4px 0 0; font-size: 14px; }
-.coll-row { grid-template-columns: 64px minmax(0, 1fr) auto 150px; }
+.row.coll-row { grid-template-columns: 64px minmax(0, 1fr) auto 150px; }
 .coll-ctrl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 .qty { display: inline-flex; align-items: center; border: 1px solid var(--border-strong); border-radius: 9px; overflow: hidden; height: 32px; background: var(--surface); }
 .qty button { width: 32px; height: 100%; border: 0; background: transparent; font-size: 17px; font-weight: 700; color: var(--text-2); }
@@ -465,6 +534,20 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.55); backdrop-filter: blur(3px); 
 .ladder .bar-row { padding: 3px 0; grid-template-columns: minmax(0, 30%) minmax(0, 1fr); }
 .ladder .bar-row:hover { background: transparent; }
 svg.chart .col { fill: var(--series-1); }
+.copies { gap: 10px; }
+.copies-sum { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13.5px; font-weight: 600; }
+.copy-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.copy-actions .btn { height: 36px; }
+.lot { display: grid; gap: 6px; padding: 10px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2); }
+.lot-line { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.lot-price { font-size: 12.5px; color: var(--text-2); font-variant-numeric: tabular-nums; margin-right: auto; }
+.mini-input { height: 32px; width: 132px; font-size: 13px; padding: 0 10px; }
+.lot-del { width: 32px; height: 32px; }
+.gain { font-size: 12px; font-weight: 700; }
+.gain.up { color: var(--good); }
+.gain.down { color: var(--bad); }
+.graded-chip { background: var(--surface); }
+.btn.mini-btn { height: 32px; padding: 0 10px; font-size: 12.5px; }
 .dlg-coll { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px 0 4px; border-top: 1px solid var(--border); margin-top: 6px; }
 .dlg-coll-label { font-weight: 700; font-size: 13.5px; color: var(--good); }
 
@@ -511,7 +594,7 @@ footer p { margin: 4px 0; }
   .tile.hero { grid-column: 1 / -1; }
   .charts { grid-template-columns: 1fr; }
   .list-head, .row { grid-template-columns: 60px 72px minmax(0, 1fr) 130px 276px; gap: 10px; }
-  .coll-row { grid-template-columns: 60px minmax(0, 1fr) auto 130px; }
+  .row.coll-row { grid-template-columns: 60px minmax(0, 1fr) auto 130px; }
 }
 @media (max-width: 760px) {
   .brand-sub { display: none; }
@@ -540,7 +623,7 @@ footer p { margin: 4px 0; }
   .row .name-cell { grid-area: name; }
   .row .price { grid-area: price; }
   .row .links, .row .coll-ctrl { grid-area: links; justify-content: flex-start; align-self: end; }
-  .coll-row { grid-template-columns: 60px minmax(0, 1fr) minmax(0, 42%); }
+  .row.coll-row { grid-template-columns: 60px minmax(0, 1fr) minmax(0, 42%); }
   .sort-group { flex-wrap: wrap; }
   .scan-read { grid-template-columns: 1fr 1fr; }
   .scan-read .btn { grid-column: 1 / -1; }
@@ -564,7 +647,7 @@ footer p { margin: 4px 0; }
       <span class="brand-mark" aria-hidden="true"></span>
       <span>
         <div class="brand-name">Set Price Tracker</div>
-        <div class="brand-sub">Pokémon TCG · English &amp; Japanese</div>
+        <div class="brand-sub">Pokémon TCG · English, Japanese &amp; Chinese</div>
       </span>
     </button>
     <div class="spacer"></div>
@@ -577,14 +660,16 @@ footer p { margin: 4px 0; }
 
 <main class="wrap">
   <nav class="tabs" id="tabs" aria-label="Sections">
-    <button type="button" data-tab="sets" aria-current="page">Sets &amp; search</button>
-    <button type="button" data-tab="collection" aria-current="false">My collection <span class="tab-count" id="collCount"></span></button>
+    <button type="button" data-tab="sets" aria-current="page">Sets</button>
+    <button type="button" data-tab="master" aria-current="false">Master<span class="tab-long"> set</span></button>
+    <button type="button" data-tab="collection" aria-current="false">Collection <span class="tab-count" id="collCount"></span></button>
+    <button type="button" data-tab="wishlist" aria-current="false">Wishlist <span class="tab-count neutral" id="wishCount"></span></button>
   </nav>
   <!-- Step 1: language -->
   <section class="welcome" id="welcome" hidden>
     <span class="step-tag"><b>1</b> Choose a language</span>
     <h1>Which language is <span class="holo-text">the set</span>?</h1>
-    <p class="lead">Pick English or Japanese. The newest set for that language loads straight away, and you can switch to any other set after.</p>
+    <p class="lead">Pick English, Japanese or Chinese. The newest set for that language loads straight away, and you can switch to any other set after.</p>
     <div class="lang-cards">
       <button class="lang-card" type="button" data-lang="en">
         <span class="badge-last" hidden>Last used</span>
@@ -597,6 +682,12 @@ footer p { margin: 4px 0; }
         <span class="lang-code" lang="ja">日本</span>
         <span class="lc-title">Japanese <span lang="ja" class="muted" style="font-weight:500">日本語</span></span>
         <span class="lc-desc">Japanese expansions, high-class packs and promos.</span>
+      </button>
+      <button class="lang-card" type="button" data-lang="zh-tw">
+        <span class="badge-last" hidden>Last used</span>
+        <span class="lang-code" lang="zh-Hant">中文</span>
+        <span class="lc-title">Chinese <span lang="zh-Hant" class="muted" style="font-weight:500">繁體中文</span></span>
+        <span class="lc-desc">Traditional Chinese sets (Taiwan &amp; Hong Kong).</span>
       </button>
     </div>
     <div class="how">
@@ -612,6 +703,7 @@ footer p { margin: 4px 0; }
         <div class="seg" role="group" aria-labelledby="langLabel">
           <button type="button" data-lang="en" aria-pressed="false">EN <span class="muted" style="font-weight:500">English</span></button>
           <button type="button" data-lang="ja" aria-pressed="false">JP <span class="muted" style="font-weight:500" lang="ja">日本語</span></button>
+          <button type="button" data-lang="zh-tw" aria-pressed="false">ZH <span class="muted" style="font-weight:500" lang="zh-Hant">中文</span></button>
         </div>
       </div>
       <div class="field grow">
@@ -712,6 +804,10 @@ footer p { margin: 4px 0; }
             <option value="price">Sort: Price</option>
           </select>
           <button class="btn dir-btn" id="dirBtn" type="button" aria-label="Sort direction: ascending" title="Toggle sort direction">↑</button>
+          <div class="seg view-seg" role="group" aria-label="View">
+            <button type="button" data-view="list" aria-pressed="true">List</button>
+            <button type="button" data-view="binder" aria-pressed="false">Binder</button>
+          </div>
         </div>
       </div>
       <div class="progress" id="progress" hidden><div></div></div>
@@ -723,6 +819,26 @@ footer p { margin: 4px 0; }
         <span class="right" style="text-align:right">Have · Buy / check</span>
       </div>
       <div class="rows" id="rows"></div>
+    </section>
+
+    <section class="panel list-panel" id="masterPanel">
+      <div class="master-head" id="masterHead"></div>
+      <div class="list-toolbar">
+        <h3>Master set <span class="count" id="masterCount"></span></h3>
+        <div class="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="masterSearch" class="input" type="search" placeholder="Filter this set" aria-label="Filter the master set">
+        </div>
+        <div class="sort-group">
+          <label class="sr-only" for="masterFilter">Show</label>
+          <select id="masterFilter" class="select">
+            <option value="all">All cards</option>
+            <option value="missing">Missing prints</option>
+            <option value="complete">Complete cards</option>
+          </select>
+        </div>
+      </div>
+      <div class="rows" id="masterRows"></div>
     </section>
   </section>
 
@@ -751,13 +867,15 @@ footer p { margin: 4px 0; }
       <div class="field">
         <span class="label">Backup</span>
         <div class="refresh-group">
-          <button class="btn" type="button" id="collExport" title="Save your collection to a file">Export</button>
-          <button class="btn" type="button" id="collImport" title="Load a collection file">Import</button>
+          <button class="btn" type="button" id="collExport" title="Save your collection and wishlist to a backup file">Save backup</button>
+          <button class="btn" type="button" id="collImport" title="Load a backup file">Load backup</button>
+          <button class="btn" type="button" id="collCsv" title="Download your collection as a spreadsheet (CSV)">Spreadsheet</button>
         </div>
       </div>
     </div>
     <div class="statusline" id="collStatus" aria-live="polite"></div>
     <section class="stats" id="collStats" aria-label="Collection totals"></section>
+    <section class="panel movers" id="collMovers" aria-label="Biggest movers"></section>
     <section class="panel list-panel">
       <div class="list-toolbar">
         <h3>Cards <span class="count" id="collCountLabel"></span></h3>
@@ -771,6 +889,7 @@ footer p { margin: 4px 0; }
             <option value="all">All languages</option>
             <option value="en">English</option>
             <option value="ja">Japanese</option>
+            <option value="zh-tw">Chinese</option>
           </select>
           <label class="sr-only" for="collSort">Sort by</label>
           <select id="collSort" class="select">
@@ -782,6 +901,43 @@ footer p { margin: 4px 0; }
         </div>
       </div>
       <div class="rows" id="collRows"></div>
+    </section>
+  </section>
+
+  <!-- Wishlist -->
+  <section id="wishView" hidden>
+    <div class="coll-head">
+      <div>
+        <h1>Wishlist</h1>
+        <p class="muted">Tap ☆ Want on any card, and set a target price. Cards at or below their target are highlighted, and you'll get a heads-up when you open the app.</p>
+      </div>
+    </div>
+    <div class="controls" role="group" aria-label="Wishlist settings">
+      <div class="field small">
+        <label for="wishCurrency">Currency</label>
+        <select id="wishCurrency" class="select"></select>
+      </div>
+      <div class="field">
+        <span class="label">Prices</span>
+        <div class="refresh-group"><button class="btn btn-refresh" type="button" id="wishRefresh"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg> Refresh prices</button></div>
+      </div>
+    </div>
+    <div class="statusline" id="wishStatus" aria-live="polite"></div>
+    <div id="wishAlert"></div>
+    <section class="panel list-panel">
+      <div class="list-toolbar">
+        <h3>Cards I want <span class="count" id="wishCountLabel"></span></h3>
+        <div class="sort-group">
+          <label class="sr-only" for="wishSort">Sort by</label>
+          <select id="wishSort" class="select">
+            <option value="deal">Sort: Closest to target</option>
+            <option value="recent">Sort: Recently added</option>
+            <option value="price">Sort: Price</option>
+            <option value="name">Sort: Name</option>
+          </select>
+        </div>
+      </div>
+      <div class="rows" id="wishRows"></div>
     </section>
   </section>
 
@@ -823,6 +979,13 @@ footer p { margin: 4px 0; }
         <label for="sPc">PriceCharting API token (optional)</label>
         <input id="sPc" class="input" type="password" autocomplete="off" spellcheck="false" placeholder="Paste your PriceCharting token">
         <span class="hint">Needs a PriceCharting subscription with API access. Adds PSA and other graded prices to each card’s window, and PriceCharting prices for whole sets (Price menu). For your own use; the key is stored only in this browser. PriceCharting allows 1 request per second, so a whole set takes a few minutes.</span>
+      </div>
+      <div class="field">
+        <label for="sGh">Cloud sync: GitHub key (optional)</label>
+        <input id="sGh" class="input" type="password" autocomplete="off" spellcheck="false" placeholder="Paste a GitHub token with gist access">
+        <span class="hint">Backs up your collection and wishlist to a private file (a secret gist) in your GitHub account, and keeps every device where you add the same key in sync. Create a fine-grained token at github.com/settings/personal-access-tokens with only the <b>Gists: read and write</b> permission. The key is stored only in this browser.</span>
+        <span class="hint warn-hint" id="syncWarn" hidden>You're using the shared mirror link (raw.githack.com). Other pages on that site could read keys saved here, so use your own GitHub Pages link for cloud sync.</span>
+        <div class="sync-row"><span class="hint" id="syncState"></span><button class="btn mini-btn" type="button" id="syncNowBtn">Sync now</button></div>
       </div>
       <div class="field">
         <label for="sPtcg">pokemontcg.io API key (optional)</label>
@@ -913,6 +1076,14 @@ footer p { margin: 4px 0; }
   const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
 
+  // Languages. Traditional Chinese sets copy the Japanese ones card for card (same set codes and
+  // numbers), so the Japanese English-name files label them too.
+  const LANGS = ['en', 'ja', 'zh-tw'];
+  const LANG_NAME = { en: 'English', ja: 'Japanese', 'zh-tw': 'Chinese' };
+  const LANG_TAG = { en: 'EN', ja: 'JP', 'zh-tw': 'ZH' };
+  const LANG_WORD = { en: '', ja: 'japanese', 'zh-tw': 'chinese' }; // for PriceCharting and eBay searches
+  const usesJaNames = (lang) => lang === 'ja' || lang === 'zh-tw';
+
   // The hosted copy of this page, for when it's opened somewhere that can't go online.
   const HOSTED_URL = 'https://raw.githack.com/roarn20/pokemonlistchecker/claude/pokemon-set-price-tracker-icxomp/index.html';
   // File viewers and in-app HTML previews often block a page from loading anything online.
@@ -994,7 +1165,7 @@ footer p { margin: 4px 0; }
      ========================================================= */
 
   const TCGDEX = {
-    id: 'tcgdex', label: 'TCGdex', langs: ['en', 'ja'],
+    id: 'tcgdex', label: 'TCGdex', langs: ['en', 'ja', 'zh-tw'],
     pocket: {},
     // Pokémon TCG Pocket (the phone game) sets are in TCGdex too, but their cards can't be bought.
     isPocket(lang, setId) {
@@ -1072,6 +1243,17 @@ footer p { margin: 4px 0; }
       } : null;
       const updated = [tp && tp.updated, cmp && cmp.updated].filter(Boolean).sort().pop() || null;
       const tpId = productId || (c.thirdParty && c.thirdParty.tcgplayer) || null;
+      // Which prints exist (normal, holo, reverse holo, 1st edition), for the master set.
+      const pv = c.variants && typeof c.variants === 'object' && !Array.isArray(c.variants) ? c.variants : null;
+      let prints = null;
+      if (pv && 'normal' in pv) {
+        prints = [];
+        if (pv.normal) prints.push('Normal');
+        if (pv.holo) prints.push('Holofoil');
+        if (pv.reverse) prints.push('Reverse Holofoil');
+        if (pv.firstEdition) prints.push(pv.holo ? '1st Edition Holofoil' : '1st Edition Normal');
+        if (!prints.length) prints = null;
+      }
       const base = safeUrl(c.image || b.image);
       // Brand-new sets often have no TCGdex scans yet; TCGplayer's product photo fills the gap.
       const cdn = tpId ? `https://tcgplayer-cdn.tcgplayer.com/product/${encodeURIComponent(tpId)}` : null;
@@ -1086,6 +1268,7 @@ footer p { margin: 4px 0; }
         tcgplayerUrl: tpId ? `https://www.tcgplayer.com/product/${encodeURIComponent(tpId)}` : null,
         variants,
         cm,
+        prints,
         updated,
       };
     },
@@ -1197,13 +1380,14 @@ footer p { margin: 4px 0; }
     }
     return jaIndexP;
   }
-  const enSetName = (set) => (state.lang === 'ja' && set && JA.sets && JA.sets[set.id]) || '';
-  function applyJaNames(cards, data) {
+  const enSetName = (set) => (usesJaNames(state.lang) && set && JA.sets && JA.sets[set.id]) || '';
+  // withIds: also use the TCGplayer product ids (Japanese only; Chinese cards are different products).
+  function applyJaNames(cards, data, withIds = true) {
     const map = data && data.cards;
     if (!map) return;
     for (const c of cards) {
       const hit = map[c.localId];
-      if (Array.isArray(hit)) applyEnglish(c, hit[0], hit[1]);
+      if (Array.isArray(hit)) applyEnglish(c, hit[0], withIds ? hit[1] : null);
     }
   }
   function applyEnglish(c, name, pid) {
@@ -1279,13 +1463,13 @@ footer p { margin: 4px 0; }
       const cached = !force && this.cached(lang, card.id);
       if (cached) return cached.d;
       const n = numShort(card.number);
-      const setName = card.setEnName || (lang === 'ja' && JA.sets ? JA.sets[card.setId] || '' : '') || shortSetName(card.setName || (state.set ? state.set.name : ''));
-      const q = `${card.enName || card.name} #${n} ${lang === 'ja' ? 'japanese ' : ''}${setName}`.replace(/\s+/g, ' ').trim();
+      const setName = card.setEnName || (usesJaNames(lang) && JA.sets ? JA.sets[card.setId] || '' : '') || shortSetName(card.setName || (state.set ? state.set.name : ''));
+      const q = `${card.enName || card.name} #${n} ${LANG_WORD[lang] || ''} ${setName}`.replace(/\s+/g, ' ').trim();
       const j = await this.call(`products?q=${encodeURIComponent(q)}`);
       const list = Array.isArray(j.products) ? j.products : [];
       const tcgId = tcgIdOf(card);
       const numRe = new RegExp('#\\s*0*' + escapeRe(n) + '(?![0-9])', 'i');
-      const langOk = (x) => (lang === 'ja' ? /japanese/i.test(x['console-name'] || '') : !/japanese|chinese|korean/i.test(x['console-name'] || ''));
+      const langOk = (x) => (LANG_WORD[lang] ? new RegExp(LANG_WORD[lang], 'i').test(x['console-name'] || '') : !/japanese|chinese|korean/i.test(x['console-name'] || ''));
       let hit = (tcgId && list.find((x) => String(x['tcg-id'] || '') === tcgId)) || list.find((x) => numRe.test(x['product-name'] || '') && langOk(x)) || null;
       if (hit && !('loose-price' in hit) && !('manual-only-price' in hit) && hit.id) hit = await this.call(`product?id=${encodeURIComponent(hit.id)}`);
       const d = hit ? pcData(hit) : null;
@@ -1385,6 +1569,7 @@ footer p { margin: 4px 0; }
     state.ratesInfo = r;
     scheduleRender();
     if (typeof COLL !== 'undefined' && COLL.tab === 'collection') requestAnimationFrame(renderCollection);
+    if (typeof COLL !== 'undefined' && COLL.tab === 'wishlist') requestAnimationFrame(renderWishlist);
   }
   const rate = () => state.rates[state.currency] || 1;
   function money(value, { compact = false, whole = false, currency = state.currency } = {}) {
@@ -1464,6 +1649,7 @@ footer p { margin: 4px 0; }
     sort: LS.get('sort', { key: 'number', dir: 'asc' }),
     query: '',
     ownFilter: 'all',
+    view: LS.get('view', 'list') === 'binder' ? 'binder' : 'list',
     rates: Object.assign({}, FALLBACK_RATES),
     ratesInfo: null,
     settings: Object.assign({}, DEFAULT_SETTINGS, LS.get('settings', {})),
@@ -1517,12 +1703,12 @@ footer p { margin: 4px 0; }
   async function chooseLanguage(lang, { setId = null, src = null } = {}) {
     state.lang = lang;
     LS.set('lang', lang);
-    setTabUI('sets');
+    setTabUI(COLL.tab === 'master' ? 'master' : 'sets');
     closeSearch();
-    $('#gsInput').placeholder = lang === 'ja' ? 'Search every Japanese card, e.g. Charizard or リザードン' : 'Search every English card, e.g. Charizard';
+    $('#gsInput').placeholder = { en: 'Search every English card, e.g. Charizard', ja: 'Search every Japanese card, e.g. Charizard or リザードン', 'zh-tw': 'Search every Chinese card, e.g. Charizard or 噴火龍' }[lang];
     $('#welcome').hidden = true;
     $('#app').hidden = false;
-    $$('.seg button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
+    $$('.controls .seg button[data-lang]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
     state.set = null; state.cards = []; state.sets = []; state.changes = new Map();
     state.lastError = null; state.listError = null;
     rowCache.clear();
@@ -1540,7 +1726,7 @@ footer p { margin: 4px 0; }
       state.sets = provider === TCGDEX ? sets : sets.slice().sort((a, b) => (b.releaseDate || '').localeCompare(a.releaseDate || ''));
       state.setsLoadedAt = Date.now();
       renderSetSelect();
-      if (lang === 'ja') jaSetNames().then(() => { if (state.lang === 'ja') { renderSetSelect(); renderSetHero(); } });
+      if (usesJaNames(lang)) jaSetNames().then(() => { if (state.lang === lang) { renderSetSelect(); renderSetHero(); } });
       const wanted = setId && (!src || src === provider.id) ? state.sets.find((s) => s.id === setId) : null;
       await selectSet((wanted || newestSet(state.sets)).id);
     } catch (e) {
@@ -1589,13 +1775,13 @@ footer p { margin: 4px 0; }
           return;
         }
       }
-      const namesP = state.lang === 'ja' ? jaCardNames(set.id) : null;
+      const namesP = usesJaNames(state.lang) ? jaCardNames(set.id) : null;
       const { cards, meta } = await state.provider.loadSet(state.lang, set, {
         fresh,
         stale: () => id !== state.reqId,
         onProgress: (done, total) => { if (id === state.reqId) { state.progress = done < total ? done / total : null; renderProgress(); } },
       });
-      if (namesP) applyJaNames(cards, await namesP);
+      if (namesP) applyJaNames(cards, await namesP, state.lang === 'ja');
       if (id !== state.reqId) return;
       const before = new Map(state.cards.map((c) => [c.id, priceUSD(c)]));
       const pcBefore = new Map(state.cards.filter((c) => c.pc).map((c) => [c.id, c.pc]));
@@ -1610,7 +1796,7 @@ footer p { margin: 4px 0; }
       }
       for (const c of cards) c.setId = set.id;
       state.cards = cards;
-      if (Coll.sync(cards, state.lang)) renderTabCount();
+      if (Coll.sync(cards, state.lang) | Wish.sync(cards, state.lang)) renderTabCount();
       Object.assign(set, Object.fromEntries(Object.entries(meta || {}).filter(([, v]) => v != null)));
       state.lastChecked = new Date();
       state.lastFull = Date.now();
@@ -1653,6 +1839,7 @@ footer p { margin: 4px 0; }
      ========================================================= */
   setInterval(() => {
     if (COLL.tab === 'collection' && !document.hidden) refreshCollection(); // only re-reads cards older than an hour
+    if (COLL.tab === 'wishlist' && !document.hidden) refreshWishlist();
     if (!state.set || !state.auto || state.loading || document.hidden) { renderRing(); return; }
     state.remaining -= 1;
     if (state.remaining <= 0) {
@@ -1719,6 +1906,7 @@ footer p { margin: 4px 0; }
     renderList();
     renderRing();
     if (SEARCH.active) renderSearch();
+    if (COLL.tab === 'master') renderMaster();
     const hasData = state.cards.length > 0;
     $$('.loading-dim').forEach((el) => el.classList.toggle('has-data', hasData));
   }
@@ -1818,7 +2006,7 @@ footer p { margin: 4px 0; }
       } else if (offlineLike) {
         out.push({ kind: 'err', text: `Couldn’t reach the card databases (${state.listError.message}). If you opened this file in an app or file viewer, open it in Safari or Chrome instead. Otherwise check your connection, or turn off a VPN or content blocker, and try again.`, link: openLink, action: retry });
       } else {
-        out.push({ kind: 'err', text: `Couldn't load the ${state.lang === 'ja' ? 'Japanese' : 'English'} set list. Details: ${state.listError.message}`, action: retry });
+        out.push({ kind: 'err', text: `Couldn't load the ${LANG_NAME[state.lang] || ''} set list. Details: ${state.listError.message}`, action: retry });
       }
     }
     if (state.set && state.cards.length && !state.loading) {
@@ -2096,12 +2284,12 @@ footer p { margin: 4px 0; }
   function tcgSearchUrl(card, lang = state.lang) {
     const line = lang === 'ja' ? 'pokemon-japan' : 'pokemon';
     // Japanese products on TCGplayer have English names, so search by the printed number instead.
-    const q = lang === 'ja' ? (card.enName ? `${card.enName} ${card.number}` : card.number) : `${card.name} ${numKey(card.number)}`;
+    const q = lang === 'ja' ? (card.enName ? `${card.enName} ${card.number}` : card.number) : `${card.enName || card.name} ${numKey(card.number)}`;
     return `https://www.tcgplayer.com/search/${line}/product?productLineName=${line}&q=${encodeURIComponent(q)}&view=grid`;
   }
   function pcSearchUrl(card, lang = state.lang) {
     const setName = card.setEnName || (card.setName ? shortSetName(card.setName) : '') || enSetName(state.set) || shortSetName(state.set ? state.set.name : '');
-    const q = `${card.enName || card.name} ${numShort(card.number)} ${lang === 'ja' ? 'japanese ' : ''}${setName}`;
+    const q = `${card.enName || card.name} ${numShort(card.number)} ${LANG_WORD[lang] || ''} ${setName}`.replace(/\s+/g, ' ');
     return `https://www.pricecharting.com/search-products?type=prices&q=${encodeURIComponent(q)}`;
   }
 
@@ -2142,6 +2330,7 @@ footer p { margin: 4px 0; }
         h('div', { class: 'name-sub' },
           h('span', { class: 'm-num num', text: '#' + card.number }),
           card.rarity ? h('span', { class: 'rarity' + (SPECIAL_RARITY.test(card.rarity) && !/^common$|^uncommon$|^rare$/i.test(card.rarity) ? ' special' : ''), text: card.rarity }) : null,
+          entry.wishSlot = h('span', { class: 'wish-slot' }),
           opts.search && card.setName ? h('span', { class: 'set-chip', title: 'Set', text: card.setName + (card.setEnName && card.setEnName !== card.setName ? ` (${card.setEnName})` : '') }) : null,
           opts.search && state.sets.some((x) => x.id === card.setId) ? h('button', { class: 'open-set', type: 'button', onclick: () => openSetFromSearch(card), text: 'Open set ›' }) : null)),
       h('div', { class: 'price' }, priceMain, priceVar, priceAlt),
@@ -2191,6 +2380,7 @@ footer p { margin: 4px 0; }
       entry.flashStamp = state.changesStamp;
     }
     if (entry.ownBtn) renderOwn(entry);
+    if (entry.wishSlot) fill(entry.wishSlot, wishButton(entry.card, entry.ctx));
   }
 
   function sortedFiltered() {
@@ -2233,6 +2423,12 @@ footer p { margin: 4px 0; }
     }
     const list = sortedFiltered();
     $('#cardCount').textContent = list.length === n ? `${n} cards` : `${list.length} of ${n} cards`;
+    $$('.view-seg button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === state.view)));
+    $('#listPanel').classList.toggle('binder-mode', state.view === 'binder');
+    if (state.view === 'binder' && list.length) {
+      fill(box, h('div', { class: 'binder', role: 'list', 'aria-label': 'Cards in this set' }, list.map(binderTile)));
+      return;
+    }
     if (!list.length) {
       const msg = state.ownFilter === 'have' && !state.query ? 'You don’t have any cards from this set yet. Tap ＋ on a card to add it.'
         : state.ownFilter === 'need' && !state.query ? 'You have every card in this set!' : 'No cards match your search.';
@@ -2249,6 +2445,21 @@ footer p { margin: 4px 0; }
     const all = new Set(state.cards.map((c) => c.id));
     for (const id of rowCache.keys()) if (!all.has(id)) rowCache.delete(id);
     fill(box, ...rows);
+  }
+
+  // Binder view: card pictures in a grid, the ones you don't have greyed out.
+  function binderTile(card) {
+    const e = Coll.get(state.lang, card.id);
+    const pi = priceInfo(card);
+    const img = card.img ? h('img', { src: card.img, alt: '', loading: 'lazy', decoding: 'async', referrerpolicy: 'no-referrer' }) : h('span', { class: 'ph', text: card.name });
+    if (card.img) img.addEventListener('error', () => img.replaceWith(h('span', { class: 'ph', text: card.name })), { once: true });
+    return h('button', {
+      class: 'bind' + (e ? ' owned' : ''), type: 'button', role: 'listitem', 'data-id': card.id,
+      'aria-label': `${fullName(card)}, number ${card.number}${pi ? ', ' + fmt(pi.usd) : ''}${e ? ', in your collection' : ', missing'}`,
+      onclick: () => openCard(card, { lang: state.lang, set: state.set }),
+    }, img,
+    e ? h('span', { class: 'bind-badge', 'aria-hidden': 'true', text: e.qty > 1 ? `✓${e.qty}` : '✓' }) : null,
+    h('span', { class: 'bind-cap' }, h('span', { text: '#' + numKey(card.number) }), h('span', { text: pi ? fmt(pi.usd, { compact: true }) : '' })));
   }
 
   function renderProgress() {
@@ -2281,21 +2492,80 @@ footer p { margin: 4px 0; }
      My collection. Saved in this browser (localStorage). Export writes a
      backup file and Import reads it back, e.g. on another device.
      ========================================================= */
+  // Grades you can give a copy, and the PriceCharting price that values it.
+  const GRADES = [
+    ['raw', 'Ungraded', null], ['psa10', 'PSA 10', 'manual-only-price'], ['bgs10', 'BGS 10', 'bgs-10-price'],
+    ['cgc10', 'CGC 10', 'condition-17-price'], ['sgc10', 'SGC 10', 'condition-18-price'], ['tag10', 'TAG 10', 'condition-21-price'],
+    ['g9.5', 'Graded 9.5', 'box-only-price'], ['g9', 'Graded 9', 'graded-price'], ['g8', 'Graded 8', 'new-price'],
+    ['g7', 'Graded 7', 'cib-price'], ['g6', 'Graded 6', 'condition-16-price'],
+  ];
+  const gradeInfo = (g) => GRADES.find((x) => x[0] === g) || GRADES[0];
+  const newLot = (variant = null, grade = 'raw') => ({ id: Math.random().toString(36).slice(2, 10), qty: 1, variant, grade, paid: null, paidAmt: null, paidCur: null });
+  const touch = (x) => { x.updatedAt = Date.now(); return x; };
+  // Each collection card holds one or more "copies" (lots): how many, which print, which grade, price paid.
+  function normEntry(e) {
+    if (!Array.isArray(e.lots) || !e.lots.length) e.lots = [Object.assign(newLot(e.variant || null), { qty: Math.max(1, Math.round(e.qty || 1)) })];
+    e.lots = e.lots.filter((l) => l && l.qty > 0);
+    e.qty = e.lots.reduce((t, l) => t + l.qty, 0);
+    delete e.variant;
+    if (!e.updatedAt) e.updatedAt = e.addedAt || Date.now();
+    return e;
+  }
+  // Price of one copy: the graded price for graded copies (PriceCharting), else the print's price.
+  function lotPrice(e, lot) {
+    if (lot.grade && lot.grade !== 'raw') {
+      const k = gradeInfo(lot.grade)[2];
+      const v = e.pc && e.pc.grades && e.pc.grades[k];
+      if (isNum(v)) return { usd: v, src: 'PriceCharting', variant: gradeInfo(lot.grade)[1], graded: true };
+      const raw = priceFor(e, lot.variant);
+      return raw ? Object.assign({}, raw, { gradedFallback: true }) : null;
+    }
+    return priceFor(e, lot.variant);
+  }
+  function entryValue(e) {
+    let v = 0, any = false;
+    for (const l of e.lots) { const p = lotPrice(e, l); if (p) { v += p.usd * l.qty; any = true; } }
+    return any ? v : null;
+  }
+  // Gain or loss over the copies that have both a price paid and a current price.
+  function entryGain(e) {
+    let paid = 0, value = 0, n = 0;
+    for (const l of e.lots) { const p = lotPrice(e, l); if (isNum(l.paid) && p) { paid += l.paid * l.qty; value += p.usd * l.qty; n++; } }
+    return n ? { paid, value, gain: value - paid } : null;
+  }
+  const hasGraded = (e) => e.lots.some((l) => l.grade && l.grade !== 'raw');
+  const primaryPrint = (card) => printsOf(card)[0];
+  // Which prints of a card you have (copies without a print count as its main print).
+  function ownedPrints(e, card) {
+    const main = primaryPrint(card || e);
+    return new Set(e.lots.map((l) => l.variant || main).filter(Boolean));
+  }
+
+  function loadStore(name) { const v = LS.get(name, null); return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; }
   const Coll = {
-    items: (() => { const v = LS.get('collection', null); return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; })(),
+    items: (() => { const v = loadStore('collection'); for (const e of Object.values(v)) normEntry(e); return v; })(),
+    deleted: loadStore('collectionDeleted'),
     key: (lang, id) => `${lang}:${id}`,
     get(lang, id) { return this.items[this.key(lang, id)] || null; },
-    save() { LS.set('collection', this.items); },
+    save() { LS.set('collection', this.items); LS.set('collectionDeleted', this.deleted); Sync.schedule(); },
     count() { let n = 0; for (const e of Object.values(this.items)) n += e.qty || 0; return n; },
-    add(card, lang, set) {
+    // Add one copy (of a given print, if known).
+    add(card, lang, set, variant = null) {
       const key = this.key(lang, card.id);
       const cur = this.items[key];
-      if (cur) cur.qty = Math.min(999, (cur.qty || 0) + 1);
-      else this.items[key] = entryFrom(card, lang, set);
+      if (cur) {
+        const main = primaryPrint(card);
+        const same = cur.lots.find((l) => (l.variant || main) === (variant || main) && (l.grade || 'raw') === 'raw' && !isNum(l.paid));
+        if (same) same.qty = Math.min(999, same.qty + 1); else cur.lots.push(newLot(variant));
+        normEntry(touch(cur));
+      } else {
+        this.items[key] = normEntry(entryFrom(card, lang, set, variant));
+        delete this.deleted[key];
+      }
       return this.items[key];
     },
-    remove(key) { const e = this.items[key]; delete this.items[key]; return e; },
-    restore(key, e) { if (e) this.items[key] = e; },
+    remove(key) { const e = this.items[key]; delete this.items[key]; this.deleted[key] = Date.now(); return e; },
+    restore(key, e) { if (e) { this.items[key] = touch(e); delete this.deleted[key]; } },
     // Keep saved prices and pictures fresh whenever the app loads those cards anyway.
     sync(cards, lang) {
       let changed = false;
@@ -2303,6 +2573,8 @@ footer p { margin: 4px 0; }
         const e = this.items[this.key(lang, c.id)];
         if (!e) continue;
         Object.assign(e, { variants: c.variants || {}, cm: c.cm || null, updated: c.updated || e.updated, pricedAt: Date.now() });
+        if (c.prints) e.prints = c.prints;
+        if (c.pc) e.pc = c.pc;
         if (c.enName) e.enName = c.enName;
         if (c.img) { e.img = c.img; e.imgLarge = c.imgLarge; }
         if (c.tcgplayerUrl) e.tcgplayerUrl = c.tcgplayerUrl;
@@ -2313,17 +2585,78 @@ footer p { margin: 4px 0; }
       return changed;
     },
   };
-  function entryFrom(card, lang, set) {
+  /* Wishlist: cards you want, each with an optional target price (USD). */
+  const Wish = {
+    items: (() => { const v = loadStore('wishlist'); for (const w of Object.values(v)) if (!w.updatedAt) w.updatedAt = w.addedAt || Date.now(); return v; })(),
+    deleted: loadStore('wishlistDeleted'),
+    key: (lang, id) => `${lang}:${id}`,
+    get(lang, id) { return this.items[this.key(lang, id)] || null; },
+    save() { LS.set('wishlist', this.items); LS.set('wishlistDeleted', this.deleted); Sync.schedule(); },
+    add(card, lang, set) {
+      const k = this.key(lang, card.id);
+      if (!this.items[k]) { this.items[k] = Object.assign(snapshotFrom(card, lang, set), { target: null }); delete this.deleted[k]; }
+      return this.items[k];
+    },
+    remove(key) { const w = this.items[key]; delete this.items[key]; this.deleted[key] = Date.now(); return w; },
+    restore(key, w) { if (w) { this.items[key] = touch(w); delete this.deleted[key]; } },
+    sync(cards, lang) {
+      let changed = false;
+      for (const c of cards) {
+        const w = this.items[this.key(lang, c.id)];
+        if (!w) continue;
+        Object.assign(w, { variants: c.variants || {}, cm: c.cm || null, updated: c.updated || w.updated, pricedAt: Date.now() });
+        if (c.img) { w.img = c.img; w.imgLarge = c.imgLarge; }
+        if (c.enName) w.enName = c.enName;
+        changed = true;
+      }
+      if (changed) LS.set('wishlist', this.items);
+      return changed;
+    },
+  };
+  const wishPrice = (w) => withCollPrice(() => { const p = priceInfo(w); return p ? p.usd : null; });
+  const isDeal = (w) => { const p = wishPrice(w); return isNum(p) && isNum(w.target) && p <= w.target; };
+  function wishButton(card, ctx, after) {
+    const on = !!Wish.items[Wish.key(ctx.lang, card.id)];
+    return h('button', {
+      class: 'wish-btn' + (on ? ' on' : ''), type: 'button', 'aria-pressed': String(on),
+      title: on ? 'On your wishlist (tap to remove)' : 'Add to your wishlist',
+      onclick: (ev) => { ev.stopPropagation(); toggleWish(card, ctx); if (after) after(); },
+      text: on ? '★ Wanted' : '☆ Want',
+    });
+  }
+  function toggleWish(card, ctx) {
+    const key = Wish.key(ctx.lang, card.id);
+    if (Wish.items[key]) {
+      const old = Wish.remove(key);
+      toast(`Removed ${fullName(card)} from your wishlist`, () => Wish.restore(key, old), afterWishChange);
+    } else {
+      Wish.add(card, ctx.lang, ctx.set);
+      toast(`Added ${fullName(card)} to your wishlist`, () => Wish.remove(key), afterWishChange);
+    }
+    afterWishChange();
+  }
+  function afterWishChange() {
+    Wish.save();
+    renderTabCount();
+    if (!$('#app').hidden) { renderList(); if (SEARCH.active) renderSearch(); }
+    if (COLL.tab === 'wishlist') renderWishlist();
+  }
+
+  // The saved details of a card (shared by the collection and the wishlist).
+  function snapshotFrom(card, lang, set) {
     return {
       id: card.id, lang, src: card.src || (state.provider ? state.provider.id : 'tcgdex'),
       setId: card.setId || (set ? set.id : ''),
       setName: card.setName || (set ? set.name : ''),
-      setEnName: card.setEnName || (set && lang === 'ja' && JA.sets ? JA.sets[set.id] || '' : ''),
+      setEnName: card.setEnName || (set && usesJaNames(lang) && JA.sets ? JA.sets[set.id] || '' : ''),
       name: card.name, enName: card.enName || '', number: card.number || '', localId: card.localId || '', rarity: card.rarity || '',
       img: card.img || null, imgLarge: card.imgLarge || null, tcgplayerUrl: card.tcgplayerUrl || null,
-      variants: card.variants || {}, cm: card.cm || null, updated: card.updated || null,
-      qty: 1, variant: null, addedAt: Date.now(), pricedAt: Date.now(),
+      variants: card.variants || {}, cm: card.cm || null, prints: card.prints || null, pc: card.pc || null, updated: card.updated || null,
+      addedAt: Date.now(), updatedAt: Date.now(), pricedAt: Date.now(),
     };
+  }
+  function entryFrom(card, lang, set, variant = null) {
+    return Object.assign(snapshotFrom(card, lang, set), { lots: [newLot(variant)], qty: 1 });
   }
   // Price of one copy of a particular print (e.g. the reverse holo), falling back to the card's main price.
   function priceFor(card, variant) {
@@ -2336,7 +2669,19 @@ footer p { margin: 4px 0; }
     }
     return priceInfo(card);
   }
+  // Every print a card comes in. TCGdex's list misses prints on new sets, so prints that
+  // TCGplayer prices count too ("Unlimited Holofoil" and "Holofoil" are the same print).
+  function printsOf(card) {
+    const norm = (n) => String(n).replace(/^Unlimited\s*/i, '') || 'Normal';
+    const seen = new Map();
+    for (const n of Object.keys(card.variants || {})) seen.set(norm(n), n);
+    for (const n of card.prints || []) if (!seen.has(norm(n))) seen.set(norm(n), n);
+    if (!Object.keys(card.variants || {}).length && card.cm && card.cm.trend > 0 && card.cm.trendHolo > 0 && !seen.has('Reverse Holofoil')) seen.set('Reverse Holofoil', 'Reverse Holofoil');
+    const list = [...seen.values()].sort((a, b) => variantRank(a) - variantRank(b));
+    return list.length ? list : ['Normal'];
+  }
   function variantOptions(card) {
+    if (card.prints && card.prints.length && !Object.keys(card.variants || {}).length) return card.prints.slice().sort((a, b) => variantRank(a) - variantRank(b));
     const names = Object.keys(card.variants || {}).sort((a, b) => variantRank(a) - variantRank(b));
     if (names.length) return names;
     if (card.cm && isNum(card.cm.trend) && card.cm.trend > 0 && isNum(card.cm.trendHolo) && card.cm.trendHolo > 0) return ['Normal', 'Reverse Holofoil'];
@@ -2353,9 +2698,9 @@ footer p { margin: 4px 0; }
   }
 
   let toastT;
-  function toast(text, undo) {
+  function toast(text, undo, after = afterCollectionChange, label = 'Undo') {
     const el = $('#toast');
-    fill(el, h('span', { text }), undo ? h('button', { type: 'button', text: 'Undo', onclick: () => { undo(); el.classList.remove('show'); afterCollectionChange(); } }) : null);
+    fill(el, h('span', { text }), undo ? h('button', { type: 'button', text: label, onclick: () => { undo(); el.classList.remove('show'); if (after) after(); } }) : null);
     el.classList.add('show');
     clearTimeout(toastT);
     toastT = setTimeout(() => el.classList.remove('show'), 5000);
@@ -2395,8 +2740,9 @@ footer p { margin: 4px 0; }
   function afterCollectionChange() {
     Coll.save();
     renderTabCount();
-    if (!$('#app').hidden) { renderList(); renderSetHero(); if (SEARCH.active) renderSearch(); }
+    if (!$('#app').hidden) { renderList(); renderSetHero(); if (SEARCH.active) renderSearch(); if (COLL.tab === 'master') renderMaster(); }
     if (COLL.tab === 'collection') renderCollection();
+    if (COLL.tab === 'wishlist') renderWishlist();
     recordCollHistory();
   }
   function qtyStepper(q, onChange) {
@@ -2419,14 +2765,108 @@ footer p { margin: 4px 0; }
       const e = Coll.get(state.lang, c.id);
       if (e) {
         have++;
-        const p = priceFor(c, e.variant);
-        if (p) worth += p.usd * (e.qty || 1);
+        const v = entryValue(e);
+        if (isNum(v)) worth += v;
       } else {
         const p = priceUSD(c);
         if (isNum(p)) { missingCost += p; missingPriced++; }
       }
     }
     return { have, total: state.cards.length, worth, missingCost, missingPriced };
+  }
+
+  /* =========================================================
+     Master set: every print of every card (normal, reverse holo, holo…)
+     as its own checkbox. Ticking one adds that copy to your collection, so
+     it stays in step with everything else.
+     ========================================================= */
+  const MASTER = { filter: 'all', q: '' };
+  function masterStats() {
+    let total = 0, have = 0, cost = 0, unpriced = 0, cards = 0, complete = 0;
+    for (const c of state.cards) {
+      const prints = printsOf(c);
+      const e = Coll.get(state.lang, c.id);
+      const owned = e ? ownedPrints(e, c) : new Set();
+      let all = true;
+      cards++;
+      for (const pr of prints) {
+        total++;
+        if (owned.has(pr)) have++;
+        else { all = false; const p = priceFor(c, pr); if (p) cost += p.usd; else unpriced++; }
+      }
+      if (all) complete++;
+    }
+    return { total, have, cost, unpriced, cards, complete };
+  }
+  function togglePrint(card, print) {
+    const lang = state.lang, key = Coll.key(lang, card.id);
+    const e = Coll.items[key];
+    const main = primaryPrint(card);
+    const lots = e ? e.lots.filter((l) => (l.variant || main) === print) : [];
+    if (!lots.length) {
+      Coll.add(card, lang, state.set, print);
+      toast(`Added ${fullName(card)} · ${shortVariant(print)}`);
+    } else if (lots.length === 1 && lots[0].qty === 1 && (lots[0].grade || 'raw') === 'raw' && !isNum(lots[0].paid)) {
+      const before = JSON.parse(JSON.stringify(e));
+      e.lots = e.lots.filter((l) => l !== lots[0]);
+      if (!e.lots.length) Coll.remove(key); else normEntry(touch(e));
+      toast(`Removed ${fullName(card)} · ${shortVariant(print)}`, () => { Coll.items[key] = touch(before); delete Coll.deleted[key]; });
+    } else {
+      openCard(card, { lang, set: state.set }); // several copies or details saved: change them in the card window
+      return;
+    }
+    afterCollectionChange();
+  }
+  function renderMaster() {
+    if (COLL.tab !== 'master' || $('#app').hidden) return;
+    const box = $('#masterRows');
+    if (!state.set || !state.cards.length) {
+      fill($('#masterHead'), h('div', { class: 'muted', text: state.loading ? 'Loading the set…' : 'Pick a set above.' }));
+      fill(box);
+      return;
+    }
+    const st = masterStats();
+    const pct = st.total ? Math.round((st.have / st.total) * 100) : 0;
+    fill($('#masterHead'),
+      h('div', { class: 'big' }, `${st.have} of ${st.total} prints`, h('span', { class: 'muted', style: 'font-weight:500;font-size:15px', text: ` (${pct}%)` })),
+      h('div', { class: 'own-bar', role: 'progressbar', 'aria-label': 'Master set completion', 'aria-valuemin': '0', 'aria-valuemax': String(st.total), 'aria-valuenow': String(st.have) }, h('span', { style: `width:${pct}%` })),
+      h('div', { class: 'own-text' },
+        st.have < st.total ? `The ${st.total - st.have} prints you need cost ${fmt(st.cost)}${st.unpriced ? '+' : ''} · ` : 'Master set complete! · ',
+        `${st.complete} of ${st.cards} cards have every print`),
+      h('p', { class: 'dlg-note', text: 'Tap a print to tick it off. It goes into your collection as that copy, and anything you add elsewhere shows up here too. Prints come from TCGdex; special patterns (like Poké Ball reverses) aren’t listed.' }));
+    const q = MASTER.q.trim().toLowerCase();
+    let list = state.cards.slice().sort((a, b) => collator.compare(numKey(a.number), numKey(b.number)));
+    if (q) list = list.filter((c) => `${c.name} ${c.enName || ''} ${c.number} ${c.rarity}`.toLowerCase().includes(q));
+    if (MASTER.filter !== 'all') {
+      list = list.filter((c) => {
+        const e = Coll.get(state.lang, c.id);
+        const owned = e ? ownedPrints(e, c) : new Set();
+        const done = printsOf(c).every((pr) => owned.has(pr));
+        return MASTER.filter === 'complete' ? done : !done;
+      });
+    }
+    $('#masterCount').textContent = `${list.length} cards`;
+    if (!list.length) { fill(box, h('div', { class: 'empty', text: MASTER.filter === 'missing' ? 'You have every print in this set!' : 'No cards match.' })); return; }
+    fill(box, list.map((c) => {
+      const e = Coll.get(state.lang, c.id);
+      const owned = e ? ownedPrints(e, c) : new Set();
+      const chips = printsOf(c).map((pr) => {
+        const on = owned.has(pr);
+        const p = priceFor(c, pr);
+        return h('button', {
+          class: 'print-chip' + (on ? ' on' : ''), type: 'button', 'aria-pressed': String(on),
+          'aria-label': `${shortVariant(pr)}${p ? ', ' + fmt(p.usd) : ''}: ${on ? 'you have it, tap to remove' : 'tap to add'}`,
+          onclick: () => togglePrint(c, pr),
+        }, `${on ? '✓' : '＋'} ${shortVariant(pr)}`, p ? h('span', { class: 'pp', text: fmt(p.usd, { compact: true }) }) : null);
+      });
+      return h('div', { class: 'row master-row' + (e ? ' owned' : ''), 'data-id': c.id },
+        makeThumb(c, () => ({ card: c, ctx: { lang: state.lang, set: state.set } })),
+        h('div', { class: 'num', text: c.number }),
+        h('div', { class: 'name-cell' },
+          h('div', { class: 'name' }, c.name, c.enName && c.enName !== c.name ? h('span', { class: 'en-name', text: ` (${c.enName})` }) : null),
+          h('div', { class: 'name-sub' }, h('span', { class: 'm-num num', text: '#' + c.number }), c.rarity ? h('span', { class: 'rarity', text: c.rarity }) : null)),
+        h('div', { class: 'prints' }, chips));
+    }));
   }
 
   /* ---------- Search every card in the chosen language ---------- */
@@ -2438,13 +2878,17 @@ footer p { margin: 4px 0; }
 
   // Matching cards without prices yet: [{ id, setId, localId, name, enName?, pid? }]
   async function searchBriefs(lang, q) {
-    const ja = lang === 'ja';
+    const ja = usesJaNames(lang);
     const index = ja ? await jaSearchIndex() : null;
     let briefs = [];
     if (ja && index && isAscii(q)) {
-      // Japanese cards by English name, from the English-name index.
+      // Japanese (and Chinese) cards by English name, from the English-name index.
       const needle = q.toLowerCase();
-      for (const [id, x] of index.byId) if (x.name.toLowerCase().includes(needle)) briefs.push({ id, setId: x.setId, localId: x.localId, name: x.name, enName: x.name, pid: x.pid });
+      const zhSets = lang === 'zh-tw' ? new Set((await setListFor('zh-tw').catch(() => [])).map((x) => x.id)) : null;
+      for (const [id, x] of index.byId) {
+        if (!x.name.toLowerCase().includes(needle) || (zhSets && !zhSets.has(x.setId))) continue;
+        briefs.push({ id, setId: x.setId, localId: x.localId, name: x.name, enName: x.name, pid: lang === 'ja' ? x.pid : null });
+      }
     } else {
       const list = await getJSON(`https://api.tcgdex.net/v2/${lang}/cards?name=${encodeURIComponent(q)}`, { timeout: 20000 });
       briefs = (Array.isArray(list) ? list : []).filter((c) => c && c.id && c.localId != null).map((c) => {
@@ -2521,7 +2965,8 @@ footer p { margin: 4px 0; }
       });
     }
     if (token !== SEARCH.token) return;
-    if (Coll.sync(SEARCH.items.filter((x) => x.card).map((x) => x.card), lang)) renderTabCount();
+    const loaded = SEARCH.items.filter((x) => x.card).map((x) => x.card);
+    if (Coll.sync(loaded, lang) | Wish.sync(loaded, lang)) renderTabCount();
     if (SEARCH.sort.startsWith('price')) rankSearch();
     SEARCH.loading = false;
     SEARCH.progress = null;
@@ -2536,9 +2981,9 @@ footer p { margin: 4px 0; }
     card.setId = set.id || brief.setId;
     card.setName = String(set.name || brief.setId);
     card.src = 'tcgdex';
-    if (lang === 'ja') {
+    if (usesJaNames(lang)) {
       card.setEnName = (JA.sets && JA.sets[card.setId]) || '';
-      applyEnglish(card, brief.enName, brief.pid);
+      applyEnglish(card, brief.enName, lang === 'ja' ? brief.pid : null);
     }
     return card;
   }
@@ -2573,6 +3018,7 @@ footer p { margin: 4px 0; }
       if (SEARCH.loading) { fill(box, ...Array.from({ length: 4 }, () => h('div', { class: 'skel' }))); return; }
       const tip = SEARCH.lang === 'ja'
         ? 'Try the English name (Charizard) or the Japanese name (リザードン). English names cover Japanese sets from about 2017 on.'
+        : SEARCH.lang === 'zh-tw' ? 'Try the Chinese name (噴火龍) or the English name (Charizard).'
         : 'Check the spelling, or try part of the name (for example “char”).';
       fill(box, h('div', { class: 'gs-empty' }, h('div', null, 'No cards found for ', h('b', { text: `“${SEARCH.q}”` }), '.'), h('div', { text: tip })));
       return;
@@ -2622,29 +3068,42 @@ footer p { margin: 4px 0; }
   }
   function collItems() {
     return withCollPrice(() => Object.entries(Coll.items).map(([key, e]) => {
-      const p = priceFor(e, e.variant);
-      return { key, e, p, value: p ? p.usd * (e.qty || 1) : null };
+      const p = lotPrice(e, e.lots[0]);
+      return { key, e, p, value: entryValue(e), gain: entryGain(e) };
     }));
   }
   function collTotal() { return collItems().reduce((t, x) => t + (x.value || 0), 0); }
   function recordCollHistory() { if (Object.keys(Coll.items).length) pushHistory(collHistKey(), collTotal()); }
-  function renderTabCount() { const n = Coll.count(); $('#collCount').textContent = n ? String(n) : ''; }
+  function renderTabCount() {
+    const n = Coll.count();
+    $('#collCount').textContent = n ? String(n) : '';
+    const w = Object.keys(Wish.items).length;
+    const deals = Object.values(Wish.items).filter(isDeal).length;
+    const wc = $('#wishCount');
+    wc.textContent = deals ? `${deals} 🎯` : w ? String(w) : '';
+    wc.className = 'tab-count ' + (deals ? 'deal' : 'neutral');
+    wc.title = deals ? `${deals} at or below your target price` : '';
+  }
 
   function setTabUI(tab) {
     COLL.tab = tab;
     $$('#tabs button').forEach((b) => b.setAttribute('aria-current', b.dataset.tab === tab ? 'page' : 'false'));
     $('#collectionView').hidden = tab !== 'collection';
+    $('#wishView').hidden = tab !== 'wishlist';
+    $('#app').classList.toggle('master', tab === 'master');
   }
   function showTab(tab) {
     setTabUI(tab);
     hideTip();
-    if (tab === 'collection') {
+    if (tab === 'collection' || tab === 'wishlist') {
       $('#welcome').hidden = true;
       $('#app').hidden = true;
-      renderCollection();
-      refreshCollection();
+      if (tab === 'collection') { renderCollection(); refreshCollection(); } else { renderWishlist(); refreshWishlist(); }
+      if (Sync.on() && Date.now() - (Sync.cfg.last || 0) > 2 * 60 * 1000) Sync.run();
     } else if (state.lang) {
+      $('#welcome').hidden = true;
       $('#app').hidden = false;
+      if (tab === 'master') closeSearch();
       renderAll();
     } else {
       $('#welcome').hidden = false;
@@ -2673,7 +3132,7 @@ footer p { margin: 4px 0; }
     const st = [];
     if (COLL.refreshing) st.push(h('span', null, h('span', { class: 'dot', 'aria-hidden': 'true' }), `Updating prices${COLL.progress ? ' ' + COLL.progress : ''}…`));
     else if (COLL.lastRefresh) st.push(h('span', { text: `Prices checked ${new Date(COLL.lastRefresh).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}` }));
-    st.push(h('span', { text: 'Saved in this browser · Export to keep a backup' }));
+    st.push(Sync.on() ? syncChip() : h('span', { text: 'Saved in this browser · turn on cloud sync in Settings, or save a backup' }));
     if (COLL.error) st.push(h('span', { text: COLL.error }));
     fill($('#collStatus'), ...st);
 
@@ -2705,8 +3164,16 @@ footer p { margin: 4px 0; }
         delta || (items.length ? `${priced} of ${items.length} cards priced` : 'Add cards to see their value'), h('div', null, delta ? h('div', { class: 't-sub', text: `${priced} of ${items.length} cards priced` }) : null, spark)),
       tile('', 'Cards', String(count), `${items.length} different · ${sets.size} set${sets.size === 1 ? '' : 's'}`),
       tile('', 'Most valuable', top ? fmt(top.p.usd) : '—', top ? h('button', { type: 'button', onclick: () => openCard(top.e, { lang: top.e.lang, set: null }), text: fullName(top.e) }) : 'No prices yet'),
-      tile('', 'Average card', count && priced ? fmt(total / count) : '—', items.length ? `${items.filter((x) => x.e.lang === 'en').length} English · ${items.filter((x) => x.e.lang === 'ja').length} Japanese` : ''),
+      (() => {
+        const g = items.filter((x) => x.gain);
+        if (!g.length) return tile('', 'Average card', count && priced ? fmt(total / count) : '—', 'Add what you paid to see gain or loss');
+        const paid = g.reduce((t, x) => t + x.gain.paid, 0), val = g.reduce((t, x) => t + x.gain.value, 0), diff = val - paid;
+        return tile('', 'Gain / loss', `${diff >= 0 ? '+' : '−'}${fmt(Math.abs(diff))}`,
+          h('span', { class: 'delta ' + (diff >= 0 ? 'up' : 'down') }, `${diff >= 0 ? '▲' : '▼'} ${paid > 0 ? Math.abs((diff / paid) * 100).toFixed(1) + '% · ' : ''}`, h('span', { class: 'muted', style: 'font-weight:500', text: `on ${fmt(paid)} paid (${g.length} card${g.length === 1 ? '' : 's'})` })));
+      })(),
     );
+
+    renderMovers();
 
     // List
     const q = COLL.q.trim().toLowerCase();
@@ -2735,9 +3202,50 @@ footer p { margin: 4px 0; }
     withCollPrice(() => fill(box, ...list.map((x) => collRow(x.key, x.e))));
   }
 
+  // Biggest movers: price change over about a week from the history recorded in this browser,
+  // or Cardmarket's 7-day vs 30-day sales average while there's no history yet.
+  function moversList() {
+    const out = [];
+    for (const [key, e] of Object.entries(Coll.items)) {
+      const pts = PH.get(e.lang, e.id);
+      let from = null, to = null, basis = '';
+      if (pts.length >= 2) {
+        const last = pts[pts.length - 1];
+        const old = pts.slice().reverse().find((p) => last[0] - p[0] >= 5);
+        if (old) { from = old[1]; to = last[1]; basis = `since ${new Date(old[0] * DAY_MS).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`; }
+      }
+      if (from == null && e.cm) {
+        const holo = !(e.cm.avg30 > 0) && e.cm.avg30Holo > 0;
+        const a30 = holo ? e.cm.avg30Holo : e.cm.avg30, a7 = holo ? e.cm.avg7Holo : e.cm.avg7;
+        if (a30 > 0 && a7 > 0) { from = a30 / eurPerUsd(); to = a7 / eurPerUsd(); basis = 'recent sales'; }
+      }
+      if (from > 0 && isNum(to) && Math.abs(to - from) / from >= 0.02) out.push({ key, e, from, to, ch: (to - from) / from, basis });
+    }
+    return out;
+  }
+  function renderMovers() {
+    const box = $('#collMovers');
+    if (!Object.keys(Coll.items).length) { box.hidden = true; return; }
+    box.hidden = false;
+    const list = moversList();
+    const up = list.filter((x) => x.ch > 0).sort((a, b) => b.ch - a.ch).slice(0, 3);
+    const down = list.filter((x) => x.ch < 0).sort((a, b) => a.ch - b.ch).slice(0, 3);
+    const item = (x) => h('button', { class: 'mover', type: 'button', onclick: () => openCard(x.e, { lang: x.e.lang, set: null }), 'aria-label': `${fullName(x.e)}: ${x.ch > 0 ? 'up' : 'down'} ${Math.abs(x.ch * 100).toFixed(0)}%` },
+      x.e.img ? h('img', { src: x.e.img, alt: '', loading: 'lazy', referrerpolicy: 'no-referrer' }) : h('span', { class: 'ph' }),
+      h('span', { style: 'min-width:0' }, h('div', { class: 'm-name', text: x.e.enName || x.e.name }), h('div', { class: 'm-sub', text: `${fmt(x.from)} → ${fmt(x.to)} · ${x.basis}` })),
+      h('span', { class: 'm-ch ' + (x.ch > 0 ? 'up' : 'down'), text: `${x.ch > 0 ? '▲' : '▼'} ${Math.abs(x.ch * 100).toFixed(0)}%` }));
+    fill(box, h('h3', { text: 'Biggest movers' }),
+      up.length || down.length
+        ? h('div', { class: 'movers-cols' },
+          h('div', null, h('div', { class: 'label', text: 'Rising' }), up.length ? up.map(item) : h('p', { class: 'dlg-note', text: 'None right now.' })),
+          h('div', null, h('div', { class: 'label', text: 'Falling' }), down.length ? down.map(item) : h('p', { class: 'dlg-note', text: 'None right now.' })))
+        : h('p', { class: 'dlg-note', text: 'No big price changes in your collection right now.' }),
+      h('p', { class: 'dlg-note', text: 'Change over about a week, from prices recorded in this browser. Cards without a week of history use Cardmarket’s 7-day vs 30-day sales average.' }));
+  }
+
   function collRow(key, e) {
     let r = collRowCache.get(key);
-    if (!r || r.e !== e) {
+    if (!r || r.e !== e || r.img !== e.img) {
       const value = h('div', { class: 'p-main' });
       const unit = h('div', { class: 'p-var' });
       const ctrl = h('div', { class: 'coll-ctrl' });
@@ -2750,21 +3258,28 @@ footer p { margin: 4px 0; }
             h('button', { class: 'set-chip set-link', type: 'button', title: 'Open this set', onclick: () => openSetFromCollection(e), text: setLabel }),
             h('span', { class: 'num', text: '#' + e.number }),
             e.rarity ? h('span', { class: 'rarity', text: e.rarity }) : null,
-            h('span', { class: 'lang-tag', text: e.lang === 'ja' ? 'JP' : 'EN' }))),
+            h('span', { class: 'lang-tag', text: LANG_TAG[e.lang] || e.lang.toUpperCase() }),
+            hasGraded(e) ? h('span', { class: 'chip graded-chip', text: e.lots.filter((l) => l.grade !== 'raw').map((l) => gradeInfo(l.grade)[1]).join(', ') }) : null)),
         ctrl,
         h('div', { class: 'price' }, value, unit));
-      r = { row, e, value, unit, ctrl };
+      r = { row, e, value, unit, ctrl, img: e.img };
       collRowCache.set(key, r);
     }
-    const p = priceFor(e, e.variant);
     const q = e.qty || 1;
-    r.value.textContent = p ? fmt(p.usd * q) : 'No price';
-    r.value.classList.toggle('na', !p);
-    r.unit.textContent = !p ? '' : q > 1 ? `${q} × ${fmt(p.usd)}` : p.src === 'TCGplayer' ? `TCGplayer · ${shortVariant(p.variant)}` : p.src;
-    const opts = variantOptions(e);
-    fill(r.ctrl, 
-      qtyStepper(q, (n) => setCollQty(key, n)),
-      opts.length > 1 ? variantSelect(e, opts, afterCollectionChange) : null,
+    const value = entryValue(e);
+    const gain = entryGain(e);
+    const single = e.lots.length === 1 ? e.lots[0] : null;
+    const p = single ? lotPrice(e, single) : null;
+    r.value.textContent = isNum(value) ? fmt(value) : 'No price';
+    r.value.classList.toggle('na', !isNum(value));
+    const lotsText = e.lots.map((l) => `${l.qty > 1 ? l.qty + '× ' : ''}${l.grade && l.grade !== 'raw' ? gradeInfo(l.grade)[1] : shortVariant(l.variant || primaryPrint(e) || 'Normal')}`).join(' · ');
+    fill(r.unit,
+      single && p ? (q > 1 ? `${q} × ${fmt(p.usd)}` : p.graded ? `PriceCharting · ${p.variant}` : p.src === 'TCGplayer' ? `TCGplayer · ${shortVariant(p.variant)}` : p.src) : lotsText,
+      p && p.gradedFallback ? h('div', { class: 'p-alt', text: 'raw price (graded needs PriceCharting key)' }) : null,
+      gain ? h('div', { class: 'gain ' + (gain.gain >= 0 ? 'up' : 'down'), text: `${gain.gain >= 0 ? '▲ +' : '▼ −'}${fmt(Math.abs(gain.gain))}${gain.paid > 0 ? ` (${gain.gain >= 0 ? '+' : '−'}${Math.abs((gain.gain / gain.paid) * 100).toFixed(0)}%)` : ''}` }) : null);
+    fill(r.ctrl,
+      single ? qtyStepper(q, (n) => setCollQty(key, n)) : h('span', { class: 'muted', style: 'font-size:12.5px', text: `${q} copies` }),
+      h('button', { class: 'btn mini-btn', type: 'button', onclick: () => openCard(e, { lang: e.lang, set: null }), text: 'Edit' }),
       h('a', { class: 'mini-link', href: e.tcgplayerUrl || tcgSearchUrl(e, e.lang), target: '_blank', rel: 'noopener noreferrer', text: 'TCGplayer ↗' }));
     return r.row;
   }
@@ -2775,7 +3290,8 @@ footer p { margin: 4px 0; }
       const old = Coll.remove(key);
       toast(`Removed ${fullName(old)}`, () => Coll.restore(key, old));
     } else {
-      e.qty = n;
+      e.lots[0].qty = n;
+      normEntry(touch(e));
     }
     afterCollectionChange();
   }
@@ -2828,11 +3344,277 @@ footer p { margin: 4px 0; }
     renderCollection();
   }
 
+  /* =========================================================
+     Cloud sync: the collection and wishlist go to a private (secret) gist in
+     your GitHub account. Each card keeps a "last changed" time, so when two
+     devices edit, the newest change to each card wins, and deletions stick.
+     ========================================================= */
+  const SYNC_FILE = 'pokemon-set-tracker.json';
+  const Sync = {
+    cfg: Object.assign({ token: '', gistId: '', last: 0, dirty: false }, LS.get('sync', {})),
+    status: 'off',
+    error: '',
+    timer: null,
+    busy: false,
+    again: false,
+    applying: false,
+    on() { return !!this.cfg.token; },
+    saveCfg() { LS.set('sync', this.cfg); },
+    // Called after every local change: sync a few seconds later.
+    schedule() {
+      if (this.applying || !this.on()) return;
+      this.cfg.dirty = true;
+      this.saveCfg();
+      clearTimeout(this.timer);
+      this.timer = setTimeout(() => this.run(), 4000);
+    },
+    async api(path, { method = 'GET', body } = {}) {
+      let res;
+      try {
+        res = await fetch('https://api.github.com' + path, {
+          method, cache: 'no-store',
+          headers: Object.assign({ Authorization: `Bearer ${this.cfg.token}`, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' }, body ? { 'Content-Type': 'application/json' } : {}),
+          body: body ? JSON.stringify(body) : undefined,
+        });
+      } catch { throw new Error('GitHub couldn’t be reached (offline?).'); }
+      if (res.status === 401) throw new Error('GitHub didn’t accept your key. Check it in Settings.');
+      if (!res.ok) {
+        let m = '';
+        try { m = (await res.json()).message || ''; } catch { /* no body */ }
+        const err = new Error(res.status === 403 || res.status === 404 && !path.startsWith('/gists/') ? 'Your GitHub key needs the “Gists: read and write” permission.' : `GitHub: ${m || 'error ' + res.status}`);
+        err.status = res.status;
+        throw err;
+      }
+      return res.status === 204 ? null : res.json();
+    },
+    async findGist() {
+      for (let page = 1; page <= 5; page++) {
+        const list = await this.api(`/gists?per_page=100&page=${page}`);
+        const g = (list || []).find((x) => x.files && x.files[SYNC_FILE]);
+        if (g) return g.id;
+        if (!list || list.length < 100) break;
+      }
+      return null;
+    },
+    async readGist(id) {
+      const g = await this.api(`/gists/${encodeURIComponent(id)}`);
+      const f = g && g.files && g.files[SYNC_FILE];
+      if (!f) return null;
+      let text = f.content;
+      if (f.truncated && f.raw_url) text = await (await fetch(f.raw_url, { cache: 'no-store' })).text();
+      try { return JSON.parse(text); } catch { return null; }
+    },
+    // What gets synced: your cards and choices, not the prices (each device fetches those).
+    payload() {
+      const strip = (x) => { const o = Object.assign({}, x); delete o.variants; delete o.cm; delete o.pc; delete o.pricedAt; return o; };
+      const map = (items) => Object.fromEntries(Object.entries(items).map(([k, v]) => [k, strip(v)]));
+      return { app: 'pokemon-set-price-tracker', version: 2, updated: new Date().toISOString(), collection: map(Coll.items), collectionDeleted: Coll.deleted, wishlist: map(Wish.items), wishlistDeleted: Wish.deleted };
+    },
+    // Newest change wins, card by card; a deletion wins over older edits. Returns whether anything changed here.
+    merge(local, localDel, remote, remoteDel, clean) {
+      let changed = false;
+      for (const [k, t] of Object.entries(remoteDel || {})) if (isNum(t) && (!localDel[k] || t > localDel[k])) localDel[k] = t;
+      for (const [k, raw] of Object.entries(remote || {})) {
+        const r = clean(raw);
+        if (!r) continue;
+        if ((localDel[k] || 0) >= (r.updatedAt || 0)) continue;
+        const l = local[k];
+        if (!l || (r.updatedAt || 0) > (l.updatedAt || 0)) {
+          if (l) Object.assign(r, { variants: l.variants, cm: l.cm, pc: l.pc, pricedAt: l.pricedAt, img: r.img || l.img, imgLarge: r.imgLarge || l.imgLarge });
+          local[k] = r;
+          changed = true;
+        }
+      }
+      for (const [k, t] of Object.entries(localDel)) if (local[k] && t >= (local[k].updatedAt || 0)) { delete local[k]; changed = true; }
+      const cutoff = Date.now() - 180 * DAY_MS;
+      for (const [k, t] of Object.entries(localDel)) if (t < cutoff) delete localDel[k];
+      return changed;
+    },
+    async run() {
+      if (!this.on()) return;
+      if (this.busy) { this.again = true; return; }
+      this.busy = true;
+      this.status = 'syncing';
+      this.error = '';
+      renderSyncState();
+      try {
+        if (!this.cfg.gistId) { this.cfg.gistId = (await this.findGist()) || ''; this.saveCfg(); }
+        let remote = null;
+        if (this.cfg.gistId) {
+          try { remote = await this.readGist(this.cfg.gistId); } catch (e) { if (e.status === 404) { this.cfg.gistId = ''; this.saveCfg(); } else throw e; }
+        }
+        let changed = false;
+        if (remote) {
+          this.applying = true;
+          const cleanWish = (x) => { const w = cleanEntry(x); if (!w) return null; delete w.lots; delete w.qty; w.target = isNum(x.target) && x.target > 0 ? x.target : null; return w; };
+          const cleanColl = (x) => { const e = cleanEntry(x); return e ? normEntry(e) : null; };
+          changed = this.merge(Coll.items, Coll.deleted, remote.collection, remote.collectionDeleted, cleanColl);
+          changed = this.merge(Wish.items, Wish.deleted, remote.wishlist, remote.wishlistDeleted, cleanWish) || changed;
+          LS.set('collection', Coll.items); LS.set('collectionDeleted', Coll.deleted);
+          LS.set('wishlist', Wish.items); LS.set('wishlistDeleted', Wish.deleted);
+          this.applying = false;
+        }
+        if (this.cfg.dirty || !remote || changed) {
+          const body = { description: 'Pokémon Set Price Tracker: my collection and wishlist (kept in sync by the app)', files: { [SYNC_FILE]: { content: JSON.stringify(this.payload()) } } };
+          if (this.cfg.gistId) await this.api(`/gists/${encodeURIComponent(this.cfg.gistId)}`, { method: 'PATCH', body });
+          else { const g = await this.api('/gists', { method: 'POST', body: Object.assign({ public: false }, body) }); this.cfg.gistId = g.id; }
+        }
+        this.cfg.dirty = false;
+        this.cfg.last = Date.now();
+        this.saveCfg();
+        this.status = 'ok';
+        if (changed) {
+          renderTabCount();
+          if (!$('#app').hidden) { renderList(); renderSetHero(); if (COLL.tab === 'master') renderMaster(); }
+          if (COLL.tab === 'collection') { renderCollection(); refreshCollection(); }
+          if (COLL.tab === 'wishlist') { renderWishlist(); refreshWishlist(); }
+        }
+      } catch (e) {
+        this.status = 'error';
+        this.error = e.message || String(e);
+      } finally {
+        this.busy = false;
+        this.applying = false;
+        renderSyncState();
+        if (this.again) { this.again = false; this.run(); }
+      }
+    },
+  };
+  const agoText = (t) => { const m = Math.round((Date.now() - t) / 60000); return m < 1 ? 'just now' : m < 60 ? `${m} min ago` : new Date(t).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }); };
+  function syncChip() {
+    if (!Sync.on()) return null;
+    if (Sync.status === 'syncing') return h('span', { class: 'sync-chip', text: '☁ Syncing…' });
+    if (Sync.status === 'error') return h('span', { class: 'sync-chip err', title: Sync.error, text: `☁ Sync problem: ${Sync.error}` });
+    return h('span', { class: 'sync-chip', text: Sync.cfg.last ? `☁ Synced ${agoText(Sync.cfg.last)}` : '☁ Sync on' });
+  }
+  function renderSyncState() {
+    const el = $('#syncState');
+    if (el) el.textContent = !Sync.on() ? 'Sync is off.' : Sync.status === 'syncing' ? 'Syncing…' : Sync.status === 'error' ? `Problem: ${Sync.error}` : Sync.cfg.last ? `Synced ${agoText(Sync.cfg.last)}.` : 'Ready to sync.';
+    if (COLL.tab === 'collection') renderCollection();
+    if (COLL.tab === 'wishlist') renderWishlist();
+  }
+
+  /* =========================================================
+     Wishlist tab
+     ========================================================= */
+  const WISHV = { sort: LS.get('wishSort', 'deal'), refreshing: false, progress: null, lastRefresh: LS.get('wishRefreshed', 0), notified: false };
+  const wishRowCache = new Map();
+  function renderWishlist() {
+    if ($('#wishView').hidden) return;
+    const cur = $('#wishCurrency');
+    if (!cur.options.length) cur.append(...CURRENCIES.map(([c, label]) => h('option', { value: c, text: label })));
+    cur.value = state.currency;
+    $('#wishSort').value = WISHV.sort;
+    $('#wishRefresh').classList.toggle('busy-btn', WISHV.refreshing);
+    const items = Object.entries(Wish.items).map(([key, w]) => ({ key, w, price: wishPrice(w) }));
+    const deals = items.filter((x) => isNum(x.price) && isNum(x.w.target) && x.price <= x.w.target);
+    const total = items.reduce((t, x) => t + (x.price || 0), 0);
+    fill($('#wishStatus'),
+      items.length ? h('span', { text: `${items.length} card${items.length === 1 ? '' : 's'} · ${fmt(total)} to buy them all` }) : null,
+      WISHV.refreshing ? h('span', { text: `Updating prices${WISHV.progress ? ' ' + WISHV.progress : ''}…` }) : WISHV.lastRefresh ? h('span', { text: `Prices checked ${new Date(WISHV.lastRefresh).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}` }) : null,
+      syncChip());
+    fill($('#wishAlert'), deals.length ? h('div', { class: 'banner deal-banner' }, h('span', { class: 'grow', text: `🎯 ${deals.length} card${deals.length === 1 ? ' is' : 's are'} at or below your target price.` })) : null);
+    const ratio = (x) => (isNum(x.price) && isNum(x.w.target) && x.w.target > 0 ? x.price / x.w.target : 1e9);
+    const nm = (x) => x.w.enName || x.w.name;
+    if (WISHV.sort === 'recent') items.sort((a, b) => (b.w.addedAt || 0) - (a.w.addedAt || 0));
+    else if (WISHV.sort === 'price') items.sort((a, b) => (b.price ?? -1) - (a.price ?? -1));
+    else if (WISHV.sort === 'name') items.sort((a, b) => collator.compare(nm(a), nm(b)));
+    else items.sort((a, b) => ratio(a) - ratio(b) || (b.price ?? -1) - (a.price ?? -1));
+    $('#wishCountLabel').textContent = items.length ? String(items.length) : '';
+    const box = $('#wishRows');
+    if (!items.length) {
+      fill(box, h('div', { class: 'gs-empty' }, h('div', null, h('b', { text: 'Nothing on your wishlist yet.' })), h('div', { text: 'Tap ☆ Want on any card in a set, in search results or in its window.' })));
+      return;
+    }
+    const live = new Set(items.map((x) => x.key));
+    for (const k of wishRowCache.keys()) if (!live.has(k)) wishRowCache.delete(k);
+    fill(box, items.map((x) => wishRow(x.key, x.w, x.price)));
+  }
+  function wishRow(key, w, price) {
+    let r = wishRowCache.get(key);
+    if (!r || r.w !== w || r.img !== w.img) {
+      const value = h('div', { class: 'p-main' }), sub = h('div', { class: 'p-var' }), ctrl = h('div', { class: 'target-box' });
+      const setLabel = w.setEnName && w.setEnName !== w.setName ? `${w.setName} (${w.setEnName})` : (w.setName || w.setId);
+      const row = h('div', { class: 'row wish-row', 'data-key': key },
+        makeThumb(w, () => ({ card: w, ctx: { lang: w.lang, set: null } })),
+        h('div', { class: 'name-cell' },
+          h('div', { class: 'name' }, w.name, w.enName && w.enName !== w.name ? h('span', { class: 'en-name', text: ` (${w.enName})` }) : null),
+          h('div', { class: 'name-sub' }, h('span', { class: 'set-chip', text: setLabel }), h('span', { class: 'num', text: '#' + w.number }), h('span', { class: 'lang-tag', text: LANG_TAG[w.lang] || w.lang }))),
+        ctrl,
+        h('div', { class: 'price' }, value, sub));
+      r = { row, w, value, sub, ctrl, img: w.img };
+      wishRowCache.set(key, r);
+    }
+    const deal = isNum(price) && isNum(w.target) && price <= w.target;
+    r.row.classList.toggle('deal', deal);
+    r.value.textContent = isNum(price) ? fmt(price) : 'No price';
+    r.value.classList.toggle('na', !isNum(price));
+    fill(r.sub, deal ? h('span', { class: 'deal-tag', text: '🎯 At or below target' }) : isNum(w.target) && isNum(price) ? h('span', { class: 'over-tag', text: `${fmt(price - w.target)} above target` }) : 'Market price');
+    const dp = state.currency === 'JPY' ? 0 : 2;
+    const tIn = h('input', { class: 'input mini-input', type: 'text', inputmode: 'decimal', placeholder: `Target (${state.currency})`, 'aria-label': `Target price in ${state.currency}`, value: isNum(w.target) ? (w.target * rate()).toFixed(dp) : '' });
+    tIn.addEventListener('change', () => {
+      const v = parseFloat(String(tIn.value).replace(/[^0-9.]/g, ''));
+      w.target = isNum(v) && v > 0 ? v / rate() : null;
+      touch(w);
+      afterWishChange();
+    });
+    fill(r.ctrl, tIn,
+      h('button', { class: 'btn mini-btn', type: 'button', title: 'Bought it: move it to your collection', onclick: () => gotWish(key, w), text: '✓ Got it' }),
+      h('button', { class: 'icon-btn lot-del', type: 'button', 'aria-label': 'Remove from wishlist', title: 'Remove from wishlist', onclick: () => { const old = Wish.remove(key); toast(`Removed ${fullName(w)} from your wishlist`, () => Wish.restore(key, old), afterWishChange); afterWishChange(); }, text: '✕' }));
+    return r.row;
+  }
+  function gotWish(key, w) {
+    const ck = Coll.key(w.lang, w.id);
+    const hadEntry = !!Coll.items[ck];
+    const e = Coll.add(w, w.lang, null);
+    const price = wishPrice(w);
+    if (!hadEntry && isNum(price)) { const l = e.lots[0]; l.paid = price; l.paidAmt = +(price * rate()).toFixed(state.currency === 'JPY' ? 0 : 2); l.paidCur = state.currency; }
+    const old = Wish.remove(key);
+    Coll.save();
+    toast(`Moved ${fullName(w)} to your collection`, () => { Wish.restore(key, old); if (!hadEntry) Coll.remove(ck); else { e.lots.pop(); normEntry(touch(e)); } Coll.save(); }, () => { afterWishChange(); afterCollectionChange(); });
+    afterWishChange();
+    afterCollectionChange();
+  }
+  async function refreshWishlist({ force = false } = {}) {
+    if (WISHV.refreshing) return;
+    const todo = Object.values(Wish.items).filter((w) => (w.src || 'tcgdex') === 'tcgdex' && (force || Date.now() - (w.pricedAt || 0) > 60 * 60 * 1000));
+    if (!todo.length) { checkDeals(); return; }
+    WISHV.refreshing = true;
+    renderWishlist();
+    await mapLimit(todo, 8, async (w) => {
+      try {
+        const d = await getJSON(`https://api.tcgdex.net/v2/${w.lang}/cards/${encodeURIComponent(w.id)}`, { cache: force ? 'no-cache' : 'default' });
+        const fresh = TCGDEX.toCard({ id: w.id, localId: w.localId || d.localId }, d, d.set && d.set.cardCount && d.set.cardCount.official);
+        Object.assign(w, { variants: fresh.variants, cm: fresh.cm, updated: fresh.updated, pricedAt: Date.now() });
+        if (fresh.img && !w.img) { w.img = fresh.img; w.imgLarge = fresh.imgLarge; }
+        PH.record(w.lang, w);
+      } catch { /* keep the saved price */ }
+    }, (done, total) => { WISHV.progress = done < total ? `${done}/${total}` : null; if (done % 10 === 0) renderWishlist(); });
+    WISHV.refreshing = false;
+    WISHV.progress = null;
+    WISHV.lastRefresh = Date.now();
+    LS.set('wishRefreshed', WISHV.lastRefresh);
+    LS.set('wishlist', Wish.items);
+    PH.save();
+    renderTabCount();
+    renderWishlist();
+    checkDeals();
+  }
+  // A heads-up (once per visit) when wishlist cards reach their target price.
+  function checkDeals() {
+    if (WISHV.notified) return;
+    const n = Object.values(Wish.items).filter(isDeal).length;
+    if (!n) return;
+    WISHV.notified = true;
+    if (COLL.tab === 'wishlist') return;
+    toast(`🎯 ${n} wishlist card${n === 1 ? ' is' : 's are'} at or below your target price`, () => showTab('wishlist'), null, 'View');
+  }
+
   // Backup
   function exportCollection() {
     const cards = Object.values(Coll.items);
-    if (!cards.length) { toast('Your collection is empty'); return; }
-    const data = { app: 'pokemon-set-price-tracker', version: 1, exported: new Date().toISOString(), cards };
+    if (!cards.length && !Object.keys(Wish.items).length) { toast('Your collection is empty'); return; }
+    const data = { app: 'pokemon-set-price-tracker', version: 2, exported: new Date().toISOString(), cards, wishlist: Object.values(Wish.items) };
     const blob = new Blob([JSON.stringify(data, null, 1)], { type: 'application/json' });
     const a = h('a', { href: URL.createObjectURL(blob), download: `pokemon-collection-${todayISO()}.json` });
     document.body.append(a);
@@ -2840,8 +3622,35 @@ footer p { margin: 4px 0; }
     setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
     toast(`Saved ${cards.length} cards to a file`);
   }
+  // Spreadsheet (CSV) of every copy in the collection, in the current currency.
+  function exportCsv() {
+    const cur = state.currency;
+    const R = rate();
+    const n2 = (v) => (isNum(v) ? (cur === 'JPY' ? Math.round(v) : v.toFixed(2)) : '');
+    const rows = [['Name', 'English name', 'Set', 'Number', 'Language', 'Rarity', 'Print', 'Grade', 'Quantity', `Price each (${cur})`, `Value (${cur})`, `Paid each (${cur})`, `Gain/loss (${cur})`, 'Price source', 'TCGplayer']];
+    withCollPrice(() => {
+      for (const e of Object.values(Coll.items)) {
+        for (const l of e.lots) {
+          const p = lotPrice(e, l);
+          const each = p ? p.usd * R : null;
+          const paid = isNum(l.paid) ? l.paid * R : null;
+          rows.push([e.name, e.enName && e.enName !== e.name ? e.enName : '', e.setEnName || e.setName, e.number, LANG_NAME[e.lang] || e.lang, e.rarity,
+            shortVariant(l.variant || primaryPrint(e) || 'Normal'), gradeInfo(l.grade)[1], l.qty, n2(each), n2(isNum(each) ? each * l.qty : null), n2(paid),
+            isNum(each) && isNum(paid) ? n2((each - paid) * l.qty) : '', p ? (p.gradedFallback ? `${p.src} (ungraded)` : p.src) : '', e.tcgplayerUrl || '']);
+        }
+      }
+    });
+    if (rows.length === 1) { toast('Your collection is empty'); return; }
+    const cell = (v) => { const t = String(v ?? ''); return /[",\n\r]/.test(t) || /^[=+\-@]/.test(t) ? `"${(/^[=+\-@]/.test(t) ? "'" : '') + t.replace(/"/g, '""')}"` : t; };
+    const csv = '\ufeff' + rows.map((r) => r.map(cell).join(',')).join('\r\n');
+    const a = h('a', { href: URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })), download: `pokemon-collection-${todayISO()}.csv` });
+    document.body.append(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+    toast(`Saved ${rows.length - 1} rows to a spreadsheet file`);
+  }
   function cleanEntry(x) {
-    if (!x || typeof x !== 'object' || typeof x.id !== 'string' || !x.id || !['en', 'ja'].includes(x.lang)) return null;
+    if (!x || typeof x !== 'object' || typeof x.id !== 'string' || !x.id || !LANGS.includes(x.lang)) return null;
     const str = (v, n = 200) => (typeof v === 'string' ? v.slice(0, n) : '');
     const num = (v) => (isNum(v) ? v : null);
     const variants = {};
@@ -2856,8 +3665,17 @@ footer p { margin: 4px 0; }
       name: str(x.name) || str(x.id, 80), enName: str(x.enName), number: str(x.number, 24), localId: str(x.localId, 24), rarity: str(x.rarity, 60),
       img: safeUrl(x.img), imgLarge: safeUrl(x.imgLarge), tcgplayerUrl: safeUrl(x.tcgplayerUrl),
       variants, cm, updated: str(x.updated, 40) || null,
-      qty: Math.max(1, Math.min(999, Math.round(num(x.qty) || 1))), variant: str(x.variant, 40) || null,
-      addedAt: num(x.addedAt) || Date.now(), pricedAt: 0,
+      prints: Array.isArray(x.prints) ? x.prints.filter((v) => typeof v === 'string').slice(0, 8).map((v) => v.slice(0, 40)) : null,
+      lots: Array.isArray(x.lots) && x.lots.length
+        ? x.lots.slice(0, 30).map((l) => ({
+          id: str(l && l.id, 16) || Math.random().toString(36).slice(2, 10),
+          qty: Math.max(1, Math.min(999, Math.round(num(l && l.qty) || 1))),
+          variant: str(l && l.variant, 40) || null,
+          grade: GRADES.some((g) => g[0] === (l && l.grade)) ? l.grade : 'raw',
+          paid: num(l && l.paid), paidAmt: num(l && l.paidAmt), paidCur: CURRENCIES.some(([c]) => c === (l && l.paidCur)) ? l.paidCur : null,
+        }))
+        : [Object.assign(newLot(str(x.variant, 40) || null), { qty: Math.max(1, Math.min(999, Math.round(num(x.qty) || 1))) })],
+      addedAt: num(x.addedAt) || Date.now(), updatedAt: num(x.updatedAt) || Date.now(), pricedAt: 0,
     };
   }
   async function importCollection(file) {
@@ -2865,11 +3683,14 @@ footer p { margin: 4px 0; }
     try { data = JSON.parse(await file.text()); } catch { toast('That file isn’t a collection backup'); return; }
     const list = (Array.isArray(data) ? data : data && data.cards) || [];
     const clean = list.map(cleanEntry).filter(Boolean);
-    if (!clean.length) { toast('No cards found in that file'); return; }
+    const wishes = (data && Array.isArray(data.wishlist) ? data.wishlist : []).map((x) => { const w = cleanEntry(x); if (!w) return null; delete w.lots; delete w.qty; w.target = isNum(x.target) && x.target > 0 ? x.target : null; return w; }).filter(Boolean);
+    for (const w of wishes) { const k = Wish.key(w.lang, w.id); Wish.items[k] = touch(w); delete Wish.deleted[k]; }
+    if (wishes.length) afterWishChange();
+    if (!clean.length) { toast(wishes.length ? `Imported ${wishes.length} wishlist cards` : 'No cards found in that file'); return; }
     const existing = clean.filter((e) => Coll.items[Coll.key(e.lang, e.id)]).length;
     const msg = `Import ${clean.length} cards?` + (existing ? ` ${existing} you already have will be updated to the file’s numbers.` : '');
     if (!confirm(msg)) return;
-    for (const e of clean) Coll.items[Coll.key(e.lang, e.id)] = e;
+    for (const e of clean) { const k = Coll.key(e.lang, e.id); Coll.items[k] = normEntry(touch(e)); delete Coll.deleted[k]; }
     afterCollectionChange();
     toast(`Imported ${clean.length} cards`);
     refreshCollection();
@@ -3004,10 +3825,10 @@ footer p { margin: 4px 0; }
     let list = [...found.values()].sort((a, b) => b.score - a.score || (rank.get(a.brief.setId) ?? 1e6) - (rank.get(b.brief.setId) ?? 1e6));
     if (list.length && list[0].score >= 4) list = list.filter((x) => x.score >= 3); // name and number agree: drop weaker guesses
     list = list.slice(0, 12);
-    const index = lang === 'ja' ? await jaSearchIndex() : null;
+    const index = usesJaNames(lang) ? await jaSearchIndex() : null;
     const cards = await mapLimit(list, 6, async (x) => {
       const b = x.brief;
-      if (index && !b.enName) { const hit = index.byId.get(b.id); if (hit) { b.enName = hit.name; b.pid = hit.pid; } }
+      if (index && !b.enName) { const hit = index.byId.get(b.id); if (hit) { b.enName = hit.name; b.pid = lang === 'ja' ? hit.pid : null; } }
       const d = await getJSON(`https://api.tcgdex.net/v2/${lang}/cards/${encodeURIComponent(b.id)}`);
       return toSearchCard(lang, b, d);
     });
@@ -3204,7 +4025,7 @@ footer p { margin: 4px 0; }
     const langSeg = h('div', { class: 'field' },
       h('span', { class: 'label', text: 'Card language' }),
       h('div', { class: 'seg', role: 'group', 'aria-label': 'Card language' },
-        ...[['en', 'English'], ['ja', 'Japanese']].map(([l, t]) => h('button', { type: 'button', 'aria-pressed': String(SCAN.lang === l), onclick: () => { SCAN.lang = l; renderScan(); }, text: t }))));
+        ...[['en', 'English'], ['ja', 'Japanese'], ['zh-tw', 'Chinese']].map(([l, t]) => h('button', { type: 'button', 'aria-pressed': String(SCAN.lang === l), onclick: () => { SCAN.lang = l; renderScan(); }, text: t }))));
     const photoBtns = (primary) => [
       h('button', { class: 'btn' + (primary ? ' primary' : ''), type: 'button', onclick: () => $('#scanCamera').click(), text: '📷 Take a photo' }),
       h('button', { class: 'btn', type: 'button', onclick: () => $('#scanFile').click(), text: 'Choose a photo' })];
@@ -3255,12 +4076,12 @@ footer p { margin: 4px 0; }
     }
     // Results: what was read (editable) and the matching cards.
     const info = v.info || { number: null, name: '' };
-    const nameIn = h('input', { class: 'input', id: 'scanName', type: 'text', value: info.name || '', placeholder: SCAN.lang === 'ja' ? 'e.g. Charizard (optional)' : 'e.g. Pikachu ex', autocomplete: 'off' });
+    const nameIn = h('input', { class: 'input', id: 'scanName', type: 'text', value: info.name || '', placeholder: SCAN.lang !== 'en' ? 'e.g. Charizard (optional)' : 'e.g. Pikachu ex', autocomplete: 'off' });
     const numIn = h('input', { class: 'input', id: 'scanNum', type: 'text', inputmode: 'numeric', value: info.number ? `${info.number.local}/${info.number.total}` : '', placeholder: 'e.g. 238/191', autocomplete: 'off' });
     const again = () => findMatches({ name: nameIn.value.trim(), number: parseNumberInput(numIn.value) });
     for (const el of [nameIn, numIn]) el.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); again(); } });
     const read = h('div', { class: 'scan-read' },
-      h('div', { class: 'field' }, h('label', { for: 'scanName', text: SCAN.lang === 'ja' ? 'English name' : 'Name' }), nameIn),
+      h('div', { class: 'field' }, h('label', { for: 'scanName', text: SCAN.lang !== 'en' ? 'English name' : 'Name' }), nameIn),
       h('div', { class: 'field' }, h('label', { for: 'scanNum', text: 'Number' }), numIn),
       h('button', { class: 'btn', type: 'button', onclick: again, text: 'Find' }));
     const headline = info.number || info.name
@@ -3342,22 +4163,7 @@ footer p { margin: 4px 0; }
       h('span', { class: 'dlg-price-main', text: pi ? fmt(pi.usd) : 'No price' }),
       pi ? h('span', { class: 'muted', text: pi.src === 'TCGplayer' ? `TCGplayer · ${shortVariant(pi.variant)}` : pi.src }) : null);
 
-    // Collection
-    const collBox = h('div', { class: 'dlg-coll' });
-    const drawColl = () => {
-      const key = Coll.key(lang, card.id);
-      const e = Coll.items[key];
-      if (!e) {
-        fill(collBox, h('button', { class: 'btn primary', type: 'button', text: '＋ Add to my collection', onclick: () => { Coll.add(card, lang, ctx.set); afterCollectionChange(); drawColl(); } }));
-        return;
-      }
-      const opts = variantOptions(e);
-      fill(collBox,
-        h('span', { class: 'dlg-coll-label', text: '✓ In my collection' }),
-        qtyStepper(e.qty || 1, (q) => { if (q <= 0) Coll.remove(key); else e.qty = q; afterCollectionChange(); drawColl(); }),
-        opts.length > 1 ? variantSelect(e, opts, () => { afterCollectionChange(); drawColl(); }) : null);
-    };
-    drawColl();
+    const collBox = copiesSection(card, ctx);
 
     const graded = h('section', { class: 'dlg-sec', 'aria-label': 'Graded prices' });
     fill($('#cardDlgInfo'),
@@ -3374,7 +4180,77 @@ footer p { margin: 4px 0; }
     renderGraded(graded, card, lang);
   }
 
-  const ebayUrl = (card, lang, grade) => `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(`${card.enName || card.name} ${card.number}${lang === 'ja' ? ' japanese' : ''} ${grade}`)}&LH_Sold=1&LH_Complete=1`;
+  // "My copies": each copy's count, print, grade and price paid.
+  function copiesSection(card, ctx) {
+    const lang = ctx.lang;
+    const box = h('section', { class: 'dlg-sec copies', 'aria-label': 'My copies' });
+    const draw = () => {
+      const key = Coll.key(lang, card.id);
+      const e = Coll.items[key];
+      const wish = wishButton(card, ctx, draw);
+      if (!e) {
+        fill(box, h('h4', { text: 'My collection' }),
+          h('div', { class: 'copy-actions' },
+            h('button', { class: 'btn primary', type: 'button', text: '＋ Add to my collection', onclick: () => { Coll.add(card, lang, ctx.set); afterCollectionChange(); draw(); } }),
+            wish));
+        return;
+      }
+      const changed = () => { normEntry(touch(e)); afterCollectionChange(); draw(); };
+      const opts = printsOf(card.variants && Object.keys(card.variants).length ? card : e);
+      const value = entryValue(e), gain = entryGain(e);
+      const rows = e.lots.map((lot) => lotRow(e, lot, opts, changed, () => {
+        if (e.lots.length > 1) { e.lots = e.lots.filter((l) => l !== lot); changed(); return; }
+        const old = Coll.remove(key);
+        toast(`Removed ${fullName(card)}`, () => Coll.restore(key, old));
+        afterCollectionChange();
+        draw();
+      }));
+      fill(box,
+        h('h4', null, `✓ My copies (${e.qty})`),
+        h('div', { class: 'copies-sum' },
+          h('span', { text: `Worth ${isNum(value) ? fmt(value) : '—'}` }),
+          gain ? h('span', { class: 'gain ' + (gain.gain >= 0 ? 'up' : 'down'), text: `${gain.gain >= 0 ? '▲ +' : '▼ −'}${fmt(Math.abs(gain.gain))} on ${fmt(gain.paid)} paid` }) : null),
+        rows,
+        h('div', { class: 'copy-actions' },
+          h('button', { class: 'btn', type: 'button', onclick: () => { e.lots.push(newLot(opts[0] || null)); changed(); }, text: '＋ Add another copy' }),
+          wish),
+        hasGraded(e) && !PC.hasToken() ? h('p', { class: 'dlg-note', text: 'Graded copies use the ungraded price until you add a PriceCharting key in Settings.' }) : null);
+    };
+    draw();
+    return box;
+  }
+  function lotRow(e, lot, opts, changed, remove) {
+    const p = lotPrice(e, lot);
+    const printSel = opts.length > 1 ? h('select', { class: 'select mini', 'aria-label': 'Print' },
+      opts.map((n) => h('option', { value: n, text: shortVariant(n) }))) : null;
+    if (printSel) { printSel.value = lot.variant && opts.includes(lot.variant) ? lot.variant : opts[0]; printSel.addEventListener('change', () => { lot.variant = printSel.value; changed(); }); }
+    const gradeSel = h('select', { class: 'select mini', 'aria-label': 'Grade' }, GRADES.map(([g, label]) => h('option', { value: g, text: label })));
+    gradeSel.value = lot.grade || 'raw';
+    gradeSel.addEventListener('change', () => {
+      lot.grade = gradeSel.value;
+      changed();
+      if (lot.grade !== 'raw' && PC.hasToken() && !(e.pc && e.pc.grades)) {
+        PC.lookup(e, e.lang).then((d) => { if (d) { e.pc = d; Coll.save(); afterCollectionChange(); } }).catch(() => {});
+      }
+    });
+    const cur = lot.paidCur || state.currency;
+    const paidIn = h('input', { class: 'input mini-input', type: 'text', inputmode: 'decimal', placeholder: `Paid each (${cur})`, 'aria-label': `Price paid per copy in ${cur}`, value: isNum(lot.paidAmt) ? String(lot.paidAmt) : '' });
+    paidIn.addEventListener('change', () => {
+      const v = parseFloat(String(paidIn.value).replace(/[^0-9.]/g, ''));
+      if (isNum(v) && v >= 0) { lot.paidAmt = v; lot.paidCur = cur; lot.paid = v / (state.rates[cur] || 1); } else { lot.paidAmt = null; lot.paidCur = null; lot.paid = null; }
+      changed();
+    });
+    return h('div', { class: 'lot' },
+      h('div', { class: 'lot-line' },
+        qtyStepper(lot.qty, (q) => { if (q <= 0) remove(); else { lot.qty = q; changed(); } }),
+        printSel, gradeSel),
+      h('div', { class: 'lot-line' },
+        paidIn,
+        h('span', { class: 'lot-price', text: p ? `${fmt(p.usd)} each${p.graded ? ' (PriceCharting)' : p.gradedFallback ? ' (ungraded price)' : ''}` : 'No price' }),
+        h('button', { class: 'icon-btn lot-del', type: 'button', 'aria-label': 'Remove this copy', title: 'Remove this copy', onclick: remove, text: '✕' })));
+  }
+
+  const ebayUrl = (card, lang, grade) => `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(`${card.enName || card.name} ${card.number} ${LANG_WORD[lang] || ''} ${grade}`.replace(/\s+/g, ' '))}&LH_Sold=1&LH_Complete=1`;
   function extLink(href, text) {
     const a = h('a', { class: 'mini-link', href, target: '_blank', rel: 'noopener noreferrer' }, text);
     a.insertAdjacentHTML('beforeend', ' ↗');
@@ -3408,6 +4284,8 @@ footer p { margin: 4px 0; }
     }
     if (!box.isConnected) return;
     card.pc = d;
+    const owned = Coll.get(lang, card.id);
+    if (owned && d) { owned.pc = d; Coll.save(); if (hasGraded(owned)) afterCollectionChange(); }
     if (!d || !Object.keys(d.grades).length) {
       fill(box, head, h('p', { class: 'dlg-note', text: d ? 'PriceCharting lists this card but has no graded sales for it yet.' : 'Couldn’t find this card on PriceCharting. Its page and recent eBay sales may still help:' }), links);
       return;
@@ -3553,6 +4431,9 @@ footer p { margin: 4px 0; }
     $('#sInterval').value = String(s.interval);
     $('#sPc').value = s.pcToken;
     $('#sPtcg').value = s.ptcgKey;
+    $('#sGh').value = Sync.cfg.token;
+    $('#syncWarn').hidden = !/githack\.com$/.test(location.hostname);
+    renderSyncState();
     $('#settingsDlg').returnValue = '';
     $('#settingsDlg').showModal();
   }
@@ -3568,6 +4449,13 @@ footer p { margin: 4px 0; }
     };
     state.settings = next;
     LS.set('settings', next);
+    const gh = $('#sGh').value.trim();
+    if (gh !== Sync.cfg.token) {
+      Object.assign(Sync.cfg, { token: gh, gistId: '', last: 0, dirty: !!gh });
+      Sync.status = gh ? 'idle' : 'off';
+      Sync.saveCfg();
+      if (gh) Sync.run();
+    }
     state.remaining = next.interval;
     if (state.lang && (next.source !== prev.source || next.ptcgKey !== prev.ptcgKey)) {
       chooseLanguage(state.lang);
@@ -3614,12 +4502,12 @@ footer p { margin: 4px 0; }
   function readHash() {
     const p = new URLSearchParams(location.hash.slice(1));
     const lang = p.get('lang');
-    return lang === 'en' || lang === 'ja' ? { lang, setId: p.get('set'), src: p.get('src') } : null;
+    return LANGS.includes(lang) ? { lang, setId: p.get('set'), src: p.get('src') } : null;
   }
 
   /* ---------- Events ---------- */
   function showWelcome() {
-    setTabUI('sets');
+    setTabUI(COLL.tab === 'master' ? 'master' : 'sets');
     state.reqId++;
     state.lang = null; state.set = null; state.cards = [];
     setBusy(false);
@@ -3630,13 +4518,20 @@ footer p { margin: 4px 0; }
     $$('.lang-card').forEach((c) => { $('.badge-last', c).hidden = c.dataset.lang !== last; });
   }
   $$('.lang-card').forEach((b) => b.addEventListener('click', () => chooseLanguage(b.dataset.lang)));
-  $$('.seg button').forEach((b) => b.addEventListener('click', () => { if (b.dataset.lang !== state.lang) chooseLanguage(b.dataset.lang); }));
+  $$('.controls .seg button[data-lang]').forEach((b) => b.addEventListener('click', () => { if (b.dataset.lang !== state.lang) chooseLanguage(b.dataset.lang); }));
   $('#brandBtn').addEventListener('click', showWelcome);
   $('#setSelect').addEventListener('change', (e) => { closeSearch(); selectSet(e.target.value); });
   $('#gsForm').addEventListener('submit', (e) => { e.preventDefault(); $('#gsInput').blur(); runSearch($('#gsInput').value); });
   $('#gsBack').addEventListener('click', () => { closeSearch(); window.scrollTo({ top: 0 }); });
   $$('#tabs button').forEach((b) => b.addEventListener('click', () => showTab(b.dataset.tab)));
   $('#ownFilter').addEventListener('change', (e) => { state.ownFilter = e.target.value; renderList(); });
+  $$('.view-seg button').forEach((b) => b.addEventListener('click', () => { state.view = b.dataset.view; LS.set('view', state.view); renderList(); }));
+  $('#masterFilter').addEventListener('change', (e) => { MASTER.filter = e.target.value; renderMaster(); });
+  let masterSearchT;
+  $('#masterSearch').addEventListener('input', (e) => { clearTimeout(masterSearchT); masterSearchT = setTimeout(() => { MASTER.q = e.target.value; renderMaster(); }, 120); });
+  $('#wishCurrency').addEventListener('change', (e) => { state.currency = e.target.value; LS.set('currency', state.currency); renderWishlist(); });
+  $('#wishSort').addEventListener('change', (e) => { WISHV.sort = e.target.value; LS.set('wishSort', WISHV.sort); renderWishlist(); });
+  $('#wishRefresh').addEventListener('click', () => { loadRates(true); refreshWishlist({ force: true }); });
   $('#scanBtn').addEventListener('click', openScanner);
   $('#collScan').addEventListener('click', openScanner);
   $('#scanClose').addEventListener('click', () => { $('#scanDlg').close(); });
@@ -3659,6 +4554,8 @@ footer p { margin: 4px 0; }
   $('#collSearch').addEventListener('input', (e) => { clearTimeout(collSearchT); collSearchT = setTimeout(() => { COLL.q = e.target.value; renderCollection(); }, 120); });
   $('#collRefresh').addEventListener('click', () => { loadRates(true); refreshCollection({ force: true }); });
   $('#collExport').addEventListener('click', exportCollection);
+  $('#collCsv').addEventListener('click', exportCsv);
+  $('#syncNowBtn').addEventListener('click', () => { const gh = $('#sGh').value.trim(); if (gh && gh !== Sync.cfg.token) { Object.assign(Sync.cfg, { token: gh, gistId: '', last: 0, dirty: true }); Sync.saveCfg(); } Sync.run(); });
   $('#collImport').addEventListener('click', () => $('#importFile').click());
   $('#importFile').addEventListener('change', (e) => { const f = e.target.files && e.target.files[0]; e.target.value = ''; if (f) importCollection(f); });
   $('#gsMore').addEventListener('click', () => { SEARCH.shown += PAGE; loadSearchDetails(SEARCH.token); });
@@ -3696,12 +4593,19 @@ footer p { margin: 4px 0; }
   /* ---------- Start ---------- */
   renderTabCount();
   loadRates();
+  if (Sync.on()) { Sync.status = 'idle'; Sync.run(); }
+  setTimeout(() => refreshWishlist(), 1500); // update wishlist prices, then say if any hit their target
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && Sync.on() && Date.now() - (Sync.cfg.last || 0) > 2 * 60 * 1000) Sync.run(); });
+  // Add-to-home-screen app: works offline for your collection (on your own site, e.g. GitHub Pages).
+  if ('serviceWorker' in navigator && (/\.github\.io$/.test(location.hostname) || /^(localhost|127\.0\.0\.1)$/.test(location.hostname))) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
   const fromHash = readHash();
   if (fromHash) chooseLanguage(fromHash.lang, { setId: fromHash.setId, src: fromHash.src });
   else showWelcome();
 
   // Exposed for debugging in the browser console.
-  window.__pst = { state, PROVIDERS, Coll, SCAN, parseCardText };
+  window.__pst = { state, PROVIDERS, Coll, Wish, Sync, SCAN, PH, parseCardText };
 })();
 </script>
 </body>
