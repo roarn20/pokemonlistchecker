@@ -1894,6 +1894,7 @@ footer p { margin: 4px 0; }
       // TCGdex keeps its own order (only its newest sets have dates).
       state.sets = provider === TCGDEX ? sets : sets.slice().sort((a, b) => (b.releaseDate || '').localeCompare(a.releaseDate || ''));
       state.setsLoadedAt = Date.now();
+      loadTotals(lang).then(() => { if (state.lang === lang) renderStats(); });
       noteSetList(provider.id, lang, state.sets);
       renderSetSelect();
       if (usesJaNames(lang)) jaSetNames().then(() => { if (state.lang === lang) { renderSetSelect(); renderSetHero(); } });
@@ -1975,6 +1976,7 @@ footer p { margin: 4px 0; }
       state.lastError = null;
       recordHistory();
       noteSetLoad(state.lang, set);
+      loadTotals(state.lang).then(() => renderStats()); // re-reads the daily totals every few hours
       renderAll();
       PC.enrich();
     } catch (e) {
@@ -2059,30 +2061,73 @@ footer p { margin: 4px 0; }
     else hist.push({ t: now, v: total });
     LS.set(key, hist.slice(-300));
   }
-  // The set total's change since the last value recorded before today (or, failing that, earlier today).
-  function setChange(hist, total) {
-    if (!isNum(total) || !hist.length) return null;
-    const sod = new Date(); sod.setHours(0, 0, 0, 0);
-    let base = null, label = '';
-    for (let i = hist.length - 1; i >= 0; i--) if (hist[i].t < sod.getTime()) { base = hist[i]; break; }
-    if (base) {
-      const bd = new Date(base.t); bd.setHours(0, 0, 0, 0);
-      const days = Math.round((sod - bd) / DAY_MS);
-      label = days <= 1 ? 'since yesterday' : `since ${bd.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: days > 300 ? 'numeric' : undefined })}`;
-    } else if (Math.abs(hist[0].v - total) >= 0.005) {
-      base = hist[0];
-      label = `since ${new Date(base.t).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}`;
+  /* Daily set totals from TCGplayer's prices for every English and Japanese set (data/totals/,
+     built every day by tools/build_variants.py), so each set can show how its total moved,
+     even sets this browser has never opened. */
+  const TOT = { p: {}, at: {}, data: {} };
+  function loadTotals(lang) {
+    if (lang !== 'en' && lang !== 'ja') return Promise.resolve(null);
+    if (!TOT.p[lang] || Date.now() - TOT.at[lang] > 3 * 60 * 60 * 1000) {
+      TOT.at[lang] = Date.now();
+      TOT.p[lang] = getStatic(`data/totals/${lang}.json`).then((d) => {
+        if (d && typeof d === 'object' && isNum(d.start) && d.sets && typeof d.sets === 'object') TOT.data[lang] = d;
+        return TOT.data[lang] || null;
+      });
     }
-    if (!base || !(base.v > 0)) return null;
-    return { diff: total - base.v, pct: ((total - base.v) / base.v) * 100, label, base };
+    return TOT.p[lang];
+  }
+  // One set's daily totals, oldest first: [[day, usd], ...] (day = days since 1970, UTC). Only days
+  // with as many cards priced as the latest day count, so a new set's prices filling in (or cards
+  // being added to the list) don't look like the total shooting up.
+  function serverTotals(lang, sid) {
+    const d = TOT.data[lang];
+    const arr = d && d.sets[sid];
+    if (!Array.isArray(arr)) return [];
+    const ns = (d.counts && d.counts[sid]) || [];
+    const pts = [];
+    arr.forEach((v, i) => { if (isNum(v) && v > 0) pts.push([d.start + i, v / 100, isNum(ns[i]) ? ns[i] : null]); });
+    if (!pts.length) return [];
+    const n = pts[pts.length - 1][2];
+    if (n == null) return pts.map((p) => [p[0], p[1]]);
+    const slack = Math.floor(n * 0.02);
+    const out = [];
+    for (let i = pts.length - 1; i >= 0 && pts[i][2] != null && Math.abs(pts[i][2] - n) <= slack; i--) out.unshift([pts[i][0], pts[i][1]]);
+    return out;
+  }
+  const usesServerTotals = () => ['market', 'low', 'mid'].includes(state.priceType);
+
+  // How the set total moved, best source first:
+  //  1. this browser's total from yesterday (exact),
+  //  2. TCGplayer's latest day-to-day change, applied to this total (works for every set),
+  //  3. this browser's total from an earlier visit, or from earlier today.
+  function setChange(hist, total, srv) {
+    if (!isNum(total)) return null;
+    const sod = new Date(); sod.setHours(0, 0, 0, 0);
+    let base = null;
+    for (let i = hist.length - 1; i >= 0; i--) if (hist[i].t < sod.getTime()) { base = hist[i]; break; }
+    const ago = base ? Math.round((sod - new Date(base.t).setHours(0, 0, 0, 0)) / DAY_MS) : Infinity;
+    const local = (b, label) => ({ diff: total - b.v, pct: ((total - b.v) / b.v) * 100, from: b.v, label, at: b.t });
+    if (base && base.v > 0 && ago <= 1) return local(base, 'since yesterday');
+    const today = Math.floor(Date.now() / DAY_MS);
+    if (srv.length >= 2) {
+      const [d1, v1] = srv[srv.length - 1], [d0, v0] = srv[srv.length - 2];
+      if (today - d1 <= 4 && v0 > 0) {
+        const pct = (v1 - v0) / v0;
+        const from = total / (1 + pct);
+        return { diff: total - from, pct: pct * 100, from, label: d1 - d0 === 1 && d1 >= today - 2 ? 'past day' : `since ${dayLabel(d0)}`, src: 'TCGplayer’s daily prices', at: d0 * DAY_MS };
+      }
+    }
+    if (base && base.v > 0) return local(base, `since ${new Date(base.t).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: ago > 300 ? 'numeric' : undefined })}`);
+    if (hist.length && hist[0].v > 0 && Math.abs(hist[0].v - total) >= 0.005) return local(hist[0], `since ${new Date(hist[0].t).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}`);
+    return null;
   }
   // Small pill next to a total: "▲ $12.40 (1.2%)", green up / red down, with an arrow so it isn't colour alone.
   function changePill(c) {
-    const flat = Math.abs(c.diff) < 0.005;
+    const flat = Math.abs(c.diff) < 0.005 || Math.abs(c.pct) < 0.01;
     const up = c.diff > 0;
     const a = Math.abs(c.pct);
     const pct = a >= 10 ? a.toFixed(0) : a.toFixed(a < 1 ? 2 : 1);
-    const words = flat ? `No change ${c.label}` : `${up ? 'Up' : 'Down'} ${fmt(Math.abs(c.diff))} (${pct}%) ${c.label}, from ${fmt(c.base.v)}`;
+    const words = (flat ? `No change ${c.label}` : `${up ? 'Up' : 'Down'} ${fmt(Math.abs(c.diff))} (${pct}%) ${c.label}, from ${fmt(c.from)}`) + (c.src ? ` · from ${c.src}` : '');
     return h('span', { class: 'chg-wrap', title: words },
       h('span', { class: 'chg ' + (flat ? 'flat' : up ? 'up' : 'down'), 'aria-label': words }, flat ? 'No change' : `${up ? '▲' : '▼'} ${fmt(Math.abs(c.diff))} (${pct}%)`),
       h('span', { class: 'chg-when', 'aria-hidden': 'true', text: c.label }));
@@ -2297,11 +2342,25 @@ footer p { margin: 4px 0; }
     let spark = null, delta = null, change = null;
     if (isNum(st.total) && state.provider) {
       const hist = LS.get(histKey(), []);
-      change = setChange(hist, st.total);
-      if (hist.length >= 2) {
+      const srv = usesServerTotals() ? serverTotals(state.lang, state.set.id) : [];
+      change = setChange(hist, st.total, srv);
+      const today = Math.floor(Date.now() / DAY_MS);
+      const recent = srv.filter((p) => p[0] >= today - 31);
+      if (recent.length >= 3 && recent[recent.length - 1][0] - recent[0][0] >= 6) {
+        // Last 30 days of TCGplayer's daily totals: trend line, and the change applied to this total
+        spark = sparkline(recent.map((p) => p[1]), 'Total set cost over the last 30 days, from TCGplayer’s daily prices');
+        const [d0, v0] = recent[0], v1 = recent[recent.length - 1][1];
+        const pct = (v1 - v0) / v0, diff = st.total - st.total / (1 + pct);
+        if (Math.abs(diff) >= 0.005) {
+          const up = diff > 0;
+          delta = h('span', { class: 'delta ' + (up ? 'up' : 'down') },
+            (up ? '▲ +' : '▼ −') + fmt(Math.abs(diff)) + ` (${up ? '+' : '−'}${Math.abs(pct * 100).toFixed(1)}%)`,
+            h('span', { class: 'muted', style: 'font-weight:500', text: today - d0 >= 29 ? ' past 30 days' : ` since ${dayLabel(d0)}` }));
+        }
+      } else if (hist.length >= 2) {
         spark = sparkline(hist.slice(-40).map((p) => p.v));
         const first = hist[0], diff = st.total - first.v;
-        if (Math.abs(diff) >= 0.005 && !(change && first.t >= change.base.t)) {
+        if (Math.abs(diff) >= 0.005 && !(change && first.t >= change.at)) {
           const up = diff > 0;
           delta = h('span', { class: 'delta ' + (up ? 'up' : 'down') },
             (up ? '▲ +' : '▼ −') + fmt(Math.abs(diff)) + ` (${up ? '+' : '−'}${Math.abs(diff / first.v * 100).toFixed(1)}%)`,
@@ -2341,7 +2400,7 @@ footer p { margin: 4px 0; }
     return `TCGplayer ${word}`;
   }
 
-  function sparkline(values) {
+  function sparkline(values, label = 'Total set cost over time, tracked in this browser') {
     const W = 240, H = 34, pad = 4;
     const min = Math.min(...values), max = Math.max(...values);
     const span = max - min || 1;
@@ -2349,7 +2408,7 @@ footer p { margin: 4px 0; }
     const y = (v) => H - pad - ((v - min) / span) * (H - pad * 2);
     const d = values.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join('');
     const last = values.length - 1;
-    return sv('svg', { class: 'spark', viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: 'none', role: 'img', 'aria-label': 'Total set cost over time, tracked in this browser' },
+    return sv('svg', { class: 'spark', viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: 'none', role: 'img', 'aria-label': label },
       sv('path', { class: 'ar', d: `${d}L${x(last)},${H}L${x(0)},${H}Z` }),
       sv('path', { class: 'ln', d, 'vector-effect': 'non-scaling-stroke' }),
       sv('circle', { class: 'end', cx: x(last), cy: y(values[last]), r: 3.5, 'vector-effect': 'non-scaling-stroke' }));

@@ -15,8 +15,15 @@ Writes:
   data/variants/<lang>/<set id>.json  {"set": name, "cards": {"001": [[label, productId, market, low, mid, high], ...]}}
   data/catalog.json                   per TCGplayer set: name, release date, card count, special print kinds
   data/changelog.json                 {"updated": time, "entries": [newest first]}
+  data/totals/<lang>.json             daily set totals (one copy of each card, TCGplayer market price, in
+                                      cents) for the app's "up / down since yesterday" badge:
+                                      {"start": day, "end": day, "sets": {"sv08.5": [395332, ...]},
+                                       "counts": {"sv08.5": [180, ...]}}  (cards priced that day)
+                                      (day = days since 1970-01-01, UTC). The first run fills in the last
+                                      30 days from TCGCSV's daily price archives (needs: pip install py7zr).
 
-Standard library only. Run from the repo root:  python3 tools/build_variants.py
+Standard library only, except py7zr for the one-off backfill of set totals (skipped without it).
+Run from the repo root:  python3 tools/build_variants.py
 """
 import concurrent.futures as cf
 import datetime as dt
@@ -25,6 +32,7 @@ import json
 import os
 import re
 import sys
+import tempfile
 import time
 import urllib.request
 
@@ -34,6 +42,11 @@ CATS = {"en": 3, "ja": 85}  # TCGplayer categories: Pokémon, Pokémon Japan
 TCGDEX = "https://api.tcgdex.net/v2"
 POCKET = re.compile(r"^(?:[AB]\d+[a-z]?|P-[A-Z])$")  # Pokémon TCG Pocket sets (digital only)
 MAX_LOG = 300
+TOTAL_DAYS = 120  # days of set totals kept
+BACKFILL = 30     # days filled in from TCGCSV's price archives when missing
+EPOCH = dt.date(1970, 1, 1)
+# Which print's price counts for a card, like the app: normal, then holo, ..., reverse holo last.
+PRINT_ORDER = ["normal", "holofoil", "1st edition holofoil", "1st edition normal", "1st edition", "unlimited holofoil", "unlimited", "reverse holofoil"]
 
 
 def get(url, tries=3):
@@ -118,6 +131,106 @@ def tcgdex_sets(lang):
         return {sid: d for sid, d in ex.map(detail, sets) if d}
 
 
+def print_rank(name):
+    n = (name or "").lower()
+    return PRINT_ORDER.index(n) if n in PRINT_ORDER else (90 if "reverse" in n else 95)
+
+
+def set_total(rows, base_ids):
+    """One copy of each card at its first print's market price (else mid, else low): (cents, cards priced)."""
+    by = {}
+    for r in rows:
+        by.setdefault(r.get("productId"), []).append(r)
+    total, n = 0.0, 0
+    for pid in base_ids:
+        for r in sorted(by.get(pid, []), key=lambda r: print_rank(r.get("subTypeName"))):
+            v = next((r[k] for k in ("marketPrice", "midPrice", "lowPrice") if isinstance(r.get(k), (int, float)) and r[k] > 0), None)
+            if v:
+                total += v
+                n += 1
+                break
+    return (round(total * 100), n) if n else None
+
+
+def archive_prices(day, keys):
+    """One day's prices for the given TCGplayer sets, from TCGCSV's daily archive (a ~4 MB 7z file)."""
+    try:
+        import py7zr
+    except ImportError:
+        return None
+    date = (EPOCH + dt.timedelta(days=day)).isoformat()
+    try:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "prices.7z")
+            req = urllib.request.Request(f"https://tcgcsv.com/archive/tcgplayer/prices-{date}.ppmd.7z", headers={"User-Agent": "pokemon-set-price-tracker/1.0"})
+            with urllib.request.urlopen(req, timeout=120) as r, open(path, "wb") as f:
+                f.write(r.read())
+            with py7zr.SevenZipFile(path, "r") as z:
+                names = set(z.getnames())
+                want = [t for t in (f"{date}/{CATS[lang]}/{gid}/prices" for lang, gid in keys) if t in names]
+                z.extract(path=tmp, targets=want)
+            out = {}
+            for lang, gid in keys:
+                fp = os.path.join(tmp, date, str(CATS[lang]), str(gid), "prices")
+                if os.path.exists(fp):
+                    with open(fp, encoding="utf-8") as f:
+                        out[(lang, gid)] = (json.load(f) or {}).get("results") or []
+            return out
+    except Exception as e:
+        print(f"  archive {date}: {e}")
+        return None
+
+
+def update_totals(group_sid, bases, live_rows, live_day):
+    series = {}  # lang -> sid -> {day: (cents, cards priced)}
+    for lang in CATS:
+        old = load(os.path.join(DATA, "totals", f"{lang}.json"), {})
+        start = old.get("start")
+        series[lang] = {}
+        if isinstance(start, int):
+            counts = old.get("counts") or {}
+            for sid, arr in (old.get("sets") or {}).items():
+                ns = counts.get(sid) or []
+                series[lang][sid] = {start + i: (v, ns[i] if i < len(ns) else None) for i, v in enumerate(arr) if isinstance(v, int)}
+
+    def add(day, rows_by_key):
+        for key, rows in rows_by_key.items():
+            if rows is None or key not in group_sid:
+                continue
+            tot = set_total(rows, bases.get(key, []))
+            if tot is not None:
+                series[key[0]].setdefault(group_sid[key], {})[day] = tot
+
+    add(live_day, live_rows)
+    have = {d for lang in series for days in series[lang].values() for d in days}
+    missing = [d for d in range(live_day - BACKFILL, live_day) if d not in have]
+    if missing:
+        print(f"Filling in {len(missing)} days of set totals from TCGCSV's archives...")
+        keys = list(group_sid)
+        for d in missing:
+            rows = archive_prices(d, keys)
+            if rows is None:
+                print("  (py7zr not installed or archive unavailable; skipping the rest)")
+                break
+            add(d, rows)
+    for lang in CATS:
+        start = live_day - TOTAL_DAYS + 1
+        rows = {}
+        for sid, days in sorted(series[lang].items()):
+            arr = [days.get(d) for d in range(start, live_day + 1)]
+            while arr and arr[0] is None and len(arr) > 1:
+                arr.pop(0)
+            if any(v is not None for v in arr):
+                rows[sid] = arr
+        # Align every set to one start day so the file stays small and simple.
+        first = min((live_day + 1 - len(a) for a in rows.values()), default=live_day)
+        rows = {sid: [None] * (live_day + 1 - len(a) - first) + a for sid, a in rows.items()}
+        sets = {sid: [v[0] if v else None for v in a] for sid, a in rows.items()}
+        counts = {sid: [v[1] if v else None for v in a] for sid, a in rows.items()}
+        write(os.path.join(DATA, "totals", f"{lang}.json"), {"start": first, "end": live_day, "sets": sets, "counts": counts})
+        print(f"{lang}: daily totals for {len(sets)} sets, {live_day - first + 1} days")
+
+
 def main():
     now = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat()
     groups, products = {}, {}
@@ -141,8 +254,8 @@ def main():
     if missing > len(jobs) * 0.2:
         sys.exit("Too many TCGplayer sets couldn't be read; not updating anything.")
 
-    # Special prints per TCGplayer set: number -> [(label, productId)]
-    specials, counts = {}, {}
+    # Special prints per TCGplayer set: number -> [(label, productId)]; and each card's own product
+    specials, counts, bases = {}, {}, {}
     for (lang, gid), prods in products.items():
         if prods is None:
             continue
@@ -154,11 +267,13 @@ def main():
                 bynum.setdefault(number, []).append(p)
         counts[(lang, gid)] = len(bynum)
         found = {}
+        base_ids = []
         for number, items in bynum.items():
-            if len(items) < 2:
-                continue
             labelled = [(labels(str(p.get("name") or ""), number), p) for p in items]
             base = min(labelled, key=lambda x: (len(x[0]), len(str(x[1].get("name") or ""))))
+            base_ids.append(base[1].get("productId"))
+            if len(items) < 2:
+                continue
             base_core = core(str(base[1].get("name") or ""), number)
             for lab, p in labelled:
                 if p is base[1] or core(str(p.get("name") or ""), number) != base_core:
@@ -167,6 +282,7 @@ def main():
                 if not extra:
                     continue
                 found.setdefault(num_key(number), []).append((canonical(" / ".join(extra)), p.get("productId")))
+        bases[(lang, gid)] = base_ids
         if found:
             specials[(lang, gid)] = found
 
@@ -176,13 +292,14 @@ def main():
         try:
             return key, get(f"https://tcgcsv.com/tcgplayer/{CATS[lang]}/{gid}/prices")["results"]
         except Exception:
-            return key, []
+            return key, None
 
-    prices = {}
+    prices, raw = {}, {}
     with cf.ThreadPoolExecutor(8) as ex:
         for key, rows in ex.map(fetch_prices, list(specials)):
+            raw[key] = rows
             best = {}
-            for r in rows:
+            for r in rows or []:
                 pid = r.get("productId")
                 if pid is None:
                     continue
@@ -267,6 +384,18 @@ def main():
                     os.remove(os.path.join(out_dir, f))
         print(f"{lang}: special prints for {len(index[lang])} sets")
     write(os.path.join(DATA, "variants", "index.json"), index)
+
+    # Daily set totals for every matched set
+    need = [k for k in group_sid if k not in raw and products.get(k)]
+    with cf.ThreadPoolExecutor(8) as ex:
+        for key, rows in ex.map(fetch_prices, need):
+            raw[key] = rows
+    try:
+        stamp = urllib.request.urlopen(urllib.request.Request("https://tcgcsv.com/last-updated.txt", headers={"User-Agent": "pokemon-set-price-tracker/1.0"}), timeout=30).read().decode()[:10]
+        live_day = (dt.date.fromisoformat(stamp) - EPOCH).days
+    except Exception:
+        live_day = (dt.datetime.now(dt.timezone.utc).date() - EPOCH).days
+    update_totals(group_sid, bases, raw, live_day)
 
     # Catalog changes since the last run
     catalog = {}

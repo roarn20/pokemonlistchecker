@@ -13,7 +13,7 @@ Also included:
 - **Five tabs**: Sets, Master set, Collection, Wishlist and Updates.
 - **Search every card** in the chosen language from the search bar at the top. For example, "Charizard" lists every Charizard card from every set with its price. Japanese and Chinese cards can be searched by English name or in their own language. Results start with the newest sets and can be sorted by price or name, and **Open set** jumps to the card inside its set.
 - **Sorting** by card number, name or price, a filter box, **Cards I have / Cards I need**, and a **List / Binder** switch. Binder view shows card pictures in a grid with the ones you don't have greyed out.
-- **Set totals**: total cost of the set (one copy of each card), highest card, lowest card, average and median. Next to the total, a small badge shows how much it went up or down (amount and %) since yesterday, or since you last opened the set. The set header also shows how many cards you have, what they're worth, and what the missing ones cost.
+- **Set totals**: total cost of the set (one copy of each card), highest card, lowest card, average and median. Next to the total, a small badge shows how much it went up or down (amount and %) over the past day, and the line under it shows the last 30 days. This works for every English and Japanese set, even ones you've never opened, using TCGplayer's daily set totals (see below). The set header also shows how many cards you have, what they're worth, and what the missing ones cost.
 - **Charts**: the running total of the set cost card by card, and the top 10 most valuable cards.
 - **Card window** (tap a card's picture):
   - TCGplayer and Cardmarket prices.
@@ -83,10 +83,13 @@ The script writes:
 - `data/variants/`: the special prints of each set, with today's TCGplayer prices.
 - `data/catalog.json`: a snapshot of every set's card count and print kinds.
 - `data/changelog.json`: what changed since the previous run. The Updates tab shows it.
+- `data/totals/`: every set's total for each day (one copy of each card at TCGplayer's market price), going back 120 days. The first run filled in the last 30 days from TCGCSV's daily price archives. The app uses these for the up / down badge next to a set's total, scaled to the total it shows. If you opened the set yesterday, the app uses your own saved total from yesterday instead, since that matches exactly. Chinese sets have no daily totals, so their badge only appears once you've opened them on an earlier day.
 
 Japanese "Mirror" prints are the regular reverse holo and are merged with it. When TCGplayer lists a Japanese card's prints, those decide whether it has a reverse holo, because TCGdex marks Poké Ball and Master Ball mirrors (as in 151) as reverse holos.
 
 ### Daily refresh
+
+Card prices themselves update once a day at the source: TCGplayer's prices around 20:00 UTC, and TCGdex (where the app gets each card's price) around 23:50 UTC. The app checks for them every 30 seconds while it's open and reloads the set when they change.
 
 A GitHub Actions workflow (`.github/workflows/refresh-data.yml`) runs both scripts every day at 21:41 UTC, after TCGplayer's daily price update. It commits any changes, and Cloudflare redeploys the site. You can also run it from the repo's **Actions** tab, or locally with `python3 tools/build_japanese_names.py` and `python3 tools/build_variants.py`.
 

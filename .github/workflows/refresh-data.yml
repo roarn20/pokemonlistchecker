@@ -1,7 +1,8 @@
 # Every day: refresh the card data this site serves from data/ (Cloudflare redeploys on push).
 #  - tools/build_japanese_names.py: English names for Japanese cards, so new sets get them.
 #  - tools/build_variants.py: special prints (Poké Ball / Master Ball patterns, stamps...) with
-#    today's prices, and the catalog log the Updates tab shows (new sets, new cards, new prints).
+#    today's prices, every set's daily total (for the "up / down" badge next to the set total),
+#    and the catalog log the Updates tab shows (new sets, new cards, new prints).
 name: Refresh card data
 
 on:
@@ -23,12 +24,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
       - name: English names for Japanese cards
         run: python3 tools/build_japanese_names.py
 
-      - name: Special prints and catalog changes
+      - name: Special prints, set totals and catalog changes
         if: ${{ !cancelled() }} # still runs if the names step failed
-        run: python3 tools/build_variants.py
+        run: |
+          pip install --quiet py7zr # reads TCGCSV's price archives to fill in any missed days of set totals
+          python3 tools/build_variants.py
 
       - name: Commit changes
         if: ${{ !cancelled() }}
