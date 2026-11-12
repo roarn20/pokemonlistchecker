@@ -1,0 +1,10 @@
+# Repo files the website doesn't need. Cloudflare leaves these out when it deploys the site.
+.git
+.github
+tools
+README.md
+.nojekyll
+.assetsignore
+wrangler.jsonc
+wrangler.toml
+node_modules

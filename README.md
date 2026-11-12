@@ -34,7 +34,7 @@ Also included:
 - **Auto-refresh** every 30 seconds (15 s, 1 min or 5 min in Settings), with a countdown ring and a manual **Refresh** button. Prices that changed flash and show ▲/▼.
 - **Currencies**: USD, JPY, EUR, GBP, CAD and AUD, using live exchange rates.
 - **Languages**: English, Japanese and Traditional Chinese. Chinese sets match the Japanese ones card for card, so they get English names too.
-- **Installs on your home screen** like an app (from your Cloudflare Pages link), with offline viewing of your collection.
+- **Installs on your home screen** like an app (from your Cloudflare link), with offline viewing of your collection.
 - Light and dark themes, a phone layout, and the URL remembers your language and set.
 
 ## Data sources
@@ -67,7 +67,7 @@ A GitHub Actions workflow (`.github/workflows/japanese-names.yml`) re-runs the s
 
 Every card and wishlist entry records when it was last changed. When two devices change things, the newest change to each card wins, and deletions are kept. Prices aren't synced, because each device fetches its own.
 
-Use this from your own Cloudflare Pages link rather than the raw.githack.com mirror. The mirror is shared by many websites, and any of them could read keys saved in your browser there. The app warns about this in Settings.
+Use this from your own Cloudflare link rather than the raw.githack.com mirror. The mirror is shared by many websites, and any of them could read keys saved in your browser there. The app warns about this in Settings.
 
 ### My collection: where it's saved
 
@@ -107,22 +107,29 @@ Prints come from TCGdex's list of which versions exist, plus any version TCGplay
 
 ## Running it
 
-**Your link:** <https://pokemonlistchecker.pages.dev/> (Cloudflare Pages, once it's set up as below)
+**Your link:** <https://pokemonlistchecker.benjaminma14.workers.dev/> (Cloudflare)
 
 Open it in Safari, Chrome or another real browser. App previews and file viewers (including GitHub's file view and the preview in the Claude app) block the page from going online, so the card data can't load there. The page tells you when that happens and offers an "Open in browser" button.
 
-### Cloudflare Pages (works with a private repo, free)
+### Cloudflare hosting (works with a private repo, free)
 
-1. Sign up at <https://dash.cloudflare.com>, then go to **Workers & Pages → Create → Pages → Connect to Git** (Cloudflare may call it "Import an existing Git repository").
-2. Connect GitHub. When GitHub asks which repositories Cloudflare can see, choose **Only select repositories → pokemonlistchecker**. Private repos work.
-3. Pick the repo and set:
-   - **Project name:** `pokemonlistchecker`. This gives the address `pokemonlistchecker.pages.dev`. If that name is taken, Cloudflare picks a slightly different one; put it in `HOSTED_URL` near the top of the script in `index.html`.
-   - **Production branch:** `claude/pokemon-set-price-tracker-icxomp`
-   - **Framework preset:** None · **Build command:** leave empty · **Build output directory:** `/`
-4. **Save and Deploy.** After about a minute the app is live. Every push to the branch, including the weekly English-names update, redeploys it automatically.
-5. Install it: in Safari tap **Share → Add to Home Screen**, or in Chrome tap **⋮ → Add to Home screen**.
+The app is deployed by Cloudflare straight from this repo:
 
-Each web address keeps its own browser storage, so bring your collection over from the old link with cloud sync (add the same GitHub key on both) or **Save backup** there and **Load backup** here.
+- Cloudflare **Workers & Pages** is connected to GitHub, with access to this repo only.
+- It deploys the `claude/pokemon-set-price-tracker-icxomp` branch. There's no build step: the repo folder is the website.
+- Every push to that branch redeploys it automatically, including the weekly English-names update.
+- `.assetsignore` lists repo files the website doesn't need (README, tools, workflow), so Cloudflare leaves them out.
+- If the address ever changes, update `HOSTED_URL` near the top of the script in `index.html`. The app uses it for its "Open in browser" button.
+
+To set it up from scratch:
+
+1. In the Cloudflare dashboard, go to **Workers & Pages → Create** and import this GitHub repository. Give Cloudflare access to this repo only.
+2. Choose the branch above.
+3. Leave the build command empty and use the repo root as the output.
+
+To install it on your phone: in Safari tap **Share → Add to Home Screen**, or in Chrome tap **⋮ → Add to Home screen**.
+
+Each web address keeps its own browser storage, so bring your collection over from an old link with cloud sync (add the same GitHub key on both) or **Save backup** there and **Load backup** here.
 
 The page tells search engines not to list it, but anyone with the link can still open it. Your collection and keys are never in the repo or on the site; they stay in your browser and, with sync, in your private gist.
 

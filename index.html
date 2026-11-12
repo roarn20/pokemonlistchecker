@@ -985,7 +985,7 @@ footer p { margin: 4px 0; }
         <label for="sGh">Cloud sync: GitHub key (optional)</label>
         <input id="sGh" class="input" type="password" autocomplete="off" spellcheck="false" placeholder="Paste a GitHub token with gist access">
         <span class="hint">Backs up your collection and wishlist to a private file (a secret gist) in your GitHub account, and keeps every device where you add the same key in sync. Create a fine-grained token at github.com/settings/personal-access-tokens with only the <b>Gists: read and write</b> permission. The key is stored only in this browser.</span>
-        <span class="hint warn-hint" id="syncWarn" hidden>You're using the shared mirror link (raw.githack.com). Other pages on that site could read keys saved here, so use your own Cloudflare Pages link for cloud sync.</span>
+        <span class="hint warn-hint" id="syncWarn" hidden>You're using the shared mirror link (raw.githack.com). Other pages on that site could read keys saved here, so use your own Cloudflare link for cloud sync.</span>
         <div class="sync-row"><span class="hint" id="syncState"></span><button class="btn mini-btn" type="button" id="syncNowBtn">Sync now</button></div>
       </div>
       <div class="field">
@@ -1086,9 +1086,8 @@ footer p { margin: 4px 0; }
   const usesJaNames = (lang) => lang === 'ja' || lang === 'zh-tw';
 
   // The hosted copy of this page, for when it's opened somewhere that can't go online.
-  // Where the app lives online (Cloudflare Pages). If Cloudflare gave your project a different
-  // address, change it here. The githack mirror only works while the repo is public.
-  const HOSTED_URL = 'https://pokemonlistchecker.pages.dev/';
+  // Where the app lives online (Cloudflare). The githack mirror only works while the repo is public.
+  const HOSTED_URL = 'https://pokemonlistchecker.benjaminma14.workers.dev/';
   const MIRROR_URL = 'https://raw.githack.com/roarn20/pokemonlistchecker/claude/pokemon-set-price-tracker-icxomp/index.html';
   // File viewers and in-app HTML previews often block a page from loading anything online.
   let blockedByViewer = false;
@@ -4605,7 +4604,7 @@ footer p { margin: 4px 0; }
   if (Sync.on()) { Sync.status = 'idle'; Sync.run(); }
   setTimeout(() => refreshWishlist(), 1500); // update wishlist prices, then say if any hit their target
   document.addEventListener('visibilitychange', () => { if (!document.hidden && Sync.on() && Date.now() - (Sync.cfg.last || 0) > 2 * 60 * 1000) Sync.run(); });
-  // Add-to-home-screen app: works offline for your collection (on your own site, e.g. Cloudflare Pages).
+  // Add-to-home-screen app: works offline for your collection (on your own site, e.g. Cloudflare).
   if ('serviceWorker' in navigator && (ownSite() || /^(localhost|127\.0\.0\.1)$/.test(location.hostname))) {
     navigator.serviceWorker.register('sw.js').catch(() => {});
   }
