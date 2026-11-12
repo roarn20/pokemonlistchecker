@@ -405,9 +405,9 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.55); backdrop-filter: blur(3px); 
 .dlg-body { padding: 16px 18px; display: grid; gap: 16px; max-height: 70vh; overflow: auto; }
 .dlg-body .field .hint { font-size: 12.5px; color: var(--muted); }
 .dlg-foot { display: flex; justify-content: space-between; gap: 10px; padding: 14px 18px; border-top: 1px solid var(--border); }
-.card-dlg { max-width: min(420px, calc(100vw - 32px)); }
+.card-dlg { max-width: min(460px, calc(100vw - 32px)); }
 .card-dlg .big { padding: 16px; display: grid; place-items: center; background: var(--surface-2); }
-.card-dlg .big img { width: auto; max-width: 100%; height: min(52dvh, 460px); border-radius: 14px; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35); aspect-ratio: 63 / 88; object-fit: cover; background: var(--surface-3); }
+.card-dlg .big img { width: auto; max-width: 100%; height: min(44dvh, 420px); border-radius: 14px; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35); aspect-ratio: 63 / 88; object-fit: cover; background: var(--surface-3); }
 .card-dlg .info { padding: 14px 18px 18px; display: grid; gap: 8px; }
 .card-dlg .info h3 { margin: 0; font-size: 18px; }
 .card-dlg .kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-size: 13.5px; }
@@ -452,6 +452,19 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.55); backdrop-filter: blur(3px); 
 .lang-tag { font-size: 10.5px; font-weight: 800; padding: 1px 6px; border-radius: 5px; background: var(--surface-3); color: var(--text-2); }
 .set-link { border: 0; padding: 1px 8px; cursor: pointer; }
 .set-link:hover { text-decoration: underline; }
+.dlg-price { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.dlg-price-main { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+.dlg-sec { border-top: 1px solid var(--border); padding-top: 12px; margin-top: 4px; display: grid; gap: 8px; }
+.dlg-sec h4 { margin: 0; font-size: 14.5px; }
+.dlg-sec .links { justify-content: flex-start; flex-wrap: wrap; }
+.dlg-note { margin: 0; font-size: 12.5px; color: var(--muted); }
+.dlg-note.strong { color: var(--text-2); font-weight: 600; font-size: 13px; }
+.dlg-note.up { color: var(--good); font-weight: 600; }
+.dlg-note.down { color: var(--bad); font-weight: 600; }
+.dlg-links { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.ladder .bar-row { padding: 3px 0; grid-template-columns: minmax(0, 30%) minmax(0, 1fr); }
+.ladder .bar-row:hover { background: transparent; }
+svg.chart .col { fill: var(--series-1); }
 .dlg-coll { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px 0 4px; border-top: 1px solid var(--border); margin-top: 6px; }
 .dlg-coll-label { font-weight: 700; font-size: 13.5px; color: var(--good); }
 
@@ -809,7 +822,7 @@ footer p { margin: 4px 0; }
       <div class="field">
         <label for="sPc">PriceCharting API token (optional)</label>
         <input id="sPc" class="input" type="password" autocomplete="off" spellcheck="false" placeholder="Paste your PriceCharting token">
-        <span class="hint">Needs a PriceCharting subscription with API access. Adds PriceCharting ungraded and PSA 10 prices to each card. The token is stored only in this browser.</span>
+        <span class="hint">Needs a PriceCharting subscription with API access. Adds PSA and other graded prices to each card’s window, and PriceCharting prices for whole sets (Price menu). For your own use; the key is stored only in this browser. PriceCharting allows 1 request per second, so a whole set takes a few minutes.</span>
       </div>
       <div class="field">
         <label for="sPtcg">pokemontcg.io API key (optional)</label>
@@ -1053,7 +1066,10 @@ footer p { margin: 4px 0; }
         if (!productId && v.productId) productId = v.productId;
       }
       const cmp = p.cardmarket && typeof p.cardmarket === 'object' ? p.cardmarket : null;
-      const cm = cmp ? { trend: cmp.trend, avg: cmp.avg, low: cmp.low, trendHolo: cmp['trend-holo'], avgHolo: cmp['avg-holo'], lowHolo: cmp['low-holo'] } : null;
+      const cm = cmp ? {
+        trend: cmp.trend, avg: cmp.avg, low: cmp.low, avg1: cmp.avg1, avg7: cmp.avg7, avg30: cmp.avg30,
+        trendHolo: cmp['trend-holo'], avgHolo: cmp['avg-holo'], lowHolo: cmp['low-holo'], avg1Holo: cmp['avg1-holo'], avg7Holo: cmp['avg7-holo'], avg30Holo: cmp['avg30-holo'],
+      } : null;
       const updated = [tp && tp.updated, cmp && cmp.updated].filter(Boolean).sort().pop() || null;
       const tpId = productId || (c.thirdParty && c.thirdParty.tcgplayer) || null;
       const base = safeUrl(c.image || b.image);
@@ -1118,7 +1134,10 @@ footer p { margin: 4px 0; }
           if (v) variants[titleCase(k)] = { market: v.market, low: v.low, mid: v.mid, high: v.high };
         }
         const cmp = c.cardmarket && c.cardmarket.prices;
-        const cm = cmp ? { trend: cmp.trendPrice, avg: cmp.averageSellPrice, low: cmp.lowPrice } : null;
+        const cm = cmp ? {
+          trend: cmp.trendPrice, avg: cmp.averageSellPrice, low: cmp.lowPrice, avg1: cmp.avg1, avg7: cmp.avg7, avg30: cmp.avg30,
+          trendHolo: cmp.reverseHoloTrend, avg1Holo: cmp.reverseHoloAvg1, avg7Holo: cmp.reverseHoloAvg7, avg30Holo: cmp.reverseHoloAvg30,
+        } : null;
         return {
           id: String(c.id),
           name: String(c.name),
@@ -1200,67 +1219,138 @@ footer p { margin: 4px 0; }
   const fullName = (c) => (c.enName && c.enName !== c.name ? `${c.name} (${c.enName})` : c.name);
 
   /* =========================================================
-     PriceCharting (optional, needs the user's own API token)
+     PriceCharting (optional, needs your own API key): PSA and other graded
+     prices. Its API allows 1 request per second, so every call goes through
+     one queue, and results are cached for a day (it updates daily).
      ========================================================= */
+  const PC_LADDER = [['loose-price', 'Ungraded'], ['cib-price', 'Grade 7'], ['new-price', 'Grade 8'], ['graded-price', 'Grade 9'], ['box-only-price', 'Grade 9.5'], ['manual-only-price', 'PSA 10']];
+  const PC_TENS = [['bgs-10-price', 'BGS 10'], ['condition-20-price', 'BGS 10 Black'], ['condition-17-price', 'CGC 10'], ['condition-19-price', 'CGC 10 Pristine'], ['condition-18-price', 'SGC 10'], ['condition-21-price', 'TAG 10'], ['condition-22-price', 'ACE 10']];
+  const PC_LOW = [['condition-9-price', 'Grade 1'], ['condition-10-price', 'Grade 2'], ['condition-13-price', 'Grade 3'], ['condition-14-price', 'Grade 4'], ['condition-15-price', 'Grade 5'], ['condition-16-price', 'Grade 6']];
+  const DAY_MS = 24 * 60 * 60 * 1000;
+  function pcData(p) {
+    const cents = (v) => { const n = typeof v === 'string' && /^\d+$/.test(v) ? Number(v) : v; return isNum(n) && n > 0 ? n / 100 : null; };
+    const grades = {};
+    for (const [k] of [...PC_LADDER, ...PC_TENS, ...PC_LOW]) { const v = cents(p[k]); if (v != null) grades[k] = v; }
+    return {
+      id: String(p.id || ''), title: String(p['product-name'] || ''), console: String(p['console-name'] || ''),
+      tcgId: p['tcg-id'] ? String(p['tcg-id']) : '', grades,
+      ungraded: grades['loose-price'] ?? null, grade9: grades['graded-price'] ?? null, psa10: grades['manual-only-price'] ?? null,
+    };
+  }
+  const tcgIdOf = (card) => { const m = /tcgplayer\.com\/product\/(\d+)/.exec(card.tcgplayerUrl || ''); return m ? m[1] : null; };
   const PC = {
+    queue: Promise.resolve(),
+    last: 0,
     running: null,
     error: null,
     progress: null,
-    cacheKey() { return `pc:${state.lang}:${state.provider.id}:${state.set.id}`; },
-    apply(map) { for (const c of state.cards) if (map[c.id]) c.pc = map[c.id]; },
-    async enrich({ maxAge = 60 * 60 * 1000 } = {}) {
-      const token = state.settings.pcToken.trim();
-      if (!token || !state.set || !state.cards.length) return;
-      const key = this.cacheKey();
-      const cached = LS.get(key, null);
-      if (cached && cached.map) this.apply(cached.map);
-      // PriceCharting updates once a day, so re-check hourly (every 10 min on a manual refresh).
-      const fresh = cached && Date.now() - cached.t < maxAge;
-      if (fresh || this.running === key) return;
-      this.running = key; this.error = null;
-      const map = (cached && cached.map) || {};
-      const setName = enSetName(state.set) || shortSetName(state.set.name);
-      const cards = state.cards.slice();
-      let failures = 0, lastErr = null, stop = false;
-      const cents = (v) => (isNum(v) && v > 0 ? v / 100 : null);
-      await mapLimit(cards, 2, async (c) => {
-        if (stop || this.running !== key) return;
-        const n = numShort(c.number);
-        const q = `${c.enName || c.name} ${n} ${state.lang === 'ja' ? 'japanese ' : ''}${setName}`;
-        try {
-          const j = await getJSON(`https://www.pricecharting.com/api/products?t=${encodeURIComponent(token)}&q=${encodeURIComponent(q)}`, { timeout: 20000 });
-          if (j.status && j.status !== 'success') throw new Error(j['error-message'] || 'PriceCharting refused the request');
-          const re = new RegExp('#\\s*0*' + escapeRe(n) + '(?![0-9])', 'i');
-          const hit = (j.products || []).find((p) => re.test(String(p['product-name'] || '')));
-          if (hit) {
-            map[c.id] = {
-              ungraded: cents(hit['loose-price']),
-              grade9: cents(hit['graded-price']),
-              psa10: cents(hit['manual-only-price']),
-              title: `${hit['product-name'] || ''} · ${hit['console-name'] || ''}`,
-            };
-          }
-        } catch (e) {
-          failures++; lastErr = e;
-          if (failures >= 3 && !Object.keys(map).length) stop = true; // clearly not working, stop hammering
+    cache: (() => { const v = LS.get('pcCards', null); return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; })(),
+    hasToken: () => !!state.settings.pcToken.trim(),
+    // One request at a time, at least 1.25 s apart.
+    call(path) {
+      const run = async () => {
+        const wait = this.last + 1250 - Date.now();
+        if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+        this.last = Date.now();
+        const url = `https://www.pricecharting.com/api/${path}&t=${encodeURIComponent(state.settings.pcToken.trim())}`;
+        let res;
+        try { res = await fetch(url, { mode: 'cors' }); } catch { throw new Error('PriceCharting couldn’t be reached (offline?).'); }
+        let j = null;
+        try { j = await res.json(); } catch { /* not JSON */ }
+        if (!res.ok || !j || j.status === 'error') {
+          const msg = (j && j['error-message']) || `error ${res.status}`;
+          throw new Error(/access token/i.test(msg) ? 'PriceCharting doesn’t recognise your API key. Check it in Settings.' : `PriceCharting: ${msg}`);
         }
-      }, (done, total) => {
-        this.progress = done < total ? `${done}/${total}` : null;
-        if (done % 12 === 0 || done === total) { this.apply(map); scheduleRender(); }
-      });
-      if (this.running !== key) return;
-      this.running = null; this.progress = null;
-      if (lastErr && !Object.keys(map).length) {
-        this.error = lastErr.message === 'blocked or offline'
-          ? 'PriceCharting could not be reached from the browser (blocked by the site or offline).'
-          : 'PriceCharting: ' + lastErr.message;
-      } else {
-        LS.set(key, { t: Date.now(), map });
+        return j;
+      };
+      const p = this.queue.then(run, run);
+      this.queue = p.catch(() => {});
+      return p;
+    },
+    cached(lang, id) { const c = this.cache[`${lang}:${id}`]; return c && Date.now() - c.t < DAY_MS ? c : null; },
+    store(lang, id, d) {
+      this.cache[`${lang}:${id}`] = { t: Date.now(), d };
+      const keys = Object.keys(this.cache);
+      if (keys.length > 1500) keys.sort((a, b) => this.cache[a].t - this.cache[b].t).slice(0, keys.length - 1500).forEach((k) => delete this.cache[k]);
+      LS.set('pcCards', this.cache);
+    },
+    // Find one card on PriceCharting; returns its prices (USD) or null if it isn't listed.
+    async lookup(card, lang, { force = false } = {}) {
+      const cached = !force && this.cached(lang, card.id);
+      if (cached) return cached.d;
+      const n = numShort(card.number);
+      const setName = card.setEnName || (lang === 'ja' && JA.sets ? JA.sets[card.setId] || '' : '') || shortSetName(card.setName || (state.set ? state.set.name : ''));
+      const q = `${card.enName || card.name} #${n} ${lang === 'ja' ? 'japanese ' : ''}${setName}`.replace(/\s+/g, ' ').trim();
+      const j = await this.call(`products?q=${encodeURIComponent(q)}`);
+      const list = Array.isArray(j.products) ? j.products : [];
+      const tcgId = tcgIdOf(card);
+      const numRe = new RegExp('#\\s*0*' + escapeRe(n) + '(?![0-9])', 'i');
+      const langOk = (x) => (lang === 'ja' ? /japanese/i.test(x['console-name'] || '') : !/japanese|chinese|korean/i.test(x['console-name'] || ''));
+      let hit = (tcgId && list.find((x) => String(x['tcg-id'] || '') === tcgId)) || list.find((x) => numRe.test(x['product-name'] || '') && langOk(x)) || null;
+      if (hit && !('loose-price' in hit) && !('manual-only-price' in hit) && hit.id) hit = await this.call(`product?id=${encodeURIComponent(hit.id)}`);
+      const d = hit ? pcData(hit) : null;
+      this.store(lang, card.id, d);
+      return d;
+    },
+    // Fill in saved PriceCharting prices for the set; fetch the rest only when a PriceCharting
+    // price is selected (one request per card at 1 per second, so a set takes a few minutes).
+    async enrich() {
+      if (!this.hasToken() || !state.set || !state.cards.length) return;
+      const lang = state.lang;
+      for (const c of state.cards) { const hit = this.cached(lang, c.id); if (hit) c.pc = hit.d; }
+      if (!isPC()) return;
+      const key = `${lang}:${state.set.id}`;
+      if (this.running === key) return;
+      const todo = state.cards.filter((c) => !this.cached(lang, c.id));
+      if (!todo.length) return;
+      this.running = key;
+      this.error = null;
+      let done = 0, fails = 0;
+      for (const c of todo) {
+        if (this.running !== key || !state.set || `${state.lang}:${state.set.id}` !== key || !isPC()) break;
+        try { c.pc = await this.lookup(c, lang); fails = 0; } catch (e) { fails++; this.error = e.message; if (fails >= 3 || /API key/.test(e.message)) break; }
+        done++;
+        this.progress = `${done}/${todo.length}`;
+        if (done % 5 === 0) scheduleRender();
       }
-      this.apply(map);
+      if (this.running === key) this.running = null;
+      this.progress = null;
       scheduleRender();
     },
   };
+
+  /* Price history: recorded in this browser once a day for cards you look at or own. */
+  const PH = {
+    data: (() => { const v = LS.get('priceHistory', null); return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; })(),
+    dirty: false,
+    record(lang, card) {
+      const usd = marketUSD(card);
+      if (!isNum(usd)) return;
+      const key = `${lang}:${card.id}`;
+      const day = Math.floor(Date.now() / DAY_MS);
+      const arr = this.data[key] || (this.data[key] = []);
+      const last = arr[arr.length - 1];
+      const v = Math.round(usd * 100) / 100;
+      if (last && last[0] === day) { if (last[1] === v) return; last[1] = v; } else arr.push([day, v]);
+      if (arr.length > 400) arr.splice(0, arr.length - 400);
+      this.dirty = true;
+    },
+    get(lang, id) { return this.data[`${lang}:${id}`] || []; },
+    save() {
+      if (!this.dirty) return;
+      const keys = Object.keys(this.data);
+      const lastDay = (k) => { const a = this.data[k]; return a.length ? a[a.length - 1][0] : 0; };
+      if (keys.length > 1200) keys.sort((a, b) => lastDay(a) - lastDay(b)).slice(0, keys.length - 1200).forEach((k) => delete this.data[k]);
+      LS.set('priceHistory', this.data);
+      this.dirty = false;
+    },
+  };
+  // The card's everyday price (TCGplayer market, or Cardmarket trend), whatever price type is selected.
+  function marketUSD(card) {
+    const prev = state.priceType;
+    state.priceType = 'market';
+    try { const p = priceInfo(card); return p ? p.usd : null; } finally { state.priceType = prev; }
+  }
 
   /* =========================================================
      Currency
@@ -1527,7 +1617,7 @@ footer p { margin: 4px 0; }
       state.lastError = null;
       recordHistory();
       renderAll();
-      PC.enrich({ maxAge: reason === 'manual' ? 10 * 60 * 1000 : 60 * 60 * 1000 });
+      PC.enrich();
     } catch (e) {
       if (id !== state.reqId) return;
       state.lastError = e;
@@ -2216,9 +2306,10 @@ footer p { margin: 4px 0; }
         if (c.enName) e.enName = c.enName;
         if (c.img) { e.img = c.img; e.imgLarge = c.imgLarge; }
         if (c.tcgplayerUrl) e.tcgplayerUrl = c.tcgplayerUrl;
+        PH.record(lang, c);
         changed = true;
       }
-      if (changed) this.save();
+      if (changed) { this.save(); PH.save(); }
       return changed;
     },
   };
@@ -2720,6 +2811,7 @@ footer p { margin: 4px 0; }
         Object.assign(e, { variants: fresh.variants, cm: fresh.cm, updated: fresh.updated, pricedAt: Date.now() });
         if (fresh.img && !e.img) { e.img = fresh.img; e.imgLarge = fresh.imgLarge; }
         if (fresh.tcgplayerUrl && !e.tcgplayerUrl) e.tcgplayerUrl = fresh.tcgplayerUrl;
+        PH.record(e.lang, e);
       } catch { fails++; }
     }, (done, total) => {
       COLL.progress = done < total ? `${done}/${total}` : null;
@@ -2731,6 +2823,7 @@ footer p { margin: 4px 0; }
     LS.set('collRefreshed', COLL.lastRefresh);
     if (fails && fails === todo.length) COLL.error = 'Couldn’t update prices (offline?). Showing the last saved prices.';
     Coll.save();
+    PH.save();
     recordCollHistory();
     renderCollection();
   }
@@ -2756,7 +2849,7 @@ footer p { margin: 4px 0; }
       for (const [k, v] of Object.entries(x.variants).slice(0, 10)) if (v && typeof v === 'object') variants[str(k, 40)] = { market: num(v.market), low: num(v.low), mid: num(v.mid), high: num(v.high) };
     }
     const cm = x.cm && typeof x.cm === 'object'
-      ? { trend: num(x.cm.trend), avg: num(x.cm.avg), low: num(x.cm.low), trendHolo: num(x.cm.trendHolo), avgHolo: num(x.cm.avgHolo), lowHolo: num(x.cm.lowHolo) } : null;
+      ? Object.fromEntries(['trend', 'avg', 'low', 'avg1', 'avg7', 'avg30', 'trendHolo', 'avgHolo', 'lowHolo', 'avg1Holo', 'avg7Holo', 'avg30Holo'].map((k) => [k, num(x.cm[k])])) : null;
     return {
       id: str(x.id, 80), lang: x.lang, src: x.src === 'ptcgio' ? 'ptcgio' : 'tcgdex',
       setId: str(x.setId, 60), setName: str(x.setName), setEnName: str(x.setEnName),
@@ -3219,48 +3312,236 @@ footer p { margin: 4px 0; }
   function openCard(card, ctx) {
     if (!card) return;
     ctx = ctx || { lang: card.lang || state.lang, set: card.setName ? null : state.set };
+    const lang = ctx.lang;
     const dlg = $('#cardDlg');
     $('#cardDlgTitle').textContent = `#${card.number}`;
     const img = $('#cardDlgImg');
     img.onerror = () => { if (card.img && img.src !== card.img) img.src = card.img; else img.removeAttribute('src'); };
     if (card.imgLarge || card.img) img.src = card.imgLarge || card.img; else img.removeAttribute('src');
     img.alt = fullName(card);
+    PH.record(lang, card);
+    PH.save();
+
+    // Prices
     const pi = priceInfo(card);
     const kv = [];
     const add = (k, v) => { if (v) kv.push(h('dt', { text: k }), h('dd', { text: v })); };
-    add('Price', pi ? `${fmt(pi.usd)} · ${pi.src}${pi.src === 'TCGplayer' ? ' ' + shortVariant(pi.variant).toLowerCase() : ''}` : 'No price');
     for (const [n, v] of Object.entries(card.variants || {})) {
       const parts = [['Market', v.market], ['Low', v.low], ['Mid', v.mid], ['High', v.high]].filter(([, x]) => isNum(x) && x > 0).map(([k, x]) => `${k} ${fmt(x)}`);
       if (parts.length) add(`TCGplayer ${shortVariant(n).toLowerCase()}`, parts.join(' · '));
     }
     if (card.cm) {
       const parts = [['Trend', card.cm.trend], ['Avg', card.cm.avg], ['Low', card.cm.low], ['Reverse holo', card.cm.trendHolo]]
-        .filter(([, x]) => isNum(x) && x > 0).map(([k, x]) => `${k} ${money(x, { currency: 'EUR' })}`);
+        .filter(([, x]) => isNum(x) && x > 0).map(([k, x]) => `${k} ${fmt(x / eurPerUsd())}`);
       if (parts.length) add('Cardmarket', parts.join(' · '));
-    }
-    if (card.pc) {
-      add('PriceCharting', [['Ungraded', card.pc.ungraded], ['Grade 9', card.pc.grade9], ['PSA 10', card.pc.psa10]].filter(([, x]) => isNum(x)).map(([k, x]) => `${k} ${fmt(x)}`).join(' · '));
     }
     add('Rarity', card.rarity);
     if (card.setName) add('Set', card.setName + (card.setEnName && card.setEnName !== card.setName ? ` (${card.setEnName})` : ''));
     else if (state.set) add('Set', state.set.name + (enSetName(state.set) ? ` (${enSetName(state.set)})` : ''));
+    const summary = h('div', { class: 'dlg-price' },
+      h('span', { class: 'dlg-price-main', text: pi ? fmt(pi.usd) : 'No price' }),
+      pi ? h('span', { class: 'muted', text: pi.src === 'TCGplayer' ? `TCGplayer · ${shortVariant(pi.variant)}` : pi.src }) : null);
+
+    // Collection
     const collBox = h('div', { class: 'dlg-coll' });
     const drawColl = () => {
-      const key = Coll.key(ctx.lang, card.id);
+      const key = Coll.key(lang, card.id);
       const e = Coll.items[key];
       if (!e) {
-        fill(collBox, h('button', { class: 'btn primary', type: 'button', text: '＋ Add to my collection', onclick: () => { Coll.add(card, ctx.lang, ctx.set); afterCollectionChange(); drawColl(); } }));
+        fill(collBox, h('button', { class: 'btn primary', type: 'button', text: '＋ Add to my collection', onclick: () => { Coll.add(card, lang, ctx.set); afterCollectionChange(); drawColl(); } }));
         return;
       }
       const opts = variantOptions(e);
-      fill(collBox, 
+      fill(collBox,
         h('span', { class: 'dlg-coll-label', text: '✓ In my collection' }),
         qtyStepper(e.qty || 1, (q) => { if (q <= 0) Coll.remove(key); else e.qty = q; afterCollectionChange(); drawColl(); }),
         opts.length > 1 ? variantSelect(e, opts, () => { afterCollectionChange(); drawColl(); }) : null);
     };
     drawColl();
-    fill($('#cardDlgInfo'), h('h3', null, card.name, card.enName && card.enName !== card.name ? h('span', { class: 'en-name', text: ` (${card.enName})` }) : null), h('dl', { class: 'kv' }, kv), linkBtns(card, ctx.lang), collBox);
+
+    const graded = h('section', { class: 'dlg-sec', 'aria-label': 'Graded prices' });
+    fill($('#cardDlgInfo'),
+      h('h3', null, card.name, card.enName && card.enName !== card.name ? h('span', { class: 'en-name', text: ` (${card.enName})` }) : null),
+      summary,
+      h('dl', { class: 'kv' }, kv),
+      collBox,
+      graded,
+      recentSalesSection(card),
+      historySection(card, lang),
+      h('section', { class: 'dlg-sec' }, h('h4', { text: 'Buy or check' }), linkBtns(card, lang)));
     dlg.showModal();
+    $('#cardDlg').scrollTop = 0;
+    renderGraded(graded, card, lang);
+  }
+
+  const ebayUrl = (card, lang, grade) => `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(`${card.enName || card.name} ${card.number}${lang === 'ja' ? ' japanese' : ''} ${grade}`)}&LH_Sold=1&LH_Complete=1`;
+  function extLink(href, text) {
+    const a = h('a', { class: 'mini-link', href, target: '_blank', rel: 'noopener noreferrer' }, text);
+    a.insertAdjacentHTML('beforeend', ' ↗');
+    return a;
+  }
+
+  // PSA and other graded prices (PriceCharting, with your key).
+  async function renderGraded(box, card, lang, force = false) {
+    const head = h('h4', { text: 'Graded prices (PSA & others)' });
+    const links = h('div', { class: 'dlg-links' },
+      extLink(ebayUrl(card, lang, 'PSA 10'), 'PSA 10 sales on eBay'),
+      extLink(ebayUrl(card, lang, 'PSA 9'), 'PSA 9 sales on eBay'),
+      extLink(pcSearchUrl(card, lang), 'PriceCharting page'));
+    if (!PC.hasToken()) {
+      fill(box, head,
+        h('p', { class: 'dlg-note', text: 'PSA and other graded prices come from PriceCharting, which needs a paid subscription. Add your PriceCharting API key in Settings to see them here. Until then, these links show recent graded sales:' }),
+        links,
+        h('div', null, h('button', { class: 'btn', type: 'button', style: 'height:34px', onclick: () => { $('#cardDlg').close(); openSettings(); }, text: 'Add PriceCharting key' })));
+      return;
+    }
+    const cached = PC.cached(lang, card.id);
+    if (!cached || force) fill(box, head, h('div', { class: 'scan-status' }, h('span', { class: 'spinner', 'aria-hidden': 'true' }), h('span', { text: 'Getting graded prices from PriceCharting…' })));
+    let d;
+    try {
+      d = cached && !force ? cached.d : await PC.lookup(card, lang, { force });
+    } catch (e) {
+      if (!box.isConnected) return;
+      fill(box, head, h('p', { class: 'dlg-note', text: e.message }), links,
+        h('div', null, h('button', { class: 'btn', type: 'button', style: 'height:34px', onclick: () => renderGraded(box, card, lang, true), text: 'Try again' })));
+      return;
+    }
+    if (!box.isConnected) return;
+    card.pc = d;
+    if (!d || !Object.keys(d.grades).length) {
+      fill(box, head, h('p', { class: 'dlg-note', text: d ? 'PriceCharting lists this card but has no graded sales for it yet.' : 'Couldn’t find this card on PriceCharting. Its page and recent eBay sales may still help:' }), links);
+      return;
+    }
+    const ladder = PC_LADDER.filter(([k]) => isNum(d.grades[k])).map(([k, label]) => ({ label, usd: d.grades[k] }));
+    const tens = PC_TENS.filter(([k]) => isNum(d.grades[k])).map(([k, label]) => `${label} ${fmt(d.grades[k])}`);
+    const lows = PC_LOW.filter(([k]) => isNum(d.grades[k])).map(([k, label]) => `${label} ${fmt(d.grades[k])}`);
+    const raw = d.grades['loose-price'], psa10 = d.grades['manual-only-price'];
+    const note = isNum(raw) && isNum(psa10) && raw > 0 ? `A PSA 10 sells for about ${(psa10 / raw).toFixed(psa10 / raw >= 10 ? 0 : 1)}× the ungraded price.` : '';
+    fill(box, head,
+      ladder.length ? ladderChart(ladder) : null,
+      note ? h('p', { class: 'dlg-note strong', text: note }) : null,
+      tens.length ? h('p', { class: 'dlg-note', text: `Other 10s: ${tens.join(' · ')}` }) : null,
+      lows.length ? h('p', { class: 'dlg-note', text: `Lower grades: ${lows.join(' · ')}` }) : null,
+      h('p', { class: 'dlg-note', text: `PriceCharting: ${d.title}${d.console ? ' · ' + d.console : ''}. Grades 7 to 9.5 cover any grading company.` }),
+      links);
+  }
+  function ladderChart(rows) {
+    const max = Math.max(...rows.map((r) => r.usd));
+    return h('div', { class: 'bars ladder', role: 'list', 'aria-label': 'Price by grade' }, rows.map((r) =>
+      h('div', { class: 'bar-row', role: 'listitem', 'aria-label': `${r.label}: ${fmt(r.usd)}` },
+        h('span', { class: 'bar-name', text: r.label }),
+        h('span', { class: 'bar-track' },
+          h('span', { class: 'bar', style: `width: calc((100% - 78px) * ${Math.max(0.01, r.usd / max).toFixed(4)})` }),
+          h('span', { class: 'bar-val', text: fmt(r.usd, { compact: true }) })))));
+  }
+
+  // Cardmarket's average sale price over the last 30, 7 and 1 days, plus its trend price.
+  function recentSalesSection(card) {
+    const cm = card.cm;
+    if (!cm) return null;
+    const holo = !(cm.avg30 > 0 || cm.avg7 > 0) && (cm.avg30Holo > 0 || cm.avg7Holo > 0);
+    const g = (k) => { const v = cm[holo ? k + 'Holo' : k]; return isNum(v) && v > 0 ? v / eurPerUsd() : null; };
+    const pts = [['30-day avg', g('avg30')], ['7-day avg', g('avg7')], ['1-day avg', g('avg1')], ['Trend', g('trend')]].filter(([, v]) => v != null);
+    if (pts.length < 2) return null;
+    let caption = '';
+    const a30 = g('avg30'), a7 = g('avg7');
+    if (a30 && a7) {
+      const ch = (a7 - a30) / a30;
+      const pct = Math.abs(ch * 100).toFixed(0);
+      caption = Math.abs(ch) < 0.03 ? 'Steady: the last week’s sales are close to the 30-day average.'
+        : ch > 0 ? `▲ Rising: the last week’s sales average ${pct}% above the 30-day average.` : `▼ Falling: the last week’s sales average ${pct}% below the 30-day average.`;
+    }
+    // TCGdex sometimes links a card to the wrong Cardmarket product (e.g. the regular print of a
+    // special art card). Say so when the two markets disagree by more than 3 times.
+    let tp = null;
+    for (const n of Object.keys(card.variants || {}).sort((a, b) => variantRank(a) - variantRank(b))) {
+      const v = pick(card.variants[n], 'market');
+      if (v != null) { tp = v; break; }
+    }
+    const ref = g('trend') || g('avg7') || g('avg30');
+    const mismatch = tp && ref && (ref / tp > 3 || tp / ref > 3);
+    return h('section', { class: 'dlg-sec', 'aria-label': 'Recent sales' },
+      h('h4', { text: `Recent sales on Cardmarket${holo ? ' (reverse holo)' : ''}` }),
+      columnChart(pts),
+      mismatch ? h('p', { class: 'dlg-note strong', text: `⚠ These are far from TCGplayer’s ${fmt(tp)}, so they may be for a different version of this card.` }) : null,
+      caption && !mismatch ? h('p', { class: 'dlg-note ' + (/Rising/.test(caption) ? 'up' : /Falling/.test(caption) ? 'down' : ''), text: caption }) : null,
+      h('p', { class: 'dlg-note', text: 'Average sale price over each period, converted from euros. Cardmarket is the main European market.' }));
+  }
+  function columnChart(pts) {
+    const W = 360, H = 150, m = { t: 22, b: 26, l: 8, r: 8 };
+    const max = Math.max(...pts.map(([, v]) => v));
+    const band = (W - m.l - m.r) / pts.length, bw = Math.min(24, band * 0.5);
+    const y = (v) => m.t + (1 - v / max) * (H - m.t - m.b);
+    const svg = sv('svg', { class: 'chart', viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': pts.map(([l, v]) => `${l} ${fmt(v)}`).join(', ') });
+    svg.append(sv('line', { class: 'base', x1: m.l, x2: W - m.r, y1: H - m.b + 0.5, y2: H - m.b + 0.5 }));
+    pts.forEach(([label, v], i) => {
+      const cx = m.l + band * i + band / 2, top = y(v), bh = H - m.b - top;
+      const r = Math.min(4, bw / 2, bh);
+      // 4px rounded top, square at the baseline
+      svg.append(sv('path', { class: 'col', d: `M${cx - bw / 2},${H - m.b}V${top + r}Q${cx - bw / 2},${top} ${cx - bw / 2 + r},${top}H${cx + bw / 2 - r}Q${cx + bw / 2},${top} ${cx + bw / 2},${top + r}V${H - m.b}Z` }));
+      svg.append(sv('text', { class: 'end-label-sub', x: cx, y: top - 6, 'text-anchor': 'middle' }, fmt(v, { compact: true })));
+      svg.append(sv('text', { class: 'tick', x: cx, y: H - 8, 'text-anchor': 'middle' }, label));
+    });
+    return svg;
+  }
+
+  // The price this browser has recorded for the card, day by day.
+  function historySection(card, lang) {
+    const pts = PH.get(lang, card.id);
+    const head = h('h4', { text: 'Your price history' });
+    if (pts.length < 2) {
+      return h('section', { class: 'dlg-sec' }, head,
+        h('p', { class: 'dlg-note', text: 'The app records this card’s price each day you open it or have it in your collection. Check back in a few days to see a chart here.' }));
+    }
+    const first = pts[0], last = pts[pts.length - 1];
+    const ch = first[1] > 0 ? (last[1] - first[1]) / first[1] : 0;
+    const since = new Date(first[0] * DAY_MS).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    return h('section', { class: 'dlg-sec' }, head,
+      historyChart(pts),
+      h('p', { class: 'dlg-note ' + (ch > 0.005 ? 'up' : ch < -0.005 ? 'down' : '') , text: `${ch > 0.005 ? '▲ Up' : ch < -0.005 ? '▼ Down' : 'No change'}${Math.abs(ch) > 0.005 ? ` ${Math.abs(ch * 100).toFixed(1)}%` : ''} since ${since} (${fmt(first[1])} → ${fmt(last[1])}). Market price, recorded in this browser.` }));
+  }
+  function historyChart(pts) {
+    const W = 360, H = 150, m = { t: 14, r: 12, b: 24, l: 52 };
+    const R = rate();
+    const vals = pts.map((p) => p[1] * R);
+    let lo = Math.min(...vals), hi = Math.max(...vals);
+    if (hi - lo < hi * 0.02) { lo *= 0.95; hi *= 1.05; }
+    const d0 = pts[0][0], d1 = pts[pts.length - 1][0];
+    const x = (d) => m.l + ((d - d0) / Math.max(1, d1 - d0)) * (W - m.l - m.r);
+    const y = (v) => m.t + (1 - (v - lo) / Math.max(1e-9, hi - lo)) * (H - m.t - m.b);
+    const svg = sv('svg', { class: 'chart', viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': `Price from ${fmt(pts[0][1])} to ${fmt(pts[pts.length - 1][1])}` });
+    for (const v of [lo, (lo + hi) / 2, hi]) {
+      const yy = Math.round(y(v)) + 0.5;
+      svg.append(sv('line', { class: 'grid', x1: m.l, x2: W - m.r, y1: yy, y2: yy }));
+      svg.append(sv('text', { class: 'tick', x: m.l - 6, y: yy + 4, 'text-anchor': 'end' }, money(v, { compact: true })));
+    }
+    const day = (d) => new Date(d * DAY_MS).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    svg.append(sv('text', { class: 'axis-label', x: m.l, y: H - 6 }, day(d0)));
+    svg.append(sv('text', { class: 'axis-label', x: W - m.r, y: H - 6, 'text-anchor': 'end' }, day(d1)));
+    const line = pts.map((p, i) => `${i ? 'L' : 'M'}${x(p[0]).toFixed(1)},${y(p[1] * R).toFixed(1)}`).join('');
+    svg.append(sv('path', { class: 'area', d: `${line}L${x(d1)},${H - m.b}L${x(d0)},${H - m.b}Z` }));
+    svg.append(sv('path', { class: 'line', d: line }));
+    const lp = pts[pts.length - 1];
+    svg.append(sv('circle', { class: 'end-dot', cx: x(lp[0]), cy: y(lp[1] * R), r: 4 }));
+    // Hover: nearest recorded day
+    const xh = sv('line', { class: 'xhair', y1: m.t, y2: H - m.b, visibility: 'hidden' });
+    const dot = sv('circle', { class: 'hover-dot', r: 4, visibility: 'hidden' });
+    const hit = sv('rect', { class: 'hit', x: m.l, y: 0, width: W - m.l - m.r, height: H - m.b });
+    svg.append(xh, dot, hit);
+    const show = (e) => {
+      const r = svg.getBoundingClientRect();
+      const px = ((e.clientX - r.left) / r.width) * W;
+      let best = pts[0];
+      for (const p of pts) if (Math.abs(x(p[0]) - px) < Math.abs(x(best[0]) - px)) best = p;
+      const bx = x(best[0]), by = y(best[1] * R);
+      xh.setAttribute('x1', bx); xh.setAttribute('x2', bx); xh.setAttribute('visibility', 'visible');
+      dot.setAttribute('cx', bx); dot.setAttribute('cy', by); dot.setAttribute('visibility', 'visible');
+      showTip(e.clientX, e.clientY, fmt(best[1]), [{ key: true, text: day(best[0]) }]);
+    };
+    hit.addEventListener('pointermove', show);
+    hit.addEventListener('pointerdown', show);
+    hit.addEventListener('pointerleave', () => { xh.setAttribute('visibility', 'hidden'); dot.setAttribute('visibility', 'hidden'); hideTip(); });
+    return svg;
   }
   $('#cardDlgClose').addEventListener('click', () => $('#cardDlg').close());
   $('#cardDlg').addEventListener('click', (e) => { if (e.target === e.currentTarget) e.currentTarget.close(); });
@@ -3291,7 +3572,7 @@ footer p { margin: 4px 0; }
     if (state.lang && (next.source !== prev.source || next.ptcgKey !== prev.ptcgKey)) {
       chooseLanguage(state.lang);
     } else {
-      if (next.pcToken !== prev.pcToken) { PC.error = null; PC.running = null; PC.enrich({ maxAge: 0 }); }
+      if (next.pcToken !== prev.pcToken) { PC.error = null; PC.running = null; PC.enrich(); }
       renderAll();
     }
   });
@@ -3388,7 +3669,7 @@ footer p { margin: 4px 0; }
     loadSearchDetails(SEARCH.token);
   });
   $('#currencySelect').addEventListener('change', (e) => { state.currency = e.target.value; LS.set('currency', state.currency); renderAll(); });
-  $('#priceSelect').addEventListener('change', (e) => { state.priceType = e.target.value; LS.set('priceType', state.priceType); state.changes = new Map(); recordHistory(); renderAll(); });
+  $('#priceSelect').addEventListener('change', (e) => { state.priceType = e.target.value; LS.set('priceType', state.priceType); state.changes = new Map(); recordHistory(); renderAll(); if (isPC()) PC.enrich(); });
   $('#autoToggle').addEventListener('change', (e) => { state.auto = e.target.checked; LS.set('auto', state.auto); state.remaining = state.settings.interval; renderAll(); });
   $('#refreshBtn').addEventListener('click', () => {
     if (!state.set) { if (state.lang) chooseLanguage(state.lang); return; }

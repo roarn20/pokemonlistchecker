@@ -13,6 +13,13 @@ Also included:
 - **Search every card** in the chosen language from the search bar at the top. For example, "Charizard" lists every Charizard card from every set with its price. Japanese cards can be searched by English name ("Charizard") or Japanese name ("リザードン"). Results start with the newest sets and can be sorted by price or name. **Open set** jumps to the card inside its set.
 - **My collection** tab: tap ＋ on any card (in a set, in search results or in a card's window) to add it. Owned cards get a green ✓ in set lists, and each set shows how many you have, what they're worth, and what the missing cards would cost. The collection tab shows the total worth (with a history line), card count, most valuable card, and every card with its quantity, which print you have (e.g. reverse holo) and its value. Sort and filter it, and tap a set name to jump to that card in its set.
 - **Scan a card with the camera** (camera button next to Search, or in My collection). Line the card up in the frame and tap Capture. The app reads the card number (and the name on English cards) and shows the matching cards to pick from, so you can scan card after card. You can also use a photo from your library.
+- **Card window** (tap a card's picture):
+  - TCGplayer and Cardmarket prices for each print.
+  - **PSA and other graded prices**, with a price-by-grade chart from Ungraded through Grade 7, 8, 9 and 9.5 to PSA 10, plus BGS, CGC, SGC, TAG and ACE 10. These need a PriceCharting key.
+  - A **recent sales chart** of Cardmarket's 30-day, 7-day and 1-day averages, with a rising/falling note.
+  - **Your price history** chart, recorded day by day in your browser.
+  - Links to recent PSA 10 and PSA 9 sales on eBay, TCGplayer and PriceCharting.
+  - Collection controls.
 - **Sorting** by card number, name or price (tap a column header, or use the sort menu on phones). A filter box narrows the current set's list.
 - **Set totals**: total cost of the set (one copy of each card), highest card, lowest card, average and median.
 - **Charts**: the running total of the set cost card by card, and the top 10 most valuable cards. Hover or tap for details.
@@ -71,6 +78,9 @@ The sources publish new prices about once a day (TCGdex around midnight UTC). Ev
 - **TCGplayer's own API is closed to new developers**, and the free TCGplayer data dump (TCGCSV) can't be read from a web page. TCGplayer prices come through TCGdex instead.
 - **Japanese cards don't have TCGplayer prices** in any free source a web page can use. They show Cardmarket (European market) prices converted to your currency. Their TCGplayer button opens the exact Japanese product on TCGplayer when TCGdex knows it, and a search by card number otherwise.
 - **Pictures:** TCGdex doesn't have scans for some recent sets. English cards fall back to TCGplayer's photo. Japanese cards do too when TCGdex has the TCGplayer product number, otherwise they show "No image".
+- **PSA / graded prices** come from PriceCharting, which needs your own paid API key (Settings → PriceCharting API token). There's no free source of graded prices that a web page can use. Without a key, the card window links to recent PSA 10 and PSA 9 sales on eBay and to the card's PriceCharting page. PriceCharting allows 1 request per second and licenses its data for personal use, so the app sends one request every 1.25 seconds and saves results for a day. Opening a card takes one or two requests. Whole-set lookups only run when you choose a PriceCharting price in the Price menu, and take a few minutes.
+- **Cardmarket recent-sales chart:** TCGdex occasionally links a card to the wrong Cardmarket product (often the regular print of a special art card). When Cardmarket and TCGplayer differ by more than three times, the card window warns that the Cardmarket numbers may be for a different version.
+- **Price history** starts when you first open or collect a card. The app saves one price per day, in this browser only.
 - **PriceCharting** needs your own API token (Settings → PriceCharting API token). The app looks up each card by name, number and set, so a few cards may not match. Japanese cards rarely match, because their names come in Japanese. Lookups are cached for an hour, because PriceCharting updates daily and a set means one request per card. If PriceCharting blocks requests made from a browser page, the app tells you. Every card always has a PriceCharting button that opens a search for it.
 - The set total is one copy of each card at the chosen price.
 - Converted prices use live exchange rates. If no rate service can be reached, the app uses built-in approximate rates and says so.
