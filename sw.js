@@ -1,7 +1,8 @@
 // Offline support for the installed app: same-site files are fetched fresh when online
 // and served from this cache when offline. Card data and prices (other sites) aren't cached here.
-const CACHE = 'set-tracker-v1';
-const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './data/ja/sets.json'];
+const CACHE = 'set-tracker-v2';
+// Cloudflare Pages redirects /index.html to /, so the page is cached as "./".
+const SHELL = ['./', './manifest.webmanifest', './icons/icon-192.png', './data/ja/sets.json'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => {}));
@@ -22,6 +23,6 @@ self.addEventListener('fetch', (event) => {
         if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); }
         return res;
       })
-      .catch(() => caches.match(req).then((hit) => hit || caches.match('./index.html'))),
+      .catch(() => caches.match(req).then((hit) => hit || caches.match('./'))),
   );
 });

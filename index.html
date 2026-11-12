@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
 <title>Pokémon Set Price Tracker</title>
 <meta name="description" content="Every card in the newest Pokémon TCG sets (English and Japanese) with TCGplayer prices, set totals, charts and auto-refresh.">
 <link rel="manifest" href="manifest.webmanifest">
@@ -984,7 +985,7 @@ footer p { margin: 4px 0; }
         <label for="sGh">Cloud sync: GitHub key (optional)</label>
         <input id="sGh" class="input" type="password" autocomplete="off" spellcheck="false" placeholder="Paste a GitHub token with gist access">
         <span class="hint">Backs up your collection and wishlist to a private file (a secret gist) in your GitHub account, and keeps every device where you add the same key in sync. Create a fine-grained token at github.com/settings/personal-access-tokens with only the <b>Gists: read and write</b> permission. The key is stored only in this browser.</span>
-        <span class="hint warn-hint" id="syncWarn" hidden>You're using the shared mirror link (raw.githack.com). Other pages on that site could read keys saved here, so use your own GitHub Pages link for cloud sync.</span>
+        <span class="hint warn-hint" id="syncWarn" hidden>You're using the shared mirror link (raw.githack.com). Other pages on that site could read keys saved here, so use your own Cloudflare Pages link for cloud sync.</span>
         <div class="sync-row"><span class="hint" id="syncState"></span><button class="btn mini-btn" type="button" id="syncNowBtn">Sync now</button></div>
       </div>
       <div class="field">
@@ -1085,7 +1086,10 @@ footer p { margin: 4px 0; }
   const usesJaNames = (lang) => lang === 'ja' || lang === 'zh-tw';
 
   // The hosted copy of this page, for when it's opened somewhere that can't go online.
-  const HOSTED_URL = 'https://raw.githack.com/roarn20/pokemonlistchecker/claude/pokemon-set-price-tracker-icxomp/index.html';
+  // Where the app lives online (Cloudflare Pages). If Cloudflare gave your project a different
+  // address, change it here. The githack mirror only works while the repo is public.
+  const HOSTED_URL = 'https://pokemonlistchecker.pages.dev/';
+  const MIRROR_URL = 'https://raw.githack.com/roarn20/pokemonlistchecker/claude/pokemon-set-price-tracker-icxomp/index.html';
   // File viewers and in-app HTML previews often block a page from loading anything online.
   let blockedByViewer = false;
   document.addEventListener('securitypolicyviolation', (e) => {
@@ -1096,7 +1100,10 @@ footer p { margin: 4px 0; }
     try { framed = window.self !== window.top; } catch { framed = true; }
     return blockedByViewer || framed;
   }
-  const onHostedCopy = () => location.href.split('#')[0] === HOSTED_URL || /\.github\.io$/.test(location.hostname);
+  // True on the app's own site (Cloudflare Pages, GitHub Pages or another https host, but not the
+  // shared githack mirror, a local file or an app preview).
+  const ownSite = () => location.protocol === 'https:' && !/githack\.com$/.test(location.hostname);
+  const onHostedCopy = () => ownSite() || location.href.split('#')[0] === MIRROR_URL;
   const todayISO = () => new Date().toISOString().slice(0, 10);
 
   async function getJSON(url, { timeout = 15000, headers, cache = 'default', retries = 1 } = {}) {
@@ -1348,8 +1355,10 @@ footer p { margin: 4px 0; }
   async function getStatic(path) {
     const urls = [];
     if (/^https?:$/.test(location.protocol)) urls.push(new URL(path, location.href).href);
-    const hosted = HOSTED_URL.replace(/[^/]*$/, '') + path;
-    if (!urls.includes(hosted)) urls.push(hosted);
+    for (const base of [HOSTED_URL, MIRROR_URL]) {
+      const hosted = base.replace(/[^/]*$/, '') + path;
+      if (!urls.includes(hosted)) urls.push(hosted);
+    }
     for (const u of urls) {
       try { return await getJSON(u, { retries: 0, timeout: 10000 }); } catch { /* try the next copy */ }
     }
@@ -4596,8 +4605,8 @@ footer p { margin: 4px 0; }
   if (Sync.on()) { Sync.status = 'idle'; Sync.run(); }
   setTimeout(() => refreshWishlist(), 1500); // update wishlist prices, then say if any hit their target
   document.addEventListener('visibilitychange', () => { if (!document.hidden && Sync.on() && Date.now() - (Sync.cfg.last || 0) > 2 * 60 * 1000) Sync.run(); });
-  // Add-to-home-screen app: works offline for your collection (on your own site, e.g. GitHub Pages).
-  if ('serviceWorker' in navigator && (/\.github\.io$/.test(location.hostname) || /^(localhost|127\.0\.0\.1)$/.test(location.hostname))) {
+  // Add-to-home-screen app: works offline for your collection (on your own site, e.g. Cloudflare Pages).
+  if ('serviceWorker' in navigator && (ownSite() || /^(localhost|127\.0\.0\.1)$/.test(location.hostname))) {
     navigator.serviceWorker.register('sw.js').catch(() => {});
   }
   const fromHash = readHash();

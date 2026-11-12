@@ -34,7 +34,7 @@ Also included:
 - **Auto-refresh** every 30 seconds (15 s, 1 min or 5 min in Settings), with a countdown ring and a manual **Refresh** button. Prices that changed flash and show ▲/▼.
 - **Currencies**: USD, JPY, EUR, GBP, CAD and AUD, using live exchange rates.
 - **Languages**: English, Japanese and Traditional Chinese. Chinese sets match the Japanese ones card for card, so they get English names too.
-- **Installs on your home screen** like an app (from your own GitHub Pages link), with offline viewing of your collection.
+- **Installs on your home screen** like an app (from your Cloudflare Pages link), with offline viewing of your collection.
 - Light and dark themes, a phone layout, and the URL remembers your language and set.
 
 ## Data sources
@@ -67,7 +67,7 @@ A GitHub Actions workflow (`.github/workflows/japanese-names.yml`) re-runs the s
 
 Every card and wishlist entry records when it was last changed. When two devices change things, the newest change to each card wins, and deletions are kept. Prices aren't synced, because each device fetches its own.
 
-Use this from your own GitHub Pages link rather than the raw.githack.com mirror. The mirror is shared by many websites, and any of them could read keys saved in your browser there. The app warns about this in Settings.
+Use this from your own Cloudflare Pages link rather than the raw.githack.com mirror. The mirror is shared by many websites, and any of them could read keys saved in your browser there. The app warns about this in Settings.
 
 ### My collection: where it's saved
 
@@ -107,16 +107,34 @@ Prints come from TCGdex's list of which versions exist, plus any version TCGplay
 
 ## Running it
 
-**Open it here (works on phones):** <https://raw.githack.com/roarn20/pokemonlistchecker/claude/pokemon-set-price-tracker-icxomp/index.html>
-
-The first time, that free mirror shows an "External Content Notice". Tap **Open the page** and it remembers that. For a cleaner permanent link, turn on GitHub Pages (below).
+**Your link:** <https://pokemonlistchecker.pages.dev/> (Cloudflare Pages, once it's set up as below)
 
 Open it in Safari, Chrome or another real browser. App previews and file viewers (including GitHub's file view and the preview in the Claude app) block the page from going online, so the card data can't load there. The page tells you when that happens and offers an "Open in browser" button.
 
-It's a single static file, so any of these also work:
+### Cloudflare Pages (works with a private repo, free)
 
-- **GitHub Pages (recommended):** repo **Settings → Pages → Build and deployment → Deploy from a branch**, pick `claude/pokemon-set-price-tracker-icxomp` and `/ (root)`, then Save. After a minute the app is at <https://roarn20.github.io/pokemonlistchecker/>. This link has no notice page, keeps saved keys private to your site, and can be installed: in Safari tap **Share → Add to Home Screen**, or in Chrome tap **⋮ → Add to Home screen**. Your collection on the mirror link doesn't move over by itself, so use cloud sync or Save backup / Load backup to bring it across.
-- **Locally:** open `index.html` in a browser, or run `python3 -m http.server` in this folder and go to <http://localhost:8000>.
+1. Sign up at <https://dash.cloudflare.com>, then go to **Workers & Pages → Create → Pages → Connect to Git** (Cloudflare may call it "Import an existing Git repository").
+2. Connect GitHub. When GitHub asks which repositories Cloudflare can see, choose **Only select repositories → pokemonlistchecker**. Private repos work.
+3. Pick the repo and set:
+   - **Project name:** `pokemonlistchecker`. This gives the address `pokemonlistchecker.pages.dev`. If that name is taken, Cloudflare picks a slightly different one; put it in `HOSTED_URL` near the top of the script in `index.html`.
+   - **Production branch:** `claude/pokemon-set-price-tracker-icxomp`
+   - **Framework preset:** None · **Build command:** leave empty · **Build output directory:** `/`
+4. **Save and Deploy.** After about a minute the app is live. Every push to the branch, including the weekly English-names update, redeploys it automatically.
+5. Install it: in Safari tap **Share → Add to Home Screen**, or in Chrome tap **⋮ → Add to Home screen**.
+
+Each web address keeps its own browser storage, so bring your collection over from the old link with cloud sync (add the same GitHub key on both) or **Save backup** there and **Load backup** here.
+
+The page tells search engines not to list it, but anyone with the link can still open it. Your collection and keys are never in the repo or on the site; they stay in your browser and, with sync, in your private gist.
+
+### Making the repo private
+
+GitHub → repo **Settings → General → Danger Zone → Change visibility → Private**. Cloudflare keeps deploying as long as its GitHub app has access to the repo. The raw.githack.com mirror link and GitHub Pages (on a free GitHub plan) stop working for private repos, so use the Cloudflare link.
+
+### Other ways
+
+- **raw.githack.com mirror** (public repos only): <https://raw.githack.com/roarn20/pokemonlistchecker/claude/pokemon-set-price-tracker-icxomp/index.html>. The first visit shows an "External Content Notice"; tap **Open the page**.
+- **GitHub Pages** (public repos, or private with a paid GitHub plan): repo **Settings → Pages → Deploy from a branch**, pick the branch and `/ (root)`.
+- **Locally:** run `python3 -m http.server` in this folder and go to <http://localhost:8000>.
 
 Settings, API keys and price history are kept in your browser's local storage only. **Settings → Clear saved data** removes them.
 
