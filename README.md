@@ -23,7 +23,14 @@ Also included:
   - **My copies**: how many, which print, which grade and what you paid for each copy.
 - **My collection**:
   - Tap ＋ to add a card, then use the card window for extra copies, prints, grades and prices paid.
-  - The Collection tab shows total worth with a history line, **gain / loss** against what you paid, and the most valuable card.
+  - **Value chart** at the top of the Collection tab:
+    - A big total with the change over the chosen range: 1W, 1M, 3M, 6M, 1Y or All.
+    - Drag along the chart (or use the arrow keys) to read any day; the big number follows.
+    - **Cards I own now** shows what your current cards were worth each day. **As it grew** counts each card from the day you added it, and splits the change into price changes and cards added.
+    - Built from the price the app records for each card once a day. Days before it first saw a card's price are estimated from Cardmarket's recent sale averages and drawn dashed. "Show as a table" lists the numbers.
+  - **Where your value is**: your value by set, biggest first. Tap a set to list its cards.
+  - Also: **gain / loss** against what you paid, and the most valuable card.
+  - Prices of your collection refresh in the background once a day when you open the app, so the chart keeps its daily points.
   - **Biggest movers** shows the cards that rose or fell most over about a week.
   - Graded copies are valued at their graded price (PriceCharting key needed; otherwise the ungraded price is used and labelled).
 - **Master set** tab: every print of every card in the set as its own tick box, with "X of Y prints" and the cost to finish:
@@ -120,7 +127,7 @@ The sources publish new prices about once a day (TCGdex around midnight UTC). Ev
 - **Pictures:** TCGdex doesn't have scans for some recent sets. English cards fall back to TCGplayer's photo. Japanese cards do too when TCGdex has the TCGplayer product number, otherwise they show "No image".
 - **PSA / graded prices** come from PriceCharting, which needs your own paid API key (Settings → PriceCharting API token). There's no free source of graded prices that a web page can use. Without a key, the card window links to recent PSA 10 and PSA 9 sales on eBay and to the card's PriceCharting page. PriceCharting allows 1 request per second and licenses its data for personal use, so the app sends one request every 1.25 seconds and saves results for a day. Opening a card takes one or two requests. Whole-set lookups only run when you choose a PriceCharting price in the Price menu, and take a few minutes.
 - **Cardmarket recent-sales chart:** TCGdex occasionally links a card to the wrong Cardmarket product (often the regular print of a special art card). When Cardmarket and TCGplayer differ by more than three times, the card window warns that the Cardmarket numbers may be for a different version.
-- **Price history** starts when you first open or collect a card. The app saves one price per day, in this browser only.
+- **Price history** starts when you first open or collect a card. The app saves one price per day, in this browser only, so the value chart on a second device starts from scratch (cloud sync carries your cards, not their price history). Older history than that is an estimate from Cardmarket's 30-, 7- and 1-day sale averages, so it only reaches back about two weeks.
 - **PriceCharting** needs your own API token (Settings → PriceCharting API token). The app looks up each card by name, number and set, so a few cards may not match. Japanese cards rarely match, because their names come in Japanese. Lookups are cached for an hour, because PriceCharting updates daily and a set means one request per card. If PriceCharting blocks requests made from a browser page, the app tells you. Every card always has a PriceCharting button that opens a search for it.
 - The set total is one copy of each card at the chosen price.
 - Converted prices use live exchange rates. If no rate service can be reached, the app uses built-in approximate rates and says so.

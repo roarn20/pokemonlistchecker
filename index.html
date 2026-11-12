@@ -295,6 +295,61 @@ button { cursor: pointer; }
 .delta.up { color: var(--good); }
 .delta.down { color: var(--bad); }
 .spark { display: block; margin-top: 8px; width: 100%; height: 34px; }
+.stats.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+/* Collection value over time */
+.port { padding: 18px 18px 12px; margin-bottom: 14px; position: relative; overflow: hidden; }
+.port::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 3px; background: var(--holo); }
+.port-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px 16px; flex-wrap: wrap; }
+.port-label { font-size: 13px; color: var(--text-2); font-weight: 600; }
+.port-value { font-size: clamp(36px, 5vw, 52px); font-weight: 750; letter-spacing: -0.03em; line-height: 1.1; margin-top: 2px; white-space: nowrap; }
+.port-change { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: baseline; font-size: 14px; min-height: 21px; margin-top: 2px; }
+.port-change .delta { font-size: 14px; }
+.port-change .when { color: var(--muted); }
+.port-mode button { font-size: 13px; padding: 0 10px; }
+.port-chart { margin-top: 10px; position: relative; min-height: 120px; }
+.port-chart svg { display: block; width: 100%; touch-action: pan-y; cursor: crosshair; -webkit-user-select: none; user-select: none; }
+.port-chart svg:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 8px; }
+svg.chart .line.est { stroke-dasharray: 2 5; opacity: 0.8; }
+svg.chart .hover-when { fill: var(--text-2); font-size: 11px; font-weight: 700; }
+.port-empty { display: grid; place-items: center; text-align: center; min-height: 150px; color: var(--text-2); font-size: 14px; padding: 10px 20px; border: 1px dashed var(--border-strong); border-radius: 12px; }
+.port-range { display: flex; width: max-content; max-width: 100%; margin: 8px auto 0; }
+.port-range button { padding: 0 12px; font-size: 13px; font-variant-numeric: tabular-nums; }
+.port-foot { margin-top: 10px; display: grid; gap: 6px; font-size: 12.5px; color: var(--muted); }
+.port-split { font-size: 13px; color: var(--text-2); display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.port-split b { font-weight: 700; color: var(--text); }
+.port-key { display: inline-block; width: 18px; height: 0; border-top: 2px dashed var(--series-1); vertical-align: middle; margin-right: 6px; }
+.port-table summary { cursor: pointer; color: var(--text-2); font-weight: 600; width: max-content; }
+.port-table table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 6px; font-variant-numeric: tabular-nums; color: var(--text); }
+.port-table th, .port-table td { padding: 5px 6px; text-align: right; border-top: 1px solid var(--border); font-weight: 500; }
+.port-table th { color: var(--text-2); font-weight: 600; border-top: 0; }
+.port-table th:first-child, .port-table td:first-child { text-align: left; }
+/* Value by set */
+.share { padding: 16px 18px; margin-bottom: 14px; display: grid; gap: 2px; }
+.share h3 { margin: 0 0 6px; font-size: 15px; }
+.share-row { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(70px, 1fr) 118px; gap: 14px; align-items: center; padding: 7px 8px; margin: 0 -8px; border: 0; background: none; border-radius: 9px; text-align: left; color: inherit; font: inherit; cursor: pointer; }
+.share-row:hover, .share-row:focus-visible { background: var(--surface-2); }
+.share-row.other { cursor: default; }
+.share-row.other:hover { background: none; }
+.share-name { font-size: 13.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.share-sub { font-size: 12px; color: var(--muted); display: flex; gap: 6px; align-items: center; margin-top: 1px; }
+.share-bar { height: 10px; background: var(--series-1); border-radius: 0 4px 4px 0; min-width: 2px; }
+.share-row.other .share-bar { background: var(--border-strong); }
+.share-val { text-align: right; font-size: 13.5px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.share-val span { display: block; font-size: 12px; color: var(--muted); font-weight: 500; }
+.share-note { margin: 4px 0 0; font-size: 12.5px; color: var(--muted); }
+@media (max-width: 560px) {
+  .stats.three { grid-template-columns: 1fr 1fr; }
+  .stats.three > :last-child { grid-column: 1 / -1; }
+  .port { padding: 16px 14px 12px; }
+  .port-mode { width: 100%; }
+  .port-mode button { flex: 1; justify-content: center; }
+  .port-range { width: 100%; }
+  .port-range button { flex: 1; justify-content: center; padding: 0 4px; }
+  .share-row { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name val" "bar bar"; row-gap: 6px; }
+  .share-row > .share-label { grid-area: name; }
+  .share-row > .share-bar-wrap { grid-area: bar; }
+  .share-row > .share-val { grid-area: val; }
+}
 .spark .ln { fill: none; stroke: var(--series-1); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .spark .ar { fill: var(--series-1-wash); }
 .spark .end { fill: var(--series-1); stroke: var(--surface); stroke-width: 2; }
@@ -898,8 +953,10 @@ footer p { margin: 4px 0; }
       </div>
     </div>
     <div class="statusline" id="collStatus" aria-live="polite"></div>
-    <section class="stats" id="collStats" aria-label="Collection totals"></section>
+    <section class="panel port" id="collPort" aria-label="Collection value over time"></section>
+    <section class="stats three" id="collStats" aria-label="Collection totals"></section>
     <section class="panel movers" id="collMovers" aria-label="Biggest movers"></section>
+    <section class="panel share" id="collSets" aria-label="Value by set" hidden></section>
     <section class="panel list-panel">
       <div class="list-toolbar">
         <h3>Cards <span class="count" id="collCountLabel"></span></h3>
@@ -1608,6 +1665,7 @@ footer p { margin: 4px 0; }
   const PH = {
     data: (() => { const v = LS.get('priceHistory', null); return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; })(),
     dirty: false,
+    ver: 0, // bumps on every change, so charts know to recompute
     record(lang, card) {
       const usd = marketUSD(card);
       if (!isNum(usd)) return;
@@ -1619,6 +1677,7 @@ footer p { margin: 4px 0; }
       if (last && last[0] === day) { if (last[1] === v) return; last[1] = v; } else arr.push([day, v]);
       if (arr.length > 400) arr.splice(0, arr.length - 400);
       this.dirty = true;
+      this.ver++;
     },
     get(lang, id) { return this.data[`${lang}:${id}`] || []; },
     save() {
@@ -3208,6 +3267,316 @@ footer p { margin: 4px 0; }
   }
   function collTotal() { return collItems().reduce((t, x) => t + (x.value || 0), 0); }
   function recordCollHistory() { if (Object.keys(Coll.items).length) pushHistory(collHistKey(), collTotal()); }
+
+  /* =========================================================
+     Collection value over time: a big number, the change over the chosen range,
+     and a chart you can scrub (drag along it). Built from the price this browser
+     records for each card once a day (PH). Before the app first saw a card's
+     price, it's estimated from Cardmarket's 30-, 7- and 1-day sale averages, or
+     held at the first price recorded; days that lean on estimates are dashed.
+     ========================================================= */
+  const PORT = { range: LS.get('portRange', '1M'), mode: LS.get('portMode', 'now'), key: '', data: null, width: 0 };
+  const PORT_RANGES = [['1W', 7, 'past week'], ['1M', 30, 'past month'], ['3M', 91, 'past 3 months'], ['6M', 182, 'past 6 months'], ['1Y', 365, 'past year'], ['All', Infinity, '']];
+  if (!PORT_RANGES.some(([k]) => k === PORT.range)) PORT.range = '1M';
+  if (!['now', 'grew'].includes(PORT.mode)) PORT.mode = 'now';
+  const dayLabel = (d, year) => new Date(d * DAY_MS).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: year ? 'numeric' : undefined });
+
+  // A card's price on day d, as a share of today's price: [ratio, isEstimate].
+  function portRatio(c, d, today) {
+    if (d >= today || !c.real) return [1, d < today];
+    const { real, est, ref } = c;
+    if (real.length && d >= real[0][0]) {
+      let lo = 0, hi = real.length - 1;
+      while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (real[mid][0] <= d) lo = mid; else hi = mid - 1; }
+      return [real[lo][1] / ref, false];
+    }
+    const pts = est.concat([real.length ? real[0] : [today, ref]]);
+    if (d <= pts[0][0]) return [pts[0][1] / ref, true];
+    for (let i = 1; i < pts.length; i++) {
+      if (d <= pts[i][0]) {
+        const [d0, v0] = pts[i - 1], [d1, v1] = pts[i];
+        return [(v0 + ((v1 - v0) * (d - d0)) / Math.max(1, d1 - d0)) / ref, true];
+      }
+    }
+    return [1, true];
+  }
+
+  function portfolioData() {
+    const today = Math.floor(Date.now() / DAY_MS);
+    let stamp = 0;
+    for (const e of Object.values(Coll.items)) stamp += (e.updatedAt || 0) % 1e9 + (e.pricedAt || 0) % 1e9 + e.qty;
+    const key = [PORT.mode, state.priceType, PH.ver, Object.keys(Coll.items).length, stamp, today, state.rates.EUR || 0].join('|');
+    if (key === PORT.key) return PORT.data;
+    const cards = [];
+    withCollPrice(() => {
+      for (const e of Object.values(Coll.items)) {
+        const value = entryValue(e);
+        if (!isNum(value) || value <= 0) continue;
+        const added = Math.min(today, Math.floor((e.addedAt || Date.now()) / DAY_MS));
+        const real = PH.get(e.lang, e.id).filter((p) => isNum(p[1]) && p[1] > 0 && p[0] < today);
+        let ref = marketUSD(e);
+        if (!isNum(ref) || ref <= 0) ref = real.length ? real[real.length - 1][1] : null;
+        if (!ref) { cards.push({ value, added, real: null, start: today }); continue; }
+        // Estimates for the days before the first recorded price, from Cardmarket's sale averages.
+        const firstReal = real.length ? real[0][0] : today;
+        const est = [];
+        const cm = e.cm;
+        const base = cm && (isNum(cm.trend) && cm.trend > 0 ? cm.trend : isNum(cm.avg) && cm.avg > 0 ? cm.avg : null);
+        if (base) {
+          for (const [k, ago] of [['avg30', 15], ['avg7', 4], ['avg1', 1]]) {
+            const v = cm[k];
+            if (isNum(v) && v > 0 && today - ago < firstReal) est.push([today - ago, (ref * v) / base]);
+          }
+        }
+        cards.push({ value, added, real, est, ref, start: est.length ? est[0][0] : firstReal });
+      }
+    });
+    let data = null;
+    if (cards.length) {
+      let start = Math.min(...cards.map((c) => c.start));
+      if (PORT.mode === 'grew') start = Math.max(start, Math.min(...cards.map((c) => c.added)) - 1);
+      start = Math.max(start, today - 1500);
+      const n = today - start + 1;
+      const days = [];
+      for (let i = 0; i < n; i++) {
+        const d = start + i;
+        let v = 0, ev = 0;
+        for (const c of cards) {
+          if (PORT.mode === 'grew' && d < c.added) continue;
+          const [r, est] = portRatio(c, d, today);
+          v += c.value * r;
+          if (est) ev += c.value * r;
+        }
+        days.push({ d, v, est: v > 0 && ev / v > 0.1 });
+      }
+      data = { today, start, days, cards };
+    }
+    PORT.key = key;
+    PORT.data = data;
+    return data;
+  }
+
+  // In "as it grew" mode: how much of the change came from prices, and how much from cards added.
+  function portSplit(data, s) {
+    let price = 0, added = 0;
+    for (const c of data.cards) {
+      const owned = c.added <= s;
+      const r0 = portRatio(c, owned ? s : c.added, data.today)[0];
+      price += c.value * (1 - r0);
+      if (!owned) added += c.value * r0;
+    }
+    return { price, added };
+  }
+
+  function deltaEl(diff, base) {
+    if (Math.abs(diff) < 0.005) return h('span', { class: 'delta', style: 'color:var(--text-2)', text: 'No change' });
+    const up = diff > 0;
+    const pct = base > 0 ? ` (${up ? '+' : '−'}${Math.abs((diff / base) * 100).toFixed(Math.abs(diff / base) >= 0.1 ? 1 : 2)}%)` : '';
+    return h('span', { class: 'delta ' + (up ? 'up' : 'down'), text: `${up ? '▲ +' : '▼ −'}${fmt(Math.abs(diff))}${pct}` });
+  }
+
+  function renderPortfolio(info) {
+    const box = $('#collPort');
+    const word = withCollPrice(() => ({ market: 'market price', low: 'low price', mid: 'mid price', cm: 'Cardmarket' })[state.priceType]);
+    const label = h('div', { class: 'port-label' }, 'Collection value ', h('span', { class: 'muted', style: 'font-weight:500', text: `· ${word}` }));
+    const valueEl = h('div', { class: 'port-value', text: fmt(info.total) });
+    const changeEl = h('div', { class: 'port-change' });
+    const modeSeg = h('div', { class: 'seg port-mode', role: 'group', 'aria-label': 'What the chart counts' },
+      ...[['now', 'Cards I own now', 'What the cards you have now were worth each day'], ['grew', 'As it grew', 'Your collection’s value each day, counting each card from the day you added it']].map(([m, t, tip]) =>
+        h('button', { type: 'button', 'aria-pressed': String(PORT.mode === m), title: tip, text: t, onclick: () => { if (PORT.mode === m) return; PORT.mode = m; LS.set('portMode', m); renderPortfolio(info); } })));
+    const head = h('div', { class: 'port-head' }, h('div', null, label, valueEl, changeEl), info.cards ? modeSeg : null);
+    const data = info.cards ? portfolioData() : null;
+    if (!data || data.days.length < 2) {
+      fill(changeEl, h('span', { class: 'when', text: info.cards ? `${info.priced} of ${info.cards} cards priced` : 'Add cards to see their value' }));
+      fill(box, head, h('div', { class: 'port-chart' }, h('div', { class: 'port-empty', text: info.cards
+        ? 'Your chart starts today. The app records your cards’ prices once a day, so the line fills in from tomorrow.'
+        : 'Your collection’s value over time will show here. Tap ＋ on any card, or scan one, to start.' })));
+      PORT.width = box.clientWidth;
+      return;
+    }
+    const [, span, spanWord] = PORT_RANGES.find(([k]) => k === PORT.range);
+    const s = Math.max(data.start, data.today - span);
+    const win = data.days.slice(s - data.start);
+    const first = win[0], last = win[win.length - 1];
+    const clipped = !spanWord || s > data.today - span;
+    const sinceWord = clipped ? `since ${dayLabel(first.d, first.d < data.today - 300)}` : spanWord;
+    const setFigure = (i) => {
+      const p = i == null ? last : win[i];
+      valueEl.textContent = fmt(p.v);
+      fill(changeEl, deltaEl(p.v - first.v, first.v),
+        h('span', { class: 'when', text: i == null ? sinceWord : `${dayLabel(p.d, true)}${p.est ? ' · estimated' : ''}` }));
+    };
+    setFigure(null);
+
+    // Range buttons
+    const rangeSeg = h('div', { class: 'seg port-range', role: 'group', 'aria-label': 'Time range' },
+      ...PORT_RANGES.map(([k, , w]) => h('button', { type: 'button', 'aria-pressed': String(PORT.range === k), title: w || 'Everything recorded', text: k, onclick: () => { PORT.range = k; LS.set('portRange', k); renderPortfolio(info); } })));
+
+    // Chart
+    const chartBox = h('div', { class: 'port-chart' });
+    const foot = h('div', { class: 'port-foot' });
+    if (PORT.mode === 'grew') {
+      const sp = portSplit(data, first.d);
+      if (Math.abs(sp.added) >= 0.005) {
+        const sign = (v) => `${v >= 0 ? '+' : '−'}${fmt(Math.abs(v))}`;
+        foot.append(h('div', { class: 'port-split' },
+          h('span', null, h('b', { text: sign(sp.price) }), ' from price changes'),
+          h('span', null, h('b', { text: sign(sp.added) }), ' from cards you added')));
+      }
+    }
+    const anyEst = win.some((p) => p.est);
+    foot.append(h('div', null,
+      anyEst ? h('span', { class: 'port-key', 'aria-hidden': 'true' }) : null,
+      anyEst ? 'Dashed: estimated, for days before the app recorded a card’s price (from Cardmarket’s recent sale averages, or the first price recorded). ' : '',
+      PORT.mode === 'now' ? 'What the cards you have now were worth each day.' : 'Counts each card from the day you added it.',
+      ' Prices are recorded in this browser once a day.'));
+    // Table view (the same numbers without the chart)
+    const pick = [];
+    const nRows = Math.min(win.length, 8);
+    for (let k = 0; k < nRows; k++) pick.push(Math.round((k * (win.length - 1)) / Math.max(1, nRows - 1)));
+    foot.append(h('details', { class: 'port-table' }, h('summary', { text: 'Show as a table' }),
+      h('table', null,
+        h('thead', null, h('tr', null, h('th', { text: 'Day' }), h('th', { text: 'Value' }), h('th', { text: 'Change' }))),
+        h('tbody', null, ...[...new Set(pick)].reverse().map((i) => {
+          const p = win[i];
+          const diff = p.v - first.v;
+          return h('tr', null, h('td', { text: dayLabel(p.d, true) + (p.est ? ' (est.)' : '') }), h('td', { text: fmt(p.v) }), h('td', { text: i === 0 ? '—' : `${diff >= 0 ? '+' : '−'}${fmt(Math.abs(diff))}` }));
+        })))));
+    fill(box, head, chartBox, rangeSeg, foot);
+    drawPortChart(chartBox, win, setFigure);
+    PORT.width = box.clientWidth;
+  }
+
+  function drawPortChart(wrap, win, setFigure) {
+    const W = Math.max(260, Math.round(wrap.clientWidth || 600));
+    const H = W < 520 ? 190 : 240;
+    const m = { t: 22, r: 10, b: 24, l: 50 };
+    const R = rate();
+    const vals = win.map((p) => p.v * R);
+    let lo = Math.min(...vals), hi = Math.max(...vals);
+    const pad = Math.max((hi - lo) * 0.12, hi * 0.02, 0.01);
+    lo = Math.max(0, lo - pad); hi += pad;
+    const n = win.length;
+    const x = (i) => m.l + (i / (n - 1)) * (W - m.l - m.r);
+    const y = (v) => m.t + (1 - (v - lo) / Math.max(1e-9, hi - lo)) * (H - m.t - m.b);
+    const last = win[n - 1];
+    const svg = sv('svg', { class: 'chart', viewBox: `0 0 ${W} ${H}`, width: W, height: H, tabindex: '0', role: 'img',
+      'aria-label': `Collection value from ${fmt(win[0].v)} on ${dayLabel(win[0].d, true)} to ${fmt(last.v)} today. Use the arrow keys to read each day.` });
+    const gid = 'portFill' + Math.random().toString(36).slice(2, 7);
+    svg.append(sv('defs', null, sv('linearGradient', { id: gid, x1: 0, y1: 0, x2: 0, y2: 1 },
+      sv('stop', { offset: '0%', style: 'stop-color:var(--series-1);stop-opacity:0.22' }),
+      sv('stop', { offset: '100%', style: 'stop-color:var(--series-1);stop-opacity:0' }))));
+    // Round tick values (e.g. $2,000 / $2,200 / $2,400) on hairline gridlines.
+    const raw = (hi - lo) / 4;
+    const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    const step = [1, 2, 2.5, 5, 10].map((k) => k * mag).find((v) => v >= raw);
+    const whole = step >= 1;
+    for (let v = Math.ceil(lo / step) * step; v <= hi + step * 1e-6; v += step) {
+      const yy = Math.round(y(v)) + 0.5;
+      if (yy < m.t - 2) continue;
+      svg.append(sv('line', { class: 'grid', x1: m.l, x2: W - m.r, y1: yy, y2: yy }));
+      svg.append(sv('text', { class: 'tick', x: m.l - 6, y: yy + 4, 'text-anchor': 'end' }, money(v, { compact: true, whole })));
+    }
+    const years = win[0].d < last.d - 300;
+    svg.append(sv('text', { class: 'axis-label', x: m.l, y: H - 6 }, dayLabel(win[0].d, years)));
+    if (W > 420 && n > 4) svg.append(sv('text', { class: 'axis-label', x: x((n - 1) / 2), y: H - 6, 'text-anchor': 'middle' }, dayLabel(win[Math.round((n - 1) / 2)].d, years)));
+    svg.append(sv('text', { class: 'axis-label', x: W - m.r, y: H - 6, 'text-anchor': 'end' }, 'Today'));
+    // Area under the whole line, then the line in solid (recorded) and dashed (estimated) stretches.
+    const pt = (i) => `${x(i).toFixed(1)},${y(vals[i]).toFixed(1)}`;
+    const full = win.map((p, i) => `${i ? 'L' : 'M'}${pt(i)}`).join('');
+    svg.append(sv('path', { d: `${full}L${x(n - 1).toFixed(1)},${H - m.b}L${m.l},${H - m.b}Z`, fill: `url(#${gid})` }));
+    let solid = '', dashed = '', prevKind = null;
+    for (let i = 1; i < n; i++) {
+      const est = win[i].est || win[i - 1].est;
+      const kind = est ? 'e' : 's';
+      const seg = (kind === prevKind ? '' : `M${pt(i - 1)}`) + `L${pt(i)}`;
+      if (est) dashed += seg; else solid += seg;
+      prevKind = kind;
+    }
+    if (dashed) svg.append(sv('path', { class: 'line est', d: dashed }));
+    if (solid) svg.append(sv('path', { class: 'line', d: solid }));
+    svg.append(sv('circle', { class: 'end-dot', cx: x(n - 1), cy: y(vals[n - 1]), r: 4.5 }));
+    // Scrub: a crosshair snaps to the nearest day and the big number follows it.
+    const xh = sv('line', { class: 'xhair', y1: m.t - 4, y2: H - m.b, visibility: 'hidden' });
+    const dot = sv('circle', { class: 'hover-dot', r: 5, visibility: 'hidden' });
+    const when = sv('text', { class: 'hover-when', y: 12, visibility: 'hidden' });
+    const hit = sv('rect', { class: 'hit', x: m.l - 8, y: 0, width: W - m.l - m.r + 16, height: H - m.b + 6 });
+    svg.append(xh, dot, when, hit);
+    let cur = null;
+    const show = (i) => {
+      cur = Math.max(0, Math.min(n - 1, i));
+      const bx = x(cur), by = y(vals[cur]);
+      xh.setAttribute('x1', bx); xh.setAttribute('x2', bx); xh.setAttribute('visibility', 'visible');
+      dot.setAttribute('cx', bx); dot.setAttribute('cy', by); dot.setAttribute('visibility', 'visible');
+      when.textContent = dayLabel(win[cur].d, years);
+      const anchor = bx < m.l + 40 ? 'start' : bx > W - m.r - 40 ? 'end' : 'middle';
+      when.setAttribute('x', bx); when.setAttribute('text-anchor', anchor); when.setAttribute('visibility', 'visible');
+      setFigure(cur);
+    };
+    const clear = () => {
+      cur = null;
+      for (const el of [xh, dot, when]) el.setAttribute('visibility', 'hidden');
+      setFigure(null);
+    };
+    const fromEvent = (e) => {
+      const r = svg.getBoundingClientRect();
+      const px = ((e.clientX - r.left) / r.width) * W;
+      return Math.round(((px - m.l) / (W - m.l - m.r)) * (n - 1));
+    };
+    hit.addEventListener('pointermove', (e) => show(fromEvent(e)));
+    hit.addEventListener('pointerdown', (e) => show(fromEvent(e)));
+    hit.addEventListener('pointerleave', clear);
+    hit.addEventListener('pointerup', (e) => { if (e.pointerType !== 'mouse') clear(); });
+    hit.addEventListener('pointercancel', clear);
+    svg.addEventListener('keydown', (e) => {
+      const step = { ArrowLeft: -1, ArrowRight: 1, PageUp: -7, PageDown: 7 }[e.key];
+      if (step) { e.preventDefault(); show((cur == null ? n - 1 : cur) + step); }
+      else if (e.key === 'Home') { e.preventDefault(); show(0); }
+      else if (e.key === 'End') { e.preventDefault(); show(n - 1); }
+      else if (e.key === 'Escape') clear();
+    });
+    svg.addEventListener('blur', clear);
+    wrap.append(svg);
+  }
+
+  // Where the value is: one bar per set, biggest first. Tap a set to list its cards.
+  function renderSetShare(items) {
+    const box = $('#collSets');
+    const by = new Map();
+    let total = 0;
+    for (const x of items) {
+      if (!isNum(x.value) || x.value <= 0) continue;
+      const k = `${x.e.lang}:${x.e.setId}`;
+      const g = by.get(k) || { lang: x.e.lang, name: x.e.setName || x.e.setId, en: x.e.setEnName || '', v: 0, n: 0 };
+      g.v += x.value; g.n += x.e.qty || 1; total += x.value;
+      by.set(k, g);
+    }
+    if (by.size < 2) { box.hidden = true; return; }
+    box.hidden = false;
+    const groups = [...by.values()].sort((a, b) => b.v - a.v);
+    const top = groups.slice(0, groups.length > 8 ? 7 : 8);
+    const rest = groups.slice(top.length);
+    const max = top[0].v;
+    const row = (g, other) => {
+      const pct = (g.v / total) * 100;
+      const inner = [
+        h('div', { class: 'share-label' },
+          h('div', { class: 'share-name', text: other ? `${rest.length} other sets` : g.en && g.en !== g.name ? `${g.name} (${g.en})` : g.name }),
+          h('div', { class: 'share-sub' }, other ? null : h('span', { class: 'lang-tag', text: LANG_TAG[g.lang] || g.lang }), h('span', { text: `${g.n} card${g.n === 1 ? '' : 's'}` }))),
+        h('div', { class: 'share-bar-wrap' }, h('div', { class: 'share-bar', style: `width:${Math.max(1, (g.v / max) * 100).toFixed(1)}%` })),
+        h('div', { class: 'share-val', text: fmt(g.v) }, h('span', { text: `${pct >= 10 ? Math.round(pct) : pct.toFixed(1)}% of value` })),
+      ];
+      if (other) return h('div', { class: 'share-row other' }, ...inner);
+      return h('button', { class: 'share-row', type: 'button', title: 'Show these cards', onclick: () => {
+        COLL.q = g.name; $('#collSearch').value = g.name; COLL.lang = 'all';
+        renderCollection();
+        $('#collRows').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } }, ...inner);
+    };
+    const restGroup = rest.length ? { v: rest.reduce((t, g) => t + g.v, 0), n: rest.reduce((t, g) => t + g.n, 0) } : null;
+    fill(box, h('h3', { text: 'Where your value is' }), ...top.map((g) => row(g)), restGroup ? row(restGroup, true) : null,
+      h('p', { class: 'share-note', text: 'Tap a set to list its cards.' }));
+  }
   function renderTabCount() {
     const n = Coll.count();
     $('#collCount').textContent = n ? String(n) : '';
@@ -3286,21 +3655,8 @@ footer p { margin: 4px 0; }
     }
     const tile = (cls, label, value, sub, extra) => h('div', { class: 'panel tile ' + cls },
       h('div', { class: 't-label' }, label), h('div', { class: 't-value', text: value }), sub ? h('div', { class: 't-sub' }, sub) : null, extra || null);
-    let spark = null, delta = null;
-    const hist = LS.get(collHistKey(), []);
-    if (hist.length >= 2 && items.length) {
-      spark = sparkline(hist.slice(-40).map((p) => p.v));
-      const diff = total - hist[0].v;
-      if (Math.abs(diff) >= 0.005 && hist[0].v > 0) {
-        const up = diff > 0;
-        delta = h('span', { class: 'delta ' + (up ? 'up' : 'down') }, (up ? '▲ +' : '▼ −') + fmt(Math.abs(diff)),
-          h('span', { class: 'muted', style: 'font-weight:500', text: ` since ${new Date(hist[0].t).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}` }));
-      }
-    }
-    const word = withCollPrice(() => ({ market: 'market price', low: 'low price', mid: 'mid price', cm: 'Cardmarket' })[state.priceType]);
-    fill($('#collStats'), 
-      tile('hero', h('span', null, 'Total worth ', h('span', { class: 'muted', style: 'font-weight:500', text: `· ${word}` })), fmt(total),
-        delta || (items.length ? `${priced} of ${items.length} cards priced` : 'Add cards to see their value'), h('div', null, delta ? h('div', { class: 't-sub', text: `${priced} of ${items.length} cards priced` }) : null, spark)),
+    renderPortfolio({ total, priced, cards: items.length });
+    fill($('#collStats'),
       tile('', 'Cards', String(count), `${items.length} different · ${sets.size} set${sets.size === 1 ? '' : 's'}`),
       tile('', 'Most valuable', top ? fmt(top.p.usd) : '—', top ? h('button', { type: 'button', onclick: () => openCard(top.e, { lang: top.e.lang, set: null }), text: fullName(top.e) }) : 'No prices yet'),
       (() => {
@@ -3313,6 +3669,7 @@ footer p { margin: 4px 0; }
     );
 
     renderMovers();
+    renderSetShare(items);
 
     // List
     const q = COLL.q.trim().toLowerCase();
@@ -4993,6 +5350,11 @@ footer p { margin: 4px 0; }
   let resizeT;
   const ro = new ResizeObserver(() => { clearTimeout(resizeT); resizeT = setTimeout(() => { if (state.cards.length) renderCharts(); }, 120); });
   ro.observe($('#charts'));
+  let portT;
+  new ResizeObserver(() => {
+    clearTimeout(portT);
+    portT = setTimeout(() => { if (!$('#collectionView').hidden && Math.abs($('#collPort').clientWidth - PORT.width) > 24) renderCollection(); }, 150);
+  }).observe($('#collPort'));
   window.addEventListener('scroll', hideTip, { passive: true });
 
   /* ---------- Start ---------- */
@@ -5006,6 +5368,8 @@ footer p { margin: 4px 0; }
   loadRates();
   if (Sync.on()) { Sync.status = 'idle'; Sync.run(); }
   setTimeout(() => refreshWishlist(), 1500); // update wishlist prices, then say if any hit their target
+  // Once a day, refresh collection prices in the background so the value chart gets its daily point.
+  setTimeout(() => { if (Coll.count() && Date.now() - COLL.lastRefresh > 12 * 60 * 60 * 1000) refreshCollection(); }, 8000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden && Sync.on() && Date.now() - (Sync.cfg.last || 0) > 2 * 60 * 1000) Sync.run(); });
   // Add-to-home-screen app: works offline for your collection (on your own site, e.g. Cloudflare).
   if ('serviceWorker' in navigator && (ownSite() || /^(localhost|127\.0\.0\.1)$/.test(location.hostname))) {
