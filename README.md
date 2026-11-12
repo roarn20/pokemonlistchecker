@@ -13,7 +13,7 @@ Also included:
 - **Five tabs**: Sets, Master set, Collection, Wishlist and Updates.
 - **Search every card** in the chosen language from the search bar at the top. For example, "Charizard" lists every Charizard card from every set with its price. Japanese and Chinese cards can be searched by English name or in their own language. Results start with the newest sets and can be sorted by price or name, and **Open set** jumps to the card inside its set.
 - **Sorting** by card number, name or price, a filter box, **Cards I have / Cards I need**, and a **List / Binder** switch. Binder view shows card pictures in a grid with the ones you don't have greyed out.
-- **Set totals**: total cost of the set (one copy of each card), highest card, lowest card, average and median. The set header also shows how many cards you have, what they're worth, and what the missing ones cost.
+- **Set totals**: total cost of the set (one copy of each card), highest card, lowest card, average and median. Next to the total, a small badge shows how much it went up or down (amount and %) since yesterday, or since you last opened the set. The set header also shows how many cards you have, what they're worth, and what the missing ones cost.
 - **Charts**: the running total of the set cost card by card, and the top 10 most valuable cards.
 - **Card window** (tap a card's picture):
   - TCGplayer and Cardmarket prices.
