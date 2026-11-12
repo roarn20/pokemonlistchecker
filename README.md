@@ -11,7 +11,7 @@ A single-page HTML app (`index.html`, no build step) that shows every card in a 
 Also included:
 
 - **Five tabs**: Sets, Master set, Collection, Wishlist and Updates.
-- **Search every card** in the chosen language from the search bar at the top. For example, "Charizard" lists every Charizard card from every set with its price. Japanese and Chinese cards can be searched by English name or in their own language. Results start with the newest sets and can be sorted by price or name, and **Open set** jumps to the card inside its set.
+- **Search every card** in the chosen language from the search bar at the top. For example, "Charizard" lists every Charizard card from every set with its price. Japanese and Chinese cards can be searched by English name or in their own language. You can also search by card number: "238/191", "238", "TG05", or a name and a number like "Pikachu 238". Results start with the newest sets and can be sorted by price or name, and **Open set** jumps to the card inside its set.
 - **Sorting** by card number, name or price, a filter box, **Cards I have / Cards I need**, and a **List / Binder** switch. Binder view shows card pictures in a grid with the ones you don't have greyed out.
 - **Set totals**: total cost of the set (one copy of each card), highest card, lowest card, average and median. Next to the total, a small badge shows how much it went up or down (amount and %) over the past day, and the line under it shows the last 30 days. This works for every English and Japanese set, even ones you've never opened, using TCGplayer's daily set totals (see below). The set header also shows how many cards you have, what they're worth, and what the missing ones cost.
 - **Charts**: the running total of the set cost card by card, and the top 10 most valuable cards.
@@ -43,7 +43,7 @@ Also included:
   - New sets on TCGdex, newly published prices for the sets you open (with the set total before and after), price changes in your collection, and wishlist cards that hit your target. These are noticed by your browser while the app is open.
   - The bell shows how many are new since you last looked, and the app pops up a note when the daily check finds something. **Open set** jumps straight to the set.
 - **Wishlist**: tap ☆ Want on any card, set a target price, and the app highlights cards at or below their target. When you open the app it tells you how many have hit their target. **Got it** moves a card to your collection with today's price as what you paid.
-- **Camera scanner**: line a card up in the frame and the app reads its number (and name on English cards), then shows the matching cards to add. Photos stay on your device.
+- **Camera scanner**: line a card up in the frame and the app reads its number (and name on English cards), then shows the matching cards to add. If it misreads, type the number yourself: "238/191", just "238", or lettered numbers like "TG05/TG30". Photos stay on your device.
 - **Cloud sync** (optional): keeps your collection and wishlist in a private file in your GitHub account and in sync across devices. See below.
 - **Backups**: Save backup / Load backup (a file), and **Spreadsheet** (a CSV of every copy with prices, paid and gain/loss).
 - **Auto-refresh** every 30 seconds (15 s, 1 min or 5 min in Settings), with a countdown ring and a manual **Refresh** button. Prices that changed flash and show ▲/▼.

@@ -1874,7 +1874,7 @@ footer p { margin: 4px 0; }
     LS.set('lang', lang);
     setTabUI(COLL.tab === 'master' ? 'master' : 'sets');
     closeSearch();
-    $('#gsInput').placeholder = { en: 'Search every English card, e.g. Charizard', ja: 'Search every Japanese card, e.g. Charizard or リザードン', 'zh-tw': 'Search every Chinese card, e.g. Charizard or 噴火龍' }[lang];
+    $('#gsInput').placeholder = { en: 'Search every English card, e.g. Charizard or 238/191', ja: 'Search every Japanese card, e.g. Charizard, リザードン or 110/080', 'zh-tw': 'Search every Chinese card, e.g. Charizard or 噴火龍' }[lang];
     $('#welcome').hidden = true;
     $('#app').hidden = false;
     $$('.controls .seg button[data-lang]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
@@ -3173,7 +3173,44 @@ footer p { margin: 4px 0; }
   const isAscii = (q) => /^[\x00-\x7F]*$/.test(q);
 
   // Matching cards without prices yet: [{ id, setId, localId, name, enName?, pid? }]
+  // Cards with a given number: "238/191" looks in sets of 191 cards; "238" or "TG05" asks TCGdex for
+  // every card with that number. Pokémon TCG Pocket and other unlisted sets are left out.
+  async function numberBriefs(lang, n) {
+    const sets = await setListFor(lang).catch(() => []);
+    const known = new Map(sets.map((x) => [x.id, x]));
+    const out = new Map();
+    const push = (c, setId) => { if (!out.has(c.id)) out.set(c.id, { id: c.id, setId, localId: String(c.localId), name: String(c.name || ''), image: c.image }); };
+    if (n.local != null && n.total != null) {
+      const cand = sets.filter((x) => x.official === n.total).slice(0, 14);
+      const res = await Promise.allSettled(cand.map((x) => getJSON(`https://api.tcgdex.net/v2/${lang}/sets/${encodeURIComponent(x.id)}`, { retries: 0 })));
+      res.forEach((r, i) => { if (r.status === 'fulfilled' && r.value) for (const c of r.value.cards || []) if (matchesNumber(c.localId, n)) push(c, cand[i].id); });
+    }
+    // A bare single digit would match thousands of cards, so it needs the total ("5/191").
+    if (!out.size && !(n.local != null && n.local < 10 && n.total == null)) {
+      const list = await getJSON(`https://api.tcgdex.net/v2/${lang}/cards?localId=${encodeURIComponent(n.code || String(n.local))}`, { retries: 0, timeout: 20000 }).catch(() => []);
+      if (Array.isArray(list) && list.length <= 3000) {
+        for (const c of list) {
+          if (!c || !c.id || c.localId == null || !matchesNumber(c.localId, n)) continue;
+          const setId = String(c.id).slice(0, String(c.id).length - String(c.localId).length - 1);
+          if (known.size && !known.has(setId)) continue;
+          push(c, setId);
+        }
+      }
+    }
+    const index = usesJaNames(lang) ? await jaSearchIndex() : null;
+    if (index) for (const b of out.values()) { const hit = index.byId.get(b.id); if (hit) { b.enName = hit.name; b.pid = lang === 'ja' ? hit.pid : null; } }
+    return [...out.values()].map((b) => Object.assign(b, { official: known.has(b.setId) ? known.get(b.setId).official : null }));
+  }
+
   async function searchBriefs(lang, q) {
+    // A card number ("238/191", "238", "TG05"), or a name and a number ("Pikachu 238")
+    if (/\d/.test(q)) {
+      const n = parseNumberInput(q.replace(/^#/, ''));
+      if (n) return numberBriefs(lang, n);
+      const m = /^(.*\S)\s+#?(\S*\d\S*)$/.exec(q.trim());
+      const n2 = m && /[^\d\s\/#]/.test(m[1]) ? parseNumberInput(m[2]) : null;
+      if (n2) return (await searchBriefs(lang, m[1])).filter((b) => matchesNumber(b.localId, n2));
+    }
     const ja = usesJaNames(lang);
     const index = ja ? await jaSearchIndex() : null;
     let briefs = [];
@@ -4405,17 +4442,11 @@ footer p { margin: 4px 0; }
     const found = new Map();
     const add = (brief, score) => { const cur = found.get(brief.id); if (cur) cur.score += score; else found.set(brief.id, { brief, score }); };
     const tasks = [];
-    if (info.number) {
+    const n = info.number;
+    if (n) {
       tasks.push((async () => {
-        const sets = await setListFor(lang);
-        const cand = sets.filter((x) => x.official === info.number.total).slice(0, 14);
-        const res = await Promise.allSettled(cand.map((x) => getJSON(`https://api.tcgdex.net/v2/${lang}/sets/${encodeURIComponent(x.id)}`, { retries: 0 })));
-        res.forEach((r, i) => {
-          if (r.status !== 'fulfilled' || !r.value) return;
-          for (const c of r.value.cards || []) {
-            if (sameNumber(c.localId, info.number.local)) add({ id: c.id, setId: cand[i].id, localId: String(c.localId), name: String(c.name || ''), image: c.image }, 3);
-          }
-        });
+        // A number with its set size (238/191) is strong evidence; a bare number less so.
+        for (const b of await numberBriefs(lang, n)) add(b, n.total != null && b.official === n.total ? 3 : 2);
       })());
     }
     if (info.name && info.name.length >= 3) {
@@ -4425,7 +4456,7 @@ footer p { margin: 4px 0; }
         const longest = info.name.split(' ').sort((a, b) => b.length - a.length)[0] || '';
         if (!briefs.length && longest.length >= 4 && longest !== info.name) briefs = await searchBriefs(lang, longest).catch(() => []);
         if (!briefs.length && longest.length >= 7) briefs = await searchBriefs(lang, longest.slice(0, 6)).catch(() => []);
-        for (const b of briefs.slice(0, 400)) add(b, 1 + (info.number && sameNumber(b.localId, info.number.local) ? 2 : 0));
+        for (const b of briefs.slice(0, 400)) add(b, 1 + (n && matchesNumber(b.localId, n) ? 2 : 0));
       })());
     }
     await Promise.all(tasks);
@@ -4622,9 +4653,28 @@ footer p { margin: 4px 0; }
       if (token === SCAN.token) scanShow({ step: 'results', info, cands: [], error: e.message });
     }
   }
+  // A typed card number: "238/191", "238 / 191", "238 191", "238／191" (Japanese keyboard), just "238",
+  // or a lettered one like "TG05/TG30", "GG01", "SWSH050". -> { local, code, total, totalCode }
   function parseNumberInput(v) {
-    const m = /(\d{1,3})\s*\/\s*(\d{1,3})/.exec(String(v || ''));
-    return m ? { local: parseInt(m[1], 10), total: parseInt(m[2], 10) } : null;
+    const t = String(v || '').normalize('NFKC').toUpperCase().replace(/\bOF\b/g, '/').trim();
+    const parts = t.split(/\s*[\/\\|]\s*|\s+/).filter(Boolean);
+    if (!parts.length || parts.length > 2) return null;
+    const [a, b] = parts;
+    if (!/^[A-Z]{0,6}-?\d{1,4}[A-Z]?$/.test(a) || (b && !/^[A-Z]{0,6}-?\d{1,4}$/.test(b))) return null;
+    const code = a.replace('-', ''), totalCode = b ? b.replace('-', '') : null;
+    return {
+      local: /^\d+$/.test(code) ? parseInt(code, 10) : null, code,
+      total: totalCode && /^\d+$/.test(totalCode) ? parseInt(totalCode, 10) : null, totalCode,
+    };
+  }
+  // "238/191", "TG05/TG30" or "238" for showing a number back.
+  const numberText = (n) => (n ? `${n.code || n.local}${n.totalCode || n.total ? `/${n.totalCode || n.total}` : ''}` : '');
+  // Does a card's localId match a typed number? 5 = "005"; "TG5" = "TG05".
+  function matchesNumber(localId, n) {
+    if (!n) return false;
+    if (n.local != null) return sameNumber(localId, n.local);
+    const z = (x) => String(x == null ? '' : x).toUpperCase().replace(/^([A-Z]*)0+(?=\d)/, '$1');
+    return z(localId) === z(n.code);
   }
 
   function renderScan() {
@@ -4685,15 +4735,22 @@ footer p { margin: 4px 0; }
     // Results: what was read (editable) and the matching cards.
     const info = v.info || { number: null, name: '' };
     const nameIn = h('input', { class: 'input', id: 'scanName', type: 'text', value: info.name || '', placeholder: SCAN.lang !== 'en' ? 'e.g. Charizard (optional)' : 'e.g. Pikachu ex', autocomplete: 'off' });
-    const numIn = h('input', { class: 'input', id: 'scanNum', type: 'text', inputmode: 'numeric', value: info.number ? `${info.number.local}/${info.number.total}` : '', placeholder: 'e.g. 238/191', autocomplete: 'off' });
-    const again = () => findMatches({ name: nameIn.value.trim(), number: parseNumberInput(numIn.value) });
+    // Plain text keyboard (not a number pad, which has no "/" on iPhone); numbers can have letters too (TG05/TG30).
+    const numIn = h('input', { class: 'input', id: 'scanNum', type: 'text', autocapitalize: 'characters', autocorrect: 'off', spellcheck: 'false', enterkeyhint: 'search', value: numberText(info.number), placeholder: 'e.g. 238/191 or TG05', autocomplete: 'off' });
+    const again = () => {
+      const number = parseNumberInput(numIn.value);
+      if (numIn.value.trim() && !number) { numIn.setCustomValidity('Type the number like 238/191, 238 or TG05'); numIn.reportValidity(); return; }
+      numIn.setCustomValidity('');
+      findMatches({ name: nameIn.value.trim(), number });
+    };
+    numIn.addEventListener('input', () => numIn.setCustomValidity(''));
     for (const el of [nameIn, numIn]) el.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); again(); } });
     const read = h('div', { class: 'scan-read' },
       h('div', { class: 'field' }, h('label', { for: 'scanName', text: SCAN.lang !== 'en' ? 'English name' : 'Name' }), nameIn),
       h('div', { class: 'field' }, h('label', { for: 'scanNum', text: 'Number' }), numIn),
       h('button', { class: 'btn', type: 'button', onclick: again, text: 'Find' }));
     const headline = info.number || info.name
-      ? `Read: ${[info.name, info.number ? `${info.number.local}/${info.number.total}` : ''].filter(Boolean).join(' · ')}. Fix it below if it's wrong.`
+      ? `Read: ${[info.name, numberText(info.number)].filter(Boolean).join(' · ')}. Fix it below if it's wrong.`
       : 'Couldn’t read the card clearly. Type the number printed at the bottom (like 238/191) and tap Find, or scan again.';
     const cands = v.cands || [];
     const list = cands.length
