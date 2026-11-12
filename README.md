@@ -11,6 +11,8 @@ A single-page HTML app (`index.html`, no build step) that shows every card in a 
 Also included:
 
 - **Search every card** in the chosen language from the search bar at the top. For example, "Charizard" lists every Charizard card from every set with its price. Japanese cards can be searched by English name ("Charizard") or Japanese name ("リザードン"). Results start with the newest sets and can be sorted by price or name. **Open set** jumps to the card inside its set.
+- **My collection** tab: tap ＋ on any card (in a set, in search results or in a card's window) to add it. Owned cards get a green ✓ in set lists, and each set shows how many you have, what they're worth, and what the missing cards would cost. The collection tab shows the total worth (with a history line), card count, most valuable card, and every card with its quantity, which print you have (e.g. reverse holo) and its value. Sort and filter it, and tap a set name to jump to that card in its set.
+- **Scan a card with the camera** (camera button next to Search, or in My collection). Line the card up in the frame and tap Capture. The app reads the card number (and the name on English cards) and shows the matching cards to pick from, so you can scan card after card. You can also use a photo from your library.
 - **Sorting** by card number, name or price (tap a column header, or use the sort menu on phones). A filter box narrows the current set's list.
 - **Set totals**: total cost of the set (one copy of each card), highest card, lowest card, average and median.
 - **Charts**: the running total of the set cost card by card, and the top 10 most valuable cards. Hover or tap for details.
@@ -43,6 +45,22 @@ The files cover every Japanese set from about 2017 on (91 sets at the moment). O
 The script also writes `data/ja/search.json`, one list of every Japanese card with an English name. That's what lets the search find Japanese cards by English name.
 
 A GitHub Actions workflow (`.github/workflows/japanese-names.yml`) re-runs the script every Monday and commits any changes, so new sets get English names. You can also run it from the repo's **Actions** tab, or locally with `python3 tools/build_japanese_names.py`.
+
+### My collection: where it's saved
+
+Your collection is saved in your browser's storage, on that device, in that browser. It isn't uploaded anywhere. Use **Export** in the My collection tab now and then to save a backup file (`pokemon-collection-<date>.json`), and **Import** to load it back or move it to another device or browser. Clearing your browser's website data, or **Settings → Clear saved data**, deletes the collection.
+
+Collection prices update when you open the tab (cards older than an hour), every 30 seconds while it's open, and whenever those cards load in a set or a search.
+
+### Card scanner: how it works and its limits
+
+The scanner uses [Tesseract.js](https://github.com/naptha/tesseract.js), an open-source text reader that runs in your browser. It downloads once (about 5 MB, from the jsDelivr CDN), and photos never leave your device.
+
+1. The live camera view has a card-shaped frame. The app crops what's inside it at full resolution. For a photo from your library, it tries to find the card automatically.
+2. It reads the card number at the bottom (e.g. `238/191`) and, on English cards, the name at the top.
+3. It looks up cards with that number in sets of that size, and cards with that name, and lists the best matches with pictures and prices. You tap **Add** on yours.
+
+It works best on regular cards, held flat in good light, filling the frame. On full-art cards the number is printed over the artwork and often can't be read. You'll usually get the right name but need to type the number. The name and number are always editable, with a **Find** button. Japanese cards are matched by number only, because the text reader is English-only, so pick the right set from the list.
 
 ### How the 30-second refresh works
 

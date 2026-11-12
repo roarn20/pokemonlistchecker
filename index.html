@@ -211,7 +211,7 @@ button { cursor: pointer; }
 .btn.primary { background: var(--text); color: var(--page); border-color: transparent; }
 .btn.primary:hover { opacity: 0.9; }
 .btn svg { width: 16px; height: 16px; flex: none; }
-.busy .btn-refresh svg.ico { animation: spin 0.9s linear infinite; }
+.busy .btn-refresh svg.ico, .btn-refresh.busy-btn svg.ico { animation: spin 0.9s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .ring { position: relative; width: 40px; height: 40px; flex: none; }
 .ring svg { width: 40px; height: 40px; transform: rotate(-90deg); }
@@ -346,7 +346,7 @@ svg.chart .hit { fill: transparent; cursor: crosshair; }
 .sort-group .select { width: auto; }
 .dir-btn { width: 40px; padding: 0; }
 .list-head, .row {
-  display: grid; grid-template-columns: 64px 84px minmax(0, 1fr) 150px 238px; gap: 14px; align-items: center; padding: 0 16px;
+  display: grid; grid-template-columns: 64px 84px minmax(0, 1fr) 150px 282px; gap: 14px; align-items: center; padding: 0 16px;
 }
 .list-head { height: 40px; background: var(--surface-2); border-bottom: 1px solid var(--border); font-size: 11.5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
 .list-head button { border: 0; background: none; padding: 0; font: inherit; color: inherit; letter-spacing: inherit; text-transform: inherit; display: inline-flex; align-items: center; gap: 4px; }
@@ -415,6 +415,80 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.55); backdrop-filter: blur(3px); 
 .card-dlg .kv dd { margin: 0; font-variant-numeric: tabular-nums; }
 .card-dlg .links { justify-content: flex-start; margin-top: 6px; }
 
+/* Tabs */
+.tabs { display: flex; gap: 4px; padding: 4px; margin: 14px 0 0; background: var(--surface-2); border: 1px solid var(--border); border-radius: 13px; }
+.tabs button { flex: 1; height: 40px; border: 0; background: transparent; border-radius: 10px; font-weight: 700; font-size: 14px; color: var(--text-2); display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.tabs button[aria-current="page"] { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12); }
+.tab-count { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--good); color: #fff; font-size: 11.5px; display: inline-grid; place-items: center; }
+.tab-count:empty { display: none; }
+.btn.icon-only { width: 46px; padding: 0; }
+.btn.icon-only svg { width: 20px; height: 20px; }
+
+/* Owned cards */
+.own-btn { min-width: 34px; height: 32px; border-radius: 8px; border: 1px solid var(--border-strong); background: var(--surface); font-weight: 800; font-size: 15px; flex: none; color: var(--text-2); padding: 0 8px; white-space: nowrap; line-height: 1; }
+.own-btn:hover { background: var(--surface-2); color: var(--text); }
+.own-btn.on { background: var(--good); border-color: transparent; color: #fff; }
+.thumb .owned-badge { position: absolute; top: 3px; right: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--good); color: #fff; font-size: 11px; font-weight: 800; display: none; place-items: center; box-shadow: 0 0 0 2px var(--surface); }
+.row.owned .thumb .owned-badge { display: grid; }
+.row.owned { background: color-mix(in srgb, var(--good) 6%, transparent); }
+.own { margin-top: 10px; display: grid; gap: 6px; max-width: 560px; }
+.own-bar { height: 8px; border-radius: 999px; background: var(--surface-3); overflow: hidden; }
+.own-bar span { display: block; height: 100%; border-radius: 999px; background: var(--good); min-width: 0; transition: width 0.3s ease; }
+.own-text { font-size: 13px; color: var(--text-2); }
+.own-text b { color: var(--text); }
+
+/* Collection */
+.coll-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; padding: 22px 0 4px; flex-wrap: wrap; }
+.coll-head h1 { margin: 0; font-size: clamp(26px, 4vw, 34px); letter-spacing: -0.02em; }
+.coll-head p { margin: 4px 0 0; font-size: 14px; }
+.coll-row { grid-template-columns: 64px minmax(0, 1fr) auto 150px; }
+.coll-ctrl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.qty { display: inline-flex; align-items: center; border: 1px solid var(--border-strong); border-radius: 9px; overflow: hidden; height: 32px; background: var(--surface); }
+.qty button { width: 32px; height: 100%; border: 0; background: transparent; font-size: 17px; font-weight: 700; color: var(--text-2); }
+.qty button:hover { background: var(--surface-2); color: var(--text); }
+.qty-n { min-width: 28px; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
+.select.mini { height: 32px; font-size: 12.5px; padding: 0 28px 0 10px; width: auto; max-width: 170px; background-position: right 9px center; }
+.mini-link { font-size: 12.5px; font-weight: 700; color: var(--text-2); }
+.lang-tag { font-size: 10.5px; font-weight: 800; padding: 1px 6px; border-radius: 5px; background: var(--surface-3); color: var(--text-2); }
+.set-link { border: 0; padding: 1px 8px; cursor: pointer; }
+.set-link:hover { text-decoration: underline; }
+.dlg-coll { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px 0 4px; border-top: 1px solid var(--border); margin-top: 6px; }
+.dlg-coll-label { font-weight: 700; font-size: 13.5px; color: var(--good); }
+
+/* Scanner */
+.scan-dlg { max-width: min(540px, calc(100vw - 32px)); }
+.scan-tips { margin: 0; padding-left: 18px; color: var(--text-2); font-size: 14px; display: grid; gap: 4px; }
+.scan-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.scan-actions .btn { flex: 1 1 180px; height: 46px; }
+.scan-note { font-size: 12.5px; color: var(--muted); margin: 0; }
+.scan-preview { display: flex; gap: 14px; align-items: center; }
+.scan-preview img { width: 92px; height: 128px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-2); flex: none; }
+.scan-status { font-weight: 600; color: var(--text-2); display: flex; align-items: center; gap: 10px; }
+.spinner { width: 18px; height: 18px; border-radius: 50%; border: 2.5px solid var(--surface-3); border-top-color: var(--series-1); animation: spin 0.8s linear infinite; flex: none; }
+.scan-read { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto; gap: 8px; align-items: end; }
+.scan-read .field label { font-size: 11px; }
+.scan-read .btn { height: 40px; }
+.cands { display: grid; gap: 8px; }
+.cand { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px; border: 1px solid var(--border); border-radius: 12px; }
+.cand img, .cand .ph-box { width: 52px; height: 72px; object-fit: cover; border-radius: 5px; background: var(--surface-2); display: grid; place-items: center; font-size: 10px; color: var(--muted); }
+.cand .c-name { font-weight: 700; font-size: 14px; overflow-wrap: break-word; }
+.cand .c-sub { font-size: 12.5px; color: var(--muted); }
+.cand .c-price { font-weight: 700; font-variant-numeric: tabular-nums; font-size: 13.5px; color: var(--text); }
+.cand-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+
+.scan-dlg .dlg-body { display: flex; flex-direction: column; gap: 14px; }
+.cam-box { position: relative; flex: none; height: min(54vh, calc((100vw - 76px) * 4 / 3), 560px); aspect-ratio: 3 / 4; align-self: center; background: #000; border-radius: 14px; overflow: hidden; }
+.cam-box video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.cam-guide, .cam-hint { pointer-events: none; }
+.cam-guide { position: absolute; left: 50%; top: 50%; height: 84%; aspect-ratio: 63 / 88; transform: translate(-50%, -50%); border: 3px solid rgba(255, 255, 255, 0.95); border-radius: 12px; box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.38); }
+.cam-hint { position: absolute; left: 0; right: 0; bottom: 8px; text-align: center; color: #fff; font-size: 13px; font-weight: 600; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8); }
+
+/* Toast */
+.toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom)); transform: translate(-50%, 20px); z-index: 70; background: var(--text); color: var(--page); padding: 10px 14px; border-radius: 12px; font-size: 14px; font-weight: 600; display: flex; gap: 14px; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.18s, transform 0.18s; max-width: calc(100vw - 32px); box-shadow: var(--shadow); }
+.toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+.toast span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.toast button { border: 0; background: none; color: inherit; font-weight: 800; text-decoration: underline; padding: 0; flex: none; }
+
 footer { padding: 10px 0 40px; font-size: 12px; color: var(--muted); }
 footer p { margin: 4px 0; }
 
@@ -423,7 +497,8 @@ footer p { margin: 4px 0; }
   .stats { grid-template-columns: 1fr 1fr; }
   .tile.hero { grid-column: 1 / -1; }
   .charts { grid-template-columns: 1fr; }
-  .list-head, .row { grid-template-columns: 60px 72px minmax(0, 1fr) 130px 232px; gap: 10px; }
+  .list-head, .row { grid-template-columns: 60px 72px minmax(0, 1fr) 130px 276px; gap: 10px; }
+  .coll-row { grid-template-columns: 60px minmax(0, 1fr) auto 130px; }
 }
 @media (max-width: 760px) {
   .brand-sub { display: none; }
@@ -451,7 +526,11 @@ footer p { margin: 4px 0; }
   .row .m-num { display: inline; }
   .row .name-cell { grid-area: name; }
   .row .price { grid-area: price; }
-  .row .links { grid-area: links; justify-content: flex-start; align-self: end; }
+  .row .links, .row .coll-ctrl { grid-area: links; justify-content: flex-start; align-self: end; }
+  .coll-row { grid-template-columns: 60px minmax(0, 1fr) minmax(0, 42%); }
+  .sort-group { flex-wrap: wrap; }
+  .scan-read { grid-template-columns: 1fr 1fr; }
+  .scan-read .btn { grid-column: 1 / -1; }
   .name { font-size: 14.5px; }
   .price .p-main { font-size: 16px; }
   .price .p-var { white-space: normal; }
@@ -484,6 +563,10 @@ footer p { margin: 4px 0; }
 </header>
 
 <main class="wrap">
+  <nav class="tabs" id="tabs" aria-label="Sections">
+    <button type="button" data-tab="sets" aria-current="page">Sets &amp; search</button>
+    <button type="button" data-tab="collection" aria-current="false">My collection <span class="tab-count" id="collCount"></span></button>
+  </nav>
   <!-- Step 1: language -->
   <section class="welcome" id="welcome" hidden>
     <span class="step-tag"><b>1</b> Choose a language</span>
@@ -554,6 +637,7 @@ footer p { margin: 4px 0; }
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
       <input id="gsInput" class="input" type="search" enterkeyhint="search" placeholder="Search every card, e.g. Charizard">
       <button class="btn primary" type="submit">Search</button>
+      <button class="btn icon-only" type="button" id="scanBtn" aria-label="Scan a card with the camera" title="Scan a card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></button>
     </form>
     <div class="statusline" id="statusline" aria-live="polite"></div>
     <div id="banners"></div>
@@ -602,6 +686,12 @@ footer p { margin: 4px 0; }
           <input id="searchInput" class="input" type="search" placeholder="Filter this set" aria-label="Filter this set by name, number or rarity">
         </div>
         <div class="sort-group">
+          <label class="sr-only" for="ownFilter">Show</label>
+          <select id="ownFilter" class="select">
+            <option value="all">All cards</option>
+            <option value="have">Cards I have</option>
+            <option value="need">Cards I need</option>
+          </select>
           <label class="sr-only" for="sortSelect">Sort by</label>
           <select id="sortSelect" class="select">
             <option value="number">Sort: Card number</option>
@@ -617,15 +707,75 @@ footer p { margin: 4px 0; }
         <button type="button" data-sort="number">#<span class="arrow"></span></button>
         <button type="button" data-sort="name">Name<span class="arrow"></span></button>
         <button type="button" data-sort="price" class="right">Price<span class="arrow"></span></button>
-        <span class="right" style="text-align:right">Buy / check</span>
+        <span class="right" style="text-align:right">Have · Buy / check</span>
       </div>
       <div class="rows" id="rows"></div>
+    </section>
+  </section>
+
+  <!-- My collection -->
+  <section id="collectionView" hidden>
+    <div class="coll-head">
+      <div>
+        <h1>My collection</h1>
+        <p class="muted">Tap ＋ on any card in a set or in search results, or scan a card with your camera.</p>
+      </div>
+      <button class="btn primary" type="button" id="collScan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Scan a card</button>
+    </div>
+    <div class="controls" role="group" aria-label="Collection settings">
+      <div class="field small">
+        <label for="collCurrency">Currency</label>
+        <select id="collCurrency" class="select"></select>
+      </div>
+      <div class="field small">
+        <label for="collPrice">Price</label>
+        <select id="collPrice" class="select"></select>
+      </div>
+      <div class="field">
+        <span class="label">Prices</span>
+        <div class="refresh-group"><button class="btn btn-refresh" type="button" id="collRefresh"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg> Refresh prices</button></div>
+      </div>
+      <div class="field">
+        <span class="label">Backup</span>
+        <div class="refresh-group">
+          <button class="btn" type="button" id="collExport" title="Save your collection to a file">Export</button>
+          <button class="btn" type="button" id="collImport" title="Load a collection file">Import</button>
+        </div>
+      </div>
+    </div>
+    <div class="statusline" id="collStatus" aria-live="polite"></div>
+    <section class="stats" id="collStats" aria-label="Collection totals"></section>
+    <section class="panel list-panel">
+      <div class="list-toolbar">
+        <h3>Cards <span class="count" id="collCountLabel"></span></h3>
+        <div class="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="collSearch" class="input" type="search" placeholder="Filter my cards" aria-label="Filter my cards">
+        </div>
+        <div class="sort-group">
+          <label class="sr-only" for="collLang">Language</label>
+          <select id="collLang" class="select">
+            <option value="all">All languages</option>
+            <option value="en">English</option>
+            <option value="ja">Japanese</option>
+          </select>
+          <label class="sr-only" for="collSort">Sort by</label>
+          <select id="collSort" class="select">
+            <option value="value">Sort: Value</option>
+            <option value="recent">Sort: Recently added</option>
+            <option value="name">Sort: Name</option>
+            <option value="set">Sort: Set</option>
+          </select>
+        </div>
+      </div>
+      <div class="rows" id="collRows"></div>
     </section>
   </section>
 
   <footer>
     <p id="footSources">Card data from TCGdex, with pokemontcg.io as an English backup. Prices: TCGplayer (English cards) and Cardmarket (Japanese cards, and any card TCGplayer has no price for). Optional PriceCharting prices with your own API key. Exchange rates: open.er-api.com.</p>
     <p>Prices are for one copy of each card, ungraded. The sources publish new prices about once a day; this page checks for them on the refresh timer.</p>
+    <p>Your collection is saved in this browser. Use Export now and then to keep a backup file, or to move it to another device.</p>
     <p>Not affiliated with Nintendo, The Pokémon Company, TCGplayer or PriceCharting.</p>
   </footer>
 </main>
@@ -683,6 +833,19 @@ footer p { margin: 4px 0; }
   <div class="info" id="cardDlgInfo"></div>
 </dialog>
 
+<!-- Card scanner -->
+<dialog id="scanDlg" class="scan-dlg" aria-labelledby="scanTitle">
+  <div class="dlg-head">
+    <h2 id="scanTitle">Scan a card</h2>
+    <button class="icon-btn" type="button" id="scanClose" aria-label="Close">✕</button>
+  </div>
+  <div class="dlg-body" id="scanBody"></div>
+  <input type="file" accept="image/*" capture="environment" id="scanCamera" hidden>
+  <input type="file" accept="image/*" id="scanFile" hidden>
+</dialog>
+<input type="file" accept="application/json,.json" id="importFile" hidden>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
 <div class="tooltip" id="tooltip" role="status"></div>
 
 <script>
@@ -720,6 +883,8 @@ footer p { margin: 4px 0; }
     }
     return el;
   }
+  // replaceChildren, skipping empty slots (it would otherwise print "null").
+  const fill = (el, ...kids) => el.replaceChildren(...kids.flat(Infinity).filter((k) => k != null && k !== false));
   const SVGNS = 'http://www.w3.org/2000/svg';
   function sv(tag, attrs, ...kids) {
     const el = document.createElementNS(SVGNS, tag);
@@ -1129,6 +1294,7 @@ footer p { margin: 4px 0; }
     state.rates = Object.assign({}, FALLBACK_RATES, r.rates);
     state.ratesInfo = r;
     scheduleRender();
+    if (typeof COLL !== 'undefined' && COLL.tab === 'collection') requestAnimationFrame(renderCollection);
   }
   const rate = () => state.rates[state.currency] || 1;
   function money(value, { compact = false, whole = false, currency = state.currency } = {}) {
@@ -1207,6 +1373,7 @@ footer p { margin: 4px 0; }
     priceType: LS.get('priceType', 'market'),
     sort: LS.get('sort', { key: 'number', dir: 'asc' }),
     query: '',
+    ownFilter: 'all',
     rates: Object.assign({}, FALLBACK_RATES),
     ratesInfo: null,
     settings: Object.assign({}, DEFAULT_SETTINGS, LS.get('settings', {})),
@@ -1260,6 +1427,7 @@ footer p { margin: 4px 0; }
   async function chooseLanguage(lang, { setId = null, src = null } = {}) {
     state.lang = lang;
     LS.set('lang', lang);
+    setTabUI('sets');
     closeSearch();
     $('#gsInput').placeholder = lang === 'ja' ? 'Search every Japanese card, e.g. Charizard or リザードン' : 'Search every English card, e.g. Charizard';
     $('#welcome').hidden = true;
@@ -1269,7 +1437,7 @@ footer p { margin: 4px 0; }
     state.lastError = null; state.listError = null;
     rowCache.clear();
     const sel = $('#setSelect');
-    sel.replaceChildren(h('option', { text: 'Loading sets…' }));
+    fill(sel, h('option', { text: 'Loading sets…' }));
     sel.disabled = true;
     renderAll();
     const id = ++state.reqId;
@@ -1289,7 +1457,7 @@ footer p { margin: 4px 0; }
       if (id !== state.reqId) return;
       setBusy(false);
       state.listError = e;
-      sel.replaceChildren(h('option', { text: 'Could not load sets' }));
+      fill(sel, h('option', { text: 'Could not load sets' }));
       renderAll();
     }
   }
@@ -1350,7 +1518,9 @@ footer p { margin: 4px 0; }
           if (isNum(a) && isNum(b) && Math.abs(b - a) >= 0.005) state.changes.set(c.id, b > a ? 1 : -1);
         }
       }
+      for (const c of cards) c.setId = set.id;
       state.cards = cards;
+      if (Coll.sync(cards, state.lang)) renderTabCount();
       Object.assign(set, Object.fromEntries(Object.entries(meta || {}).filter(([, v]) => v != null)));
       state.lastChecked = new Date();
       state.lastFull = Date.now();
@@ -1392,6 +1562,7 @@ footer p { margin: 4px 0; }
      Auto refresh
      ========================================================= */
   setInterval(() => {
+    if (COLL.tab === 'collection' && !document.hidden) refreshCollection(); // only re-reads cards older than an hour
     if (!state.set || !state.auto || state.loading || document.hidden) { renderRing(); return; }
     state.remaining -= 1;
     if (state.remaining <= 0) {
@@ -1475,7 +1646,7 @@ footer p { margin: 4px 0; }
     if (hasPC) opts.push(['pc', 'PriceCharting ungraded'], ['pc10', 'PriceCharting PSA 10']);
     if (!hasPC && (state.priceType === 'pc' || state.priceType === 'pc10')) state.priceType = 'market';
     const sig = opts.map((o) => o[0]).join();
-    if (ps.dataset.sig !== sig) { ps.replaceChildren(...opts.map(([v, t]) => h('option', { value: v, text: t }))); ps.dataset.sig = sig; }
+    if (ps.dataset.sig !== sig) { fill(ps, ...opts.map(([v, t]) => h('option', { value: v, text: t }))); ps.dataset.sig = sig; }
     ps.value = state.priceType;
 
     $('#autoToggle').checked = state.auto;
@@ -1511,7 +1682,7 @@ footer p { margin: 4px 0; }
         return h('option', { value: s.id, text: `${s.name}${en && en.toLowerCase() !== s.name.toLowerCase() ? ` (${en})` : ''}${code}${date}` });
       })));
     }
-    sel.replaceChildren(...frag);
+    fill(sel, ...frag);
     if (state.set) sel.value = state.set.id;
   }
 
@@ -1541,7 +1712,7 @@ footer p { margin: 4px 0; }
       parts.push(h('span', { text: `1 USD = ${money(r, { currency: state.currency })} (${state.ratesInfo.source})` }));
     }
     if (PC.progress) parts.push(h('span', { text: `PriceCharting ${PC.progress}…` }));
-    el.replaceChildren(...parts);
+    fill(el, ...parts);
   }
 
   function renderBanners() {
@@ -1579,7 +1750,7 @@ footer p { margin: 4px 0; }
     if (state.ratesInfo && state.ratesInfo.approx && state.currency !== 'USD') {
       out.push({ kind: 'warn', text: 'Live exchange rates are unavailable, so converted prices use approximate built-in rates.' });
     }
-    $('#banners').replaceChildren(...out.map((b) => h('div', { class: 'banner ' + b.kind, role: b.kind === 'err' ? 'alert' : null },
+    fill($('#banners'), ...out.map((b) => h('div', { class: 'banner ' + b.kind, role: b.kind === 'err' ? 'alert' : null },
       h('span', { class: 'grow', text: b.text }),
       b.link ? h('a', { class: 'btn primary', href: b.link.href, target: '_blank', rel: 'noopener', text: b.link.text }) : null,
       b.action ? h('button', { type: 'button', onclick: b.action[1], text: b.action[0] }) : null)));
@@ -1589,7 +1760,7 @@ footer p { margin: 4px 0; }
     const el = $('#setHero');
     const s = state.set;
     if (!s) {
-      el.replaceChildren(h('div', { class: 'set-info' }, h('h2', { class: 'muted', text: state.listError ? 'No set loaded' : 'Loading sets…' })));
+      fill(el, h('div', { class: 'set-info' }, h('h2', { class: 'muted', text: state.listError ? 'No set loaded' : 'Loading sets…' })));
       return;
     }
     const logo = safeUrl(s.logo);
@@ -1604,9 +1775,21 @@ footer p { margin: 4px 0; }
     if (count) meta.push(h('span', { text: `${count} cards${s.official && count > s.official ? ` (${s.official} + ${count - s.official} secret)` : ''}` }));
     if (state.set === newestSet(state.sets)) meta.push(h('span', null, h('span', { class: 'chip', text: '★ Newest set' })));
     const en = enSetName(s);
-    el.replaceChildren(art, h('div', { class: 'set-info' },
+    let own = null;
+    if (state.cards.length) {
+      const o = ownership();
+      const pct = o.total ? Math.round((o.have / o.total) * 100) : 0;
+      const parts = [h('b', { text: `You have ${o.have} of ${o.total}` }), ` (${pct}%)`];
+      if (o.have) parts.push(` · worth ${fmt(o.worth)}`);
+      if (o.have < o.total) parts.push(` · the ${o.total - o.have} you need cost ${fmt(o.missingCost)}${o.missingPriced < o.total - o.have ? '+' : ''}`);
+      else parts.push(' · complete set!');
+      own = h('div', { class: 'own' },
+        h('div', { class: 'own-bar', role: 'progressbar', 'aria-label': 'Set completion', 'aria-valuemin': '0', 'aria-valuemax': String(o.total), 'aria-valuenow': String(o.have) }, h('span', { style: `width:${pct}%` })),
+        h('span', { class: 'own-text' }, parts));
+    }
+    fill(el, art, h('div', { class: 'set-info' },
       h('h2', null, s.name, en && en.toLowerCase() !== s.name.toLowerCase() ? h('span', { class: 'en-name', text: ` (${en})` }) : null),
-      h('div', { class: 'set-meta' }, meta)));
+      h('div', { class: 'set-meta' }, meta), own));
   }
   function codeBadge(s) {
     const code = (s.code || s.name.split(/[:\s]/)[0] || '?').slice(0, 7);
@@ -1615,7 +1798,7 @@ footer p { margin: 4px 0; }
 
   function renderStats() {
     const el = $('#stats');
-    if (!state.set) { el.replaceChildren(); return; }
+    if (!state.set) { fill(el, ); return; }
     const st = stats();
     const n = state.cards.length;
     const loadingFirst = !n && state.loading;
@@ -1624,7 +1807,7 @@ footer p { margin: 4px 0; }
       h('div', { class: 't-value', text: value }),
       sub ? h('div', { class: 't-sub' }, sub) : null, extra || null);
     if (loadingFirst) {
-      el.replaceChildren(
+      fill(el, 
         tile('hero', 'Total set cost', '…', 'Loading prices'),
         tile('', 'Highest', '…'), tile('', 'Lowest', '…'), tile('', 'Average card', '…'));
       return;
@@ -1647,7 +1830,7 @@ footer p { margin: 4px 0; }
     }
     const jump = (x) => h('button', { type: 'button', onclick: () => jumpToCard(x.c.id), title: 'Show in the list', text: `${fullName(x.c)} · #${numKey(x.c.number)}` });
     const labelFor = sourceLabel(st.priced);
-    el.replaceChildren(
+    fill(el, 
       tile('hero', h('span', null, 'Total set cost ', h('span', { class: 'muted', style: 'font-weight:500', text: `· ${labelFor}` })),
         fmt(st.total), delta || pricedTxt, h('div', null, delta ? h('div', { class: 't-sub', text: pricedTxt }) : null, spark)),
       tile('', 'Highest', fmt(st.hi && st.hi.p), st.hi ? jump(st.hi) : 'No prices'),
@@ -1687,7 +1870,7 @@ footer p { margin: 4px 0; }
   /* ---------- Charts ---------- */
   const tooltip = $('#tooltip');
   function showTip(clientX, clientY, value, lines) {
-    tooltip.replaceChildren(h('div', { class: 'tt-val', text: value }), ...lines.map((l) => h('div', { class: 'tt-row' + (l.muted ? ' tt-muted' : '') }, l.key ? h('span', { class: 'tt-key' }) : null, h('span', { text: l.text }))));
+    fill(tooltip, h('div', { class: 'tt-val', text: value }), ...lines.map((l) => h('div', { class: 'tt-row' + (l.muted ? ' tt-muted' : '') }, l.key ? h('span', { class: 'tt-key' }) : null, h('span', { text: l.text }))));
     tooltip.classList.add('show');
     const r = tooltip.getBoundingClientRect();
     let left = clientX + 14, top = clientY - r.height - 12;
@@ -1711,8 +1894,8 @@ footer p { margin: 4px 0; }
     const st = stats();
     if (!state.set || st.priced.length < 2) {
       const msg = !state.set || (state.loading && !state.cards.length) ? 'Loading…' : 'Not enough prices to chart this set.';
-      cumBox.replaceChildren(h('div', { class: 'chart-empty', text: msg }));
-      topBox.replaceChildren(h('div', { class: 'chart-empty', text: msg }));
+      fill(cumBox, h('div', { class: 'chart-empty', text: msg }));
+      fill(topBox, h('div', { class: 'chart-empty', text: msg }));
       $('#cumSub').textContent = 'Running total, with cards ordered from most to least valuable';
       return;
     }
@@ -1790,7 +1973,7 @@ footer p { margin: 4px 0; }
       if (e.key === 'ArrowRight') { show(cur + 1); e.preventDefault(); }
       else if (e.key === 'ArrowLeft') { show(cur - 1); e.preventDefault(); }
     });
-    box.replaceChildren(svg);
+    fill(box, svg);
   }
 
   function drawTopBars(box, top) {
@@ -1813,36 +1996,37 @@ footer p { margin: 4px 0; }
       return row;
     });
     $('#topSub').textContent = `Top ${top.length} by price · tap one to find it in the list`;
-    box.replaceChildren(h('div', { class: 'bars' }, rows));
+    fill(box, h('div', { class: 'bars' }, rows));
   }
 
   /* ---------- Card list ---------- */
   const rowCache = new Map();
   const SPECIAL_RARITY = /special|illustration|hyper|secret|ultra|gold|rainbow|shiny|art rare|ace spec|\bsar\b|\bsr\b|\bur\b|\bar\b|\bchr\b|\bcsr\b|mega|crown|amazing|radiant|double rare|ex\b/i;
 
-  function tcgSearchUrl(card) {
-    const line = state.lang === 'ja' ? 'pokemon-japan' : 'pokemon';
+  function tcgSearchUrl(card, lang = state.lang) {
+    const line = lang === 'ja' ? 'pokemon-japan' : 'pokemon';
     // Japanese products on TCGplayer have English names, so search by the printed number instead.
-    const q = state.lang === 'ja' ? (card.enName ? `${card.enName} ${card.number}` : card.number) : `${card.name} ${numKey(card.number)}`;
+    const q = lang === 'ja' ? (card.enName ? `${card.enName} ${card.number}` : card.number) : `${card.name} ${numKey(card.number)}`;
     return `https://www.tcgplayer.com/search/${line}/product?productLineName=${line}&q=${encodeURIComponent(q)}&view=grid`;
   }
-  function pcSearchUrl(card) {
+  function pcSearchUrl(card, lang = state.lang) {
     const setName = card.setEnName || (card.setName ? shortSetName(card.setName) : '') || enSetName(state.set) || shortSetName(state.set ? state.set.name : '');
-    const q = `${card.enName || card.name} ${numShort(card.number)} ${state.lang === 'ja' ? 'japanese ' : ''}${setName}`;
+    const q = `${card.enName || card.name} ${numShort(card.number)} ${lang === 'ja' ? 'japanese ' : ''}${setName}`;
     return `https://www.pricecharting.com/search-products?type=prices&q=${encodeURIComponent(q)}`;
   }
 
   const ICON_EXT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>';
-  function linkBtns(card) {
-    const a1 = h('a', { class: 'tcg', href: card.tcgplayerUrl || tcgSearchUrl(card), target: '_blank', rel: 'noopener noreferrer', title: card.tcgplayerUrl ? 'Buy on TCGplayer' : 'Search TCGplayer' }, 'TCGplayer');
-    const a2 = h('a', { href: pcSearchUrl(card), target: '_blank', rel: 'noopener noreferrer', title: 'Check on PriceCharting' }, 'PriceCharting');
+  function linkBtns(card, lang = state.lang) {
+    const a1 = h('a', { class: 'tcg', href: card.tcgplayerUrl || tcgSearchUrl(card, lang), target: '_blank', rel: 'noopener noreferrer', title: card.tcgplayerUrl ? 'Buy on TCGplayer' : 'Search TCGplayer' }, 'TCGplayer');
+    const a2 = h('a', { href: pcSearchUrl(card, lang), target: '_blank', rel: 'noopener noreferrer', title: 'Check on PriceCharting' }, 'PriceCharting');
     a1.insertAdjacentHTML('beforeend', ICON_EXT);
     a2.insertAdjacentHTML('beforeend', ICON_EXT);
     return h('div', { class: 'links' }, a1, a2);
   }
 
-  function makeThumb(card) {
-    const btn = h('button', { class: 'thumb', type: 'button', 'aria-label': `View ${fullName(card)} larger`, onclick: () => openCard(state.cards.find((c) => c.id === card.id && !card.setName) || card) });
+  function makeThumb(card, getEntry) {
+    const btn = h('button', { class: 'thumb', type: 'button', 'aria-label': `View ${fullName(card)} larger`, onclick: () => { const en = getEntry && getEntry(); openCard(en ? en.card : card, en ? en.ctx : null); } });
+    btn.append(h('span', { class: 'owned-badge', 'aria-hidden': 'true', text: '✓' }));
     if (card.img) {
       const img = h('img', { src: card.img, alt: '', loading: 'lazy', decoding: 'async', referrerpolicy: 'no-referrer' });
       img.addEventListener('error', () => img.replaceWith(h('span', { class: 'ph', text: 'No image' })), { once: true });
@@ -1857,8 +2041,11 @@ footer p { margin: 4px 0; }
     const priceMain = h('div', { class: 'p-main' });
     const priceVar = h('div', { class: 'p-var' });
     const priceAlt = h('div', { class: 'p-alt' });
+    const entry = { card, priceMain, priceVar, priceAlt, ctx: { lang: opts.lang || state.lang, set: opts.set === undefined ? state.set : opts.set } };
+    const links = linkBtns(card);
+    links.prepend(ownButton(entry));
     const row = h('div', { class: 'row', 'data-id': card.id },
-      makeThumb(card),
+      makeThumb(card, () => entry),
       h('div', { class: 'num', text: card.number }),
       h('div', { class: 'name-cell' },
         h('div', { class: 'name' }, card.name, card.enName && card.enName !== card.name ? h('span', { class: 'en-name', text: ` (${card.enName})` }) : null),
@@ -1868,8 +2055,8 @@ footer p { margin: 4px 0; }
           opts.search && card.setName ? h('span', { class: 'set-chip', title: 'Set', text: card.setName + (card.setEnName && card.setEnName !== card.setName ? ` (${card.setEnName})` : '') }) : null,
           opts.search && state.sets.some((x) => x.id === card.setId) ? h('button', { class: 'open-set', type: 'button', onclick: () => openSetFromSearch(card), text: 'Open set ›' }) : null)),
       h('div', { class: 'price' }, priceMain, priceVar, priceAlt),
-      linkBtns(card));
-    const entry = { row, card, priceMain, priceVar, priceAlt };
+      links);
+    entry.row = row;
     updateRow(entry, card);
     return entry;
   }
@@ -1880,7 +2067,7 @@ footer p { margin: 4px 0; }
     const ch = state.changes.get(card.id);
     const kids = [pi ? fmt(pi.usd) : 'No price'];
     if (ch) kids.unshift(h('span', { class: 'chg ' + (ch > 0 ? 'up' : 'down'), title: ch > 0 ? 'Price went up since the last check' : 'Price went down since the last check', text: ch > 0 ? '▲' : '▼' }));
-    entry.priceMain.replaceChildren(...kids);
+    fill(entry.priceMain, ...kids);
     entry.priceMain.classList.toggle('na', !pi);
     entry.priceVar.textContent = !pi ? ''
       : pi.src === 'Cardmarket' ? `Cardmarket${state.currency !== 'EUR' ? ' ' + money(pi.eur, { currency: 'EUR' }) : ''}`
@@ -1913,12 +2100,15 @@ footer p { margin: 4px 0; }
       entry.row.classList.remove('flash'); void entry.row.offsetWidth; entry.row.classList.add('flash');
       entry.flashStamp = state.changesStamp;
     }
+    if (entry.ownBtn) renderOwn(entry);
   }
 
   function sortedFiltered() {
     const q = state.query.trim().toLowerCase();
     let list = state.cards;
     if (q) list = list.filter((c) => `${c.name} ${c.enName || ''} ${c.number} ${c.rarity}`.toLowerCase().includes(q));
+    if (state.ownFilter === 'have') list = list.filter((c) => Coll.get(state.lang, c.id));
+    else if (state.ownFilter === 'need') list = list.filter((c) => !Coll.get(state.lang, c.id));
     const dir = state.sort.dir === 'asc' ? 1 : -1;
     const byNum = (a, b) => collator.compare(numKey(a.number), numKey(b.number)) || collator.compare(a.name, b.name);
     const arr = list.slice();
@@ -1941,19 +2131,24 @@ footer p { margin: 4px 0; }
     const box = $('#rows');
     const n = state.cards.length;
     if (!state.set || (!n && state.loading)) {
-      box.replaceChildren(...Array.from({ length: 6 }, () => h('div', { class: 'skel' })));
+      fill(box, ...Array.from({ length: 6 }, () => h('div', { class: 'skel' })));
       $('#cardCount').textContent = '';
       return;
     }
     if (!n) {
-      box.replaceChildren(h('div', { class: 'empty', text: state.lastError ? `Couldn't load this set (${state.lastError.message}).` : 'No cards found for this set.' },
+      fill(box, h('div', { class: 'empty', text: state.lastError ? `Couldn't load this set (${state.lastError.message}).` : 'No cards found for this set.' },
         state.lastError ? h('div', null, h('button', { class: 'btn', type: 'button', style: 'margin-top:12px', onclick: () => refreshPrices({ reason: 'manual', fresh: true }), text: 'Try again' })) : null));
       $('#cardCount').textContent = '';
       return;
     }
     const list = sortedFiltered();
     $('#cardCount').textContent = list.length === n ? `${n} cards` : `${list.length} of ${n} cards`;
-    if (!list.length) { box.replaceChildren(h('div', { class: 'empty', text: 'No cards match your search.' })); return; }
+    if (!list.length) {
+      const msg = state.ownFilter === 'have' && !state.query ? 'You don’t have any cards from this set yet. Tap ＋ on a card to add it.'
+        : state.ownFilter === 'need' && !state.query ? 'You have every card in this set!' : 'No cards match your search.';
+      fill(box, h('div', { class: 'empty', text: msg }));
+      return;
+    }
     const live = new Set();
     const rows = list.map((c) => {
       live.add(c.id);
@@ -1963,7 +2158,7 @@ footer p { margin: 4px 0; }
     });
     const all = new Set(state.cards.map((c) => c.id));
     for (const id of rowCache.keys()) if (!all.has(id)) rowCache.delete(id);
-    box.replaceChildren(...rows);
+    fill(box, ...rows);
   }
 
   function renderProgress() {
@@ -1990,6 +2185,157 @@ footer p { margin: 4px 0; }
     if (!e) return;
     e.row.scrollIntoView({ behavior: 'smooth', block: 'center' });
     e.row.classList.remove('flash'); void e.row.offsetWidth; e.row.classList.add('flash');
+  }
+
+  /* =========================================================
+     My collection. Saved in this browser (localStorage). Export writes a
+     backup file and Import reads it back, e.g. on another device.
+     ========================================================= */
+  const Coll = {
+    items: (() => { const v = LS.get('collection', null); return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; })(),
+    key: (lang, id) => `${lang}:${id}`,
+    get(lang, id) { return this.items[this.key(lang, id)] || null; },
+    save() { LS.set('collection', this.items); },
+    count() { let n = 0; for (const e of Object.values(this.items)) n += e.qty || 0; return n; },
+    add(card, lang, set) {
+      const key = this.key(lang, card.id);
+      const cur = this.items[key];
+      if (cur) cur.qty = Math.min(999, (cur.qty || 0) + 1);
+      else this.items[key] = entryFrom(card, lang, set);
+      return this.items[key];
+    },
+    remove(key) { const e = this.items[key]; delete this.items[key]; return e; },
+    restore(key, e) { if (e) this.items[key] = e; },
+    // Keep saved prices and pictures fresh whenever the app loads those cards anyway.
+    sync(cards, lang) {
+      let changed = false;
+      for (const c of cards) {
+        const e = this.items[this.key(lang, c.id)];
+        if (!e) continue;
+        Object.assign(e, { variants: c.variants || {}, cm: c.cm || null, updated: c.updated || e.updated, pricedAt: Date.now() });
+        if (c.enName) e.enName = c.enName;
+        if (c.img) { e.img = c.img; e.imgLarge = c.imgLarge; }
+        if (c.tcgplayerUrl) e.tcgplayerUrl = c.tcgplayerUrl;
+        changed = true;
+      }
+      if (changed) this.save();
+      return changed;
+    },
+  };
+  function entryFrom(card, lang, set) {
+    return {
+      id: card.id, lang, src: card.src || (state.provider ? state.provider.id : 'tcgdex'),
+      setId: card.setId || (set ? set.id : ''),
+      setName: card.setName || (set ? set.name : ''),
+      setEnName: card.setEnName || (set && lang === 'ja' && JA.sets ? JA.sets[set.id] || '' : ''),
+      name: card.name, enName: card.enName || '', number: card.number || '', localId: card.localId || '', rarity: card.rarity || '',
+      img: card.img || null, imgLarge: card.imgLarge || null, tcgplayerUrl: card.tcgplayerUrl || null,
+      variants: card.variants || {}, cm: card.cm || null, updated: card.updated || null,
+      qty: 1, variant: null, addedAt: Date.now(), pricedAt: Date.now(),
+    };
+  }
+  // Price of one copy of a particular print (e.g. the reverse holo), falling back to the card's main price.
+  function priceFor(card, variant) {
+    if (variant && !isPC()) {
+      const v = card.variants && card.variants[variant];
+      if (v && state.priceType !== 'cm') { const val = pick(v, state.priceType); if (val != null) return { usd: val, src: 'TCGplayer', variant }; }
+      if (/reverse/i.test(variant) && card.cm && isNum(card.cm.trendHolo) && card.cm.trendHolo > 0 && (!v || state.priceType === 'cm')) {
+        return { usd: card.cm.trendHolo / eurPerUsd(), src: 'Cardmarket', variant, eur: card.cm.trendHolo };
+      }
+    }
+    return priceInfo(card);
+  }
+  function variantOptions(card) {
+    const names = Object.keys(card.variants || {}).sort((a, b) => variantRank(a) - variantRank(b));
+    if (names.length) return names;
+    if (card.cm && isNum(card.cm.trend) && card.cm.trend > 0 && isNum(card.cm.trendHolo) && card.cm.trendHolo > 0) return ['Normal', 'Reverse Holofoil'];
+    return [];
+  }
+  function pushHistory(key, total) {
+    const hist = LS.get(key, []);
+    const now = Date.now();
+    const last = hist[hist.length - 1];
+    if (last && now - last.t < 10 * 60 * 1000 && Math.abs(last.v - total) < 0.005) return;
+    if (last && now - last.t < 60 * 1000) hist[hist.length - 1] = { t: now, v: total };
+    else hist.push({ t: now, v: total });
+    LS.set(key, hist.slice(-300));
+  }
+
+  let toastT;
+  function toast(text, undo) {
+    const el = $('#toast');
+    fill(el, h('span', { text }), undo ? h('button', { type: 'button', text: 'Undo', onclick: () => { undo(); el.classList.remove('show'); afterCollectionChange(); } }) : null);
+    el.classList.add('show');
+    clearTimeout(toastT);
+    toastT = setTimeout(() => el.classList.remove('show'), 5000);
+  }
+
+  // The ＋ / ✓ button on each card row.
+  function ownButton(entry) {
+    const btn = h('button', { class: 'own-btn', type: 'button', onclick: () => toggleOwned(entry.card, entry.ctx) });
+    entry.ownBtn = btn;
+    return btn;
+  }
+  function renderOwn(entry) {
+    const e = Coll.get(entry.ctx.lang, entry.card.id);
+    entry.row.classList.toggle('owned', !!e);
+    const btn = entry.ownBtn;
+    btn.classList.toggle('on', !!e);
+    btn.textContent = e ? (e.qty > 1 ? `✓ ${e.qty}` : '✓') : '＋';
+    btn.title = e ? (e.qty > 1 ? `You have ${e.qty}. Tap to change.` : 'In your collection. Tap to remove.') : 'Add to my collection';
+    btn.setAttribute('aria-label', e ? `In your collection (${e.qty}). ${e.qty > 1 ? 'Change how many' : 'Remove'}` : `Add ${fullName(entry.card)} to my collection`);
+    btn.setAttribute('aria-pressed', String(!!e));
+  }
+  function toggleOwned(card, ctx) {
+    const key = Coll.key(ctx.lang, card.id);
+    const e = Coll.items[key];
+    if (!e) {
+      Coll.add(card, ctx.lang, ctx.set);
+      toast(`Added ${fullName(card)}`, () => Coll.remove(key));
+    } else if (e.qty > 1) {
+      openCard(card, ctx); // several copies: change the number in the card window
+      return;
+    } else {
+      const old = Coll.remove(key);
+      toast(`Removed ${fullName(card)}`, () => Coll.restore(key, old));
+    }
+    afterCollectionChange();
+  }
+  function afterCollectionChange() {
+    Coll.save();
+    renderTabCount();
+    if (!$('#app').hidden) { renderList(); renderSetHero(); if (SEARCH.active) renderSearch(); }
+    if (COLL.tab === 'collection') renderCollection();
+    recordCollHistory();
+  }
+  function qtyStepper(q, onChange) {
+    return h('div', { class: 'qty', role: 'group', 'aria-label': 'How many you have' },
+      h('button', { type: 'button', 'aria-label': q <= 1 ? 'Remove from collection' : 'One fewer', title: q <= 1 ? 'Remove' : 'One fewer', onclick: () => onChange(q - 1), text: '−' }),
+      h('span', { class: 'qty-n', text: String(q) }),
+      h('button', { type: 'button', 'aria-label': 'One more', title: 'One more', onclick: () => onChange(Math.min(999, q + 1)), text: '+' }));
+  }
+  function variantSelect(e, opts, onChange) {
+    const sel = h('select', { class: 'select mini', 'aria-label': 'Which print you have' },
+      opts.map((n) => { const p = priceFor(e, n); return h('option', { value: n, text: `${shortVariant(n)}${p ? ' · ' + fmt(p.usd) : ''}` }); }));
+    sel.value = e.variant && opts.includes(e.variant) ? e.variant : opts[0];
+    sel.addEventListener('change', () => { e.variant = sel.value; onChange(); });
+    return sel;
+  }
+  // How much of the current set you have.
+  function ownership() {
+    let have = 0, worth = 0, missingCost = 0, missingPriced = 0;
+    for (const c of state.cards) {
+      const e = Coll.get(state.lang, c.id);
+      if (e) {
+        have++;
+        const p = priceFor(c, e.variant);
+        if (p) worth += p.usd * (e.qty || 1);
+      } else {
+        const p = priceUSD(c);
+        if (isNum(p)) { missingCost += p; missingPriced++; }
+      }
+    }
+    return { have, total: state.cards.length, worth, missingCost, missingPriced };
   }
 
   /* ---------- Search every card in the chosen language ---------- */
@@ -2084,6 +2430,7 @@ footer p { margin: 4px 0; }
       });
     }
     if (token !== SEARCH.token) return;
+    if (Coll.sync(SEARCH.items.filter((x) => x.card).map((x) => x.card), lang)) renderTabCount();
     if (SEARCH.sort.startsWith('price')) rankSearch();
     SEARCH.loading = false;
     SEARCH.progress = null;
@@ -2097,6 +2444,7 @@ footer p { margin: 4px 0; }
     const card = TCGDEX.toCard({ id: brief.id, localId: brief.localId, name: brief.name, image: brief.image }, d || {}, official);
     card.setId = set.id || brief.setId;
     card.setName = String(set.name || brief.setId);
+    card.src = 'tcgdex';
     if (lang === 'ja') {
       card.setEnName = (JA.sets && JA.sets[card.setId]) || '';
       applyEnglish(card, brief.enName, brief.pid);
@@ -2126,16 +2474,16 @@ footer p { margin: 4px 0; }
     const more = $('#gsMoreWrap');
     if (SEARCH.error) {
       more.hidden = true;
-      box.replaceChildren(h('div', { class: 'gs-empty' }, `Search failed (${SEARCH.error.message}). `, h('button', { class: 'open-set', type: 'button', onclick: () => runSearch(SEARCH.q), text: 'Try again' })));
+      fill(box, h('div', { class: 'gs-empty' }, `Search failed (${SEARCH.error.message}). `, h('button', { class: 'open-set', type: 'button', onclick: () => runSearch(SEARCH.q), text: 'Try again' })));
       return;
     }
     if (!total) {
       more.hidden = true;
-      if (SEARCH.loading) { box.replaceChildren(...Array.from({ length: 4 }, () => h('div', { class: 'skel' }))); return; }
+      if (SEARCH.loading) { fill(box, ...Array.from({ length: 4 }, () => h('div', { class: 'skel' }))); return; }
       const tip = SEARCH.lang === 'ja'
         ? 'Try the English name (Charizard) or the Japanese name (リザードン). English names cover Japanese sets from about 2017 on.'
         : 'Check the spelling, or try part of the name (for example “char”).';
-      box.replaceChildren(h('div', { class: 'gs-empty' }, h('div', null, 'No cards found for ', h('b', { text: `“${SEARCH.q}”` }), '.'), h('div', { text: tip })));
+      fill(box, h('div', { class: 'gs-empty' }, h('div', null, 'No cards found for ', h('b', { text: `“${SEARCH.q}”` }), '.'), h('div', { text: tip })));
       return;
     }
     const limit = SEARCH.sort.startsWith('price') ? Math.min(total, MAX_FOR_PRICE_SORT) : total;
@@ -2145,10 +2493,10 @@ footer p { margin: 4px 0; }
       if (x.failed) continue;
       if (!x.card) { rows.push(h('div', { class: 'skel' })); continue; }
       let e = gsRowCache.get(x.card.id);
-      if (!e) { e = buildRow(x.card, { search: true }); gsRowCache.set(x.card.id, e); } else updateRow(e, x.card);
+      if (!e) { e = buildRow(x.card, { search: true, lang: SEARCH.lang, set: null }); gsRowCache.set(x.card.id, e); } else updateRow(e, x.card);
       rows.push(e.row);
     }
-    box.replaceChildren(...rows);
+    fill(box, ...rows);
     const left = limit - visible.length;
     more.hidden = left <= 0;
     $('#gsMore').textContent = `Show more (${left} left)`;
@@ -2168,9 +2516,709 @@ footer p { margin: 4px 0; }
     jumpToCard(card.id);
   }
 
+  /* =========================================================
+     My collection tab
+     ========================================================= */
+  const COLL = { tab: 'sets', sort: LS.get('collSort', 'value'), lang: 'all', q: '', refreshing: false, progress: null, error: null, lastRefresh: LS.get('collRefreshed', 0) };
+  const collRowCache = new Map();
+  const collHistKey = () => `hist:collection:${isPC() ? 'market' : state.priceType}`;
+  // Collection cards don't carry PriceCharting prices, so those views fall back to market price.
+  function withCollPrice(fn) {
+    if (!isPC()) return fn();
+    const prev = state.priceType;
+    state.priceType = 'market';
+    try { return fn(); } finally { state.priceType = prev; }
+  }
+  function collItems() {
+    return withCollPrice(() => Object.entries(Coll.items).map(([key, e]) => {
+      const p = priceFor(e, e.variant);
+      return { key, e, p, value: p ? p.usd * (e.qty || 1) : null };
+    }));
+  }
+  function collTotal() { return collItems().reduce((t, x) => t + (x.value || 0), 0); }
+  function recordCollHistory() { if (Object.keys(Coll.items).length) pushHistory(collHistKey(), collTotal()); }
+  function renderTabCount() { const n = Coll.count(); $('#collCount').textContent = n ? String(n) : ''; }
+
+  function setTabUI(tab) {
+    COLL.tab = tab;
+    $$('#tabs button').forEach((b) => b.setAttribute('aria-current', b.dataset.tab === tab ? 'page' : 'false'));
+    $('#collectionView').hidden = tab !== 'collection';
+  }
+  function showTab(tab) {
+    setTabUI(tab);
+    hideTip();
+    if (tab === 'collection') {
+      $('#welcome').hidden = true;
+      $('#app').hidden = true;
+      renderCollection();
+      refreshCollection();
+    } else if (state.lang) {
+      $('#app').hidden = false;
+      renderAll();
+    } else {
+      $('#welcome').hidden = false;
+    }
+    window.scrollTo({ top: 0 });
+  }
+
+  function renderCollControls() {
+    const cur = $('#collCurrency');
+    if (!cur.options.length) cur.append(...CURRENCIES.map(([c, label]) => h('option', { value: c, text: label })));
+    cur.value = state.currency;
+    const ps = $('#collPrice');
+    if (!ps.options.length) ps.append(...[['market', 'Market price'], ['low', 'Low price'], ['mid', 'Mid price'], ['cm', 'Cardmarket only']].map(([v, t]) => h('option', { value: v, text: t })));
+    ps.value = isPC() ? 'market' : state.priceType;
+    $('#collSort').value = COLL.sort;
+    $('#collLang').value = COLL.lang;
+    document.body.classList.toggle('coll-busy', COLL.refreshing);
+    $('#collRefresh').classList.toggle('busy-btn', COLL.refreshing);
+  }
+
+  function renderCollection() {
+    if ($('#collectionView').hidden) return;
+    renderCollControls();
+    const items = collItems();
+    // Status line
+    const st = [];
+    if (COLL.refreshing) st.push(h('span', null, h('span', { class: 'dot', 'aria-hidden': 'true' }), `Updating prices${COLL.progress ? ' ' + COLL.progress : ''}…`));
+    else if (COLL.lastRefresh) st.push(h('span', { text: `Prices checked ${new Date(COLL.lastRefresh).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}` }));
+    st.push(h('span', { text: 'Saved in this browser · Export to keep a backup' }));
+    if (COLL.error) st.push(h('span', { text: COLL.error }));
+    fill($('#collStatus'), ...st);
+
+    // Totals
+    let total = 0, count = 0, priced = 0, top = null;
+    const sets = new Set();
+    for (const x of items) {
+      count += x.e.qty || 1;
+      sets.add(`${x.e.lang}:${x.e.setId}`);
+      if (isNum(x.value)) { total += x.value; priced++; }
+      if (x.p && (!top || x.p.usd > top.p.usd)) top = x;
+    }
+    const tile = (cls, label, value, sub, extra) => h('div', { class: 'panel tile ' + cls },
+      h('div', { class: 't-label' }, label), h('div', { class: 't-value', text: value }), sub ? h('div', { class: 't-sub' }, sub) : null, extra || null);
+    let spark = null, delta = null;
+    const hist = LS.get(collHistKey(), []);
+    if (hist.length >= 2 && items.length) {
+      spark = sparkline(hist.slice(-40).map((p) => p.v));
+      const diff = total - hist[0].v;
+      if (Math.abs(diff) >= 0.005 && hist[0].v > 0) {
+        const up = diff > 0;
+        delta = h('span', { class: 'delta ' + (up ? 'up' : 'down') }, (up ? '▲ +' : '▼ −') + fmt(Math.abs(diff)),
+          h('span', { class: 'muted', style: 'font-weight:500', text: ` since ${new Date(hist[0].t).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}` }));
+      }
+    }
+    const word = withCollPrice(() => ({ market: 'market price', low: 'low price', mid: 'mid price', cm: 'Cardmarket' })[state.priceType]);
+    fill($('#collStats'), 
+      tile('hero', h('span', null, 'Total worth ', h('span', { class: 'muted', style: 'font-weight:500', text: `· ${word}` })), fmt(total),
+        delta || (items.length ? `${priced} of ${items.length} cards priced` : 'Add cards to see their value'), h('div', null, delta ? h('div', { class: 't-sub', text: `${priced} of ${items.length} cards priced` }) : null, spark)),
+      tile('', 'Cards', String(count), `${items.length} different · ${sets.size} set${sets.size === 1 ? '' : 's'}`),
+      tile('', 'Most valuable', top ? fmt(top.p.usd) : '—', top ? h('button', { type: 'button', onclick: () => openCard(top.e, { lang: top.e.lang, set: null }), text: fullName(top.e) }) : 'No prices yet'),
+      tile('', 'Average card', count && priced ? fmt(total / count) : '—', items.length ? `${items.filter((x) => x.e.lang === 'en').length} English · ${items.filter((x) => x.e.lang === 'ja').length} Japanese` : ''),
+    );
+
+    // List
+    const q = COLL.q.trim().toLowerCase();
+    let list = items;
+    if (COLL.lang !== 'all') list = list.filter((x) => x.e.lang === COLL.lang);
+    if (q) list = list.filter((x) => `${x.e.name} ${x.e.enName} ${x.e.setName} ${x.e.setEnName} ${x.e.number} ${x.e.rarity}`.toLowerCase().includes(q));
+    const nm = (x) => x.e.enName || x.e.name;
+    if (COLL.sort === 'recent') list.sort((a, b) => (b.e.addedAt || 0) - (a.e.addedAt || 0));
+    else if (COLL.sort === 'name') list.sort((a, b) => collator.compare(nm(a), nm(b)));
+    else if (COLL.sort === 'set') list.sort((a, b) => collator.compare(a.e.setEnName || a.e.setName, b.e.setEnName || b.e.setName) || collator.compare(numKey(a.e.number), numKey(b.e.number)));
+    else list.sort((a, b) => (b.value ?? -1) - (a.value ?? -1));
+    $('#collCountLabel').textContent = items.length ? (list.length === items.length ? `${items.length}` : `${list.length} of ${items.length}`) : '';
+    const box = $('#collRows');
+    if (!items.length) {
+      fill(box, h('div', { class: 'gs-empty' },
+        h('div', null, h('b', { text: 'No cards yet.' })),
+        h('div', { text: 'Open a set or search for a card and tap ＋ to add it. Or scan a card with your camera.' }),
+        h('div', { style: 'margin-top:14px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap' },
+          h('button', { class: 'btn primary', type: 'button', onclick: openScanner, text: 'Scan a card' }),
+          h('button', { class: 'btn', type: 'button', onclick: () => showTab('sets'), text: 'Browse sets' }))));
+      return;
+    }
+    if (!list.length) { fill(box, h('div', { class: 'gs-empty', text: 'No cards match.' })); return; }
+    const live = new Set(list.map((x) => x.key));
+    for (const k of collRowCache.keys()) if (!live.has(k)) collRowCache.delete(k);
+    withCollPrice(() => fill(box, ...list.map((x) => collRow(x.key, x.e))));
+  }
+
+  function collRow(key, e) {
+    let r = collRowCache.get(key);
+    if (!r || r.e !== e) {
+      const value = h('div', { class: 'p-main' });
+      const unit = h('div', { class: 'p-var' });
+      const ctrl = h('div', { class: 'coll-ctrl' });
+      const setLabel = e.setEnName && e.setEnName !== e.setName ? `${e.setName} (${e.setEnName})` : (e.setName || e.setId);
+      const row = h('div', { class: 'row coll-row', 'data-key': key },
+        makeThumb(e, () => ({ card: e, ctx: { lang: e.lang, set: null } })),
+        h('div', { class: 'name-cell' },
+          h('div', { class: 'name' }, e.name, e.enName && e.enName !== e.name ? h('span', { class: 'en-name', text: ` (${e.enName})` }) : null),
+          h('div', { class: 'name-sub' },
+            h('button', { class: 'set-chip set-link', type: 'button', title: 'Open this set', onclick: () => openSetFromCollection(e), text: setLabel }),
+            h('span', { class: 'num', text: '#' + e.number }),
+            e.rarity ? h('span', { class: 'rarity', text: e.rarity }) : null,
+            h('span', { class: 'lang-tag', text: e.lang === 'ja' ? 'JP' : 'EN' }))),
+        ctrl,
+        h('div', { class: 'price' }, value, unit));
+      r = { row, e, value, unit, ctrl };
+      collRowCache.set(key, r);
+    }
+    const p = priceFor(e, e.variant);
+    const q = e.qty || 1;
+    r.value.textContent = p ? fmt(p.usd * q) : 'No price';
+    r.value.classList.toggle('na', !p);
+    r.unit.textContent = !p ? '' : q > 1 ? `${q} × ${fmt(p.usd)}` : p.src === 'TCGplayer' ? `TCGplayer · ${shortVariant(p.variant)}` : p.src;
+    const opts = variantOptions(e);
+    fill(r.ctrl, 
+      qtyStepper(q, (n) => setCollQty(key, n)),
+      opts.length > 1 ? variantSelect(e, opts, afterCollectionChange) : null,
+      h('a', { class: 'mini-link', href: e.tcgplayerUrl || tcgSearchUrl(e, e.lang), target: '_blank', rel: 'noopener noreferrer', text: 'TCGplayer ↗' }));
+    return r.row;
+  }
+  function setCollQty(key, n) {
+    const e = Coll.items[key];
+    if (!e) return;
+    if (n <= 0) {
+      const old = Coll.remove(key);
+      toast(`Removed ${fullName(old)}`, () => Coll.restore(key, old));
+    } else {
+      e.qty = n;
+    }
+    afterCollectionChange();
+  }
+  async function openSetFromCollection(e) {
+    setTabUI('sets');
+    $('#welcome').hidden = true;
+    if (state.lang !== e.lang || !state.sets.some((x) => x.id === e.setId)) {
+      await chooseLanguage(e.lang, { setId: e.setId, src: e.src || 'tcgdex' });
+    } else {
+      $('#app').hidden = false;
+      closeSearch();
+      window.scrollTo({ top: 0 });
+      if (!state.set || state.set.id !== e.setId) await selectSet(e.setId);
+      else renderAll();
+    }
+    jumpToCard(e.id);
+  }
+
+  // Re-read prices for collection cards (TCGdex publishes new prices about once a day).
+  async function refreshCollection({ force = false } = {}) {
+    if (COLL.refreshing) return;
+    const todo = Object.values(Coll.items).filter((e) => (e.src || 'tcgdex') === 'tcgdex' && (force || Date.now() - (e.pricedAt || 0) > 60 * 60 * 1000));
+    if (!todo.length) { if (force) { COLL.lastRefresh = Date.now(); renderCollection(); } return; }
+    COLL.refreshing = true;
+    COLL.error = null;
+    renderCollection();
+    let fails = 0;
+    await mapLimit(todo, 8, async (e) => {
+      try {
+        const d = await getJSON(`https://api.tcgdex.net/v2/${e.lang}/cards/${encodeURIComponent(e.id)}`, { cache: force ? 'no-cache' : 'default' });
+        const set = d.set || {};
+        const fresh = TCGDEX.toCard({ id: e.id, localId: e.localId || d.localId }, d, set.cardCount && set.cardCount.official);
+        Object.assign(e, { variants: fresh.variants, cm: fresh.cm, updated: fresh.updated, pricedAt: Date.now() });
+        if (fresh.img && !e.img) { e.img = fresh.img; e.imgLarge = fresh.imgLarge; }
+        if (fresh.tcgplayerUrl && !e.tcgplayerUrl) e.tcgplayerUrl = fresh.tcgplayerUrl;
+      } catch { fails++; }
+    }, (done, total) => {
+      COLL.progress = done < total ? `${done}/${total}` : null;
+      if (done % 10 === 0) renderCollection();
+    });
+    COLL.refreshing = false;
+    COLL.progress = null;
+    COLL.lastRefresh = Date.now();
+    LS.set('collRefreshed', COLL.lastRefresh);
+    if (fails && fails === todo.length) COLL.error = 'Couldn’t update prices (offline?). Showing the last saved prices.';
+    Coll.save();
+    recordCollHistory();
+    renderCollection();
+  }
+
+  // Backup
+  function exportCollection() {
+    const cards = Object.values(Coll.items);
+    if (!cards.length) { toast('Your collection is empty'); return; }
+    const data = { app: 'pokemon-set-price-tracker', version: 1, exported: new Date().toISOString(), cards };
+    const blob = new Blob([JSON.stringify(data, null, 1)], { type: 'application/json' });
+    const a = h('a', { href: URL.createObjectURL(blob), download: `pokemon-collection-${todayISO()}.json` });
+    document.body.append(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+    toast(`Saved ${cards.length} cards to a file`);
+  }
+  function cleanEntry(x) {
+    if (!x || typeof x !== 'object' || typeof x.id !== 'string' || !x.id || !['en', 'ja'].includes(x.lang)) return null;
+    const str = (v, n = 200) => (typeof v === 'string' ? v.slice(0, n) : '');
+    const num = (v) => (isNum(v) ? v : null);
+    const variants = {};
+    if (x.variants && typeof x.variants === 'object') {
+      for (const [k, v] of Object.entries(x.variants).slice(0, 10)) if (v && typeof v === 'object') variants[str(k, 40)] = { market: num(v.market), low: num(v.low), mid: num(v.mid), high: num(v.high) };
+    }
+    const cm = x.cm && typeof x.cm === 'object'
+      ? { trend: num(x.cm.trend), avg: num(x.cm.avg), low: num(x.cm.low), trendHolo: num(x.cm.trendHolo), avgHolo: num(x.cm.avgHolo), lowHolo: num(x.cm.lowHolo) } : null;
+    return {
+      id: str(x.id, 80), lang: x.lang, src: x.src === 'ptcgio' ? 'ptcgio' : 'tcgdex',
+      setId: str(x.setId, 60), setName: str(x.setName), setEnName: str(x.setEnName),
+      name: str(x.name) || str(x.id, 80), enName: str(x.enName), number: str(x.number, 24), localId: str(x.localId, 24), rarity: str(x.rarity, 60),
+      img: safeUrl(x.img), imgLarge: safeUrl(x.imgLarge), tcgplayerUrl: safeUrl(x.tcgplayerUrl),
+      variants, cm, updated: str(x.updated, 40) || null,
+      qty: Math.max(1, Math.min(999, Math.round(num(x.qty) || 1))), variant: str(x.variant, 40) || null,
+      addedAt: num(x.addedAt) || Date.now(), pricedAt: 0,
+    };
+  }
+  async function importCollection(file) {
+    let data;
+    try { data = JSON.parse(await file.text()); } catch { toast('That file isn’t a collection backup'); return; }
+    const list = (Array.isArray(data) ? data : data && data.cards) || [];
+    const clean = list.map(cleanEntry).filter(Boolean);
+    if (!clean.length) { toast('No cards found in that file'); return; }
+    const existing = clean.filter((e) => Coll.items[Coll.key(e.lang, e.id)]).length;
+    const msg = `Import ${clean.length} cards?` + (existing ? ` ${existing} you already have will be updated to the file’s numbers.` : '');
+    if (!confirm(msg)) return;
+    for (const e of clean) Coll.items[Coll.key(e.lang, e.id)] = e;
+    afterCollectionChange();
+    toast(`Imported ${clean.length} cards`);
+    refreshCollection();
+  }
+
+  /* =========================================================
+     Card scanner. Reads the card number (and the name on English cards)
+     from a photo with Tesseract, which runs on the device: the photo is
+     never uploaded. Then it finds matching cards for you to confirm.
+     ========================================================= */
+  const TESSERACT_URL = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+  const SCAN = { lang: 'en', workerP: null, token: 0, onLog: null, setLists: {}, view: { step: 'start' }, preview: null };
+
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      const el = document.createElement('script');
+      el.src = src;
+      el.async = true;
+      el.onload = resolve;
+      el.onerror = () => reject(new Error('Couldn’t download the text reader. Check your connection and try again.'));
+      document.head.append(el);
+    });
+  }
+  function ocrWorker() {
+    if (!SCAN.workerP) {
+      SCAN.workerP = (async () => {
+        if (!window.Tesseract) await loadScript(TESSERACT_URL);
+        return window.Tesseract.createWorker('eng', 1, { logger: (m) => { if (SCAN.onLog) SCAN.onLog(m); } });
+      })();
+      SCAN.workerP.catch(() => { SCAN.workerP = null; });
+    }
+    return SCAN.workerP;
+  }
+  async function fileToCanvas(file, maxSide = 1600) {
+    const url = URL.createObjectURL(file);
+    try {
+      const img = await new Promise((resolve, reject) => {
+        const i = new Image();
+        i.onload = () => resolve(i);
+        i.onerror = () => reject(new Error('That file isn’t a photo this browser can read.'));
+        i.src = url;
+      });
+      const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+      const c = document.createElement('canvas');
+      c.width = Math.max(1, Math.round(img.naturalWidth * scale));
+      c.height = Math.max(1, Math.round(img.naturalHeight * scale));
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      return c;
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }
+  function cropCanvas(src, x, y, w, hgt, scale = 1) {
+    const c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(w * scale));
+    c.height = Math.max(1, Math.round(hgt * scale));
+    const ctx = c.getContext('2d');
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(src, x, y, w, hgt, 0, 0, c.width, c.height);
+    return c;
+  }
+  function ocrLines(data) {
+    if (data && Array.isArray(data.lines) && data.lines.length) return data.lines;
+    const out = [];
+    for (const b of (data && data.blocks) || []) for (const p of b.paragraphs || []) for (const l of p.lines || []) out.push(l);
+    return out;
+  }
+  // Pull the card number ("238/191") and, for English cards, the name from the text.
+  function parseCardText(lines, height, bottomText, lang) {
+    let best = null;
+    const consider = (text, y) => {
+      for (const m of String(text || '').matchAll(/(\d{1,3})\s*[/|lI\\]\s*(\d{2,3})(?!\d)/g)) {
+        const local = parseInt(m[1], 10), total = parseInt(m[2], 10);
+        if (!total || total < 10 || local < 1 || local > total + 200) continue;
+        const score = (y == null ? 0.9 : y / height) + (m[1].length === m[2].length ? 0.2 : 0);
+        if (!best || score > best.score) best = { local, total, score };
+      }
+    };
+    for (const l of lines) consider(l.text, l.bbox ? l.bbox.y1 : null);
+    consider(bottomText, null);
+    let name = '';
+    if (lang === 'en') {
+      const STOP = /\b(basic|stage\s*[12]|stage|evolves|from|put|trainer|supporter|item|stadium|tool|pok[eé]mon|energy|tera|ability|mega|evolution)\b/gi;
+      const top = lines.filter((l) => l.bbox && l.bbox.y0 < height * 0.3 && (l.confidence == null || l.confidence > 40)).sort((a, b) => a.bbox.y0 - b.bbox.y0);
+      for (const l of top) {
+        const cleaned = String(l.text).replace(/\bHP\s*\d*/gi, ' ').replace(STOP, ' ').replace(/[^A-Za-zÀ-ÿ'’.\- ]/g, ' ').replace(/\s+/g, ' ').trim();
+        const words = cleaned.split(' ').filter((w) => w.length >= 3 || /^(ex|EX|GX|V|X|Y|δ)$/.test(w)).slice(0, 4);
+        if (words.join('').replace(/[^A-Za-z]/g, '').length >= 4) { name = words.join(' '); break; }
+      }
+    }
+    return { number: best ? { local: best.local, total: best.total } : null, name };
+  }
+  const sameNumber = (localId, n) => { const m = /^0*(\d+)$/.exec(String(localId == null ? '' : localId).trim()); return !!m && parseInt(m[1], 10) === n; };
+  async function setListFor(lang) {
+    if (state.lang === lang && state.provider === TCGDEX && state.sets.length) return state.sets;
+    if (!SCAN.setLists[lang]) {
+      SCAN.setLists[lang] = TCGDEX.listSets(lang);
+      SCAN.setLists[lang].catch(() => { SCAN.setLists[lang] = null; });
+    }
+    return SCAN.setLists[lang];
+  }
+  // Cards that fit what was read: same number in sets of that size, and/or the same name.
+  async function scanCandidates(lang, info) {
+    const found = new Map();
+    const add = (brief, score) => { const cur = found.get(brief.id); if (cur) cur.score += score; else found.set(brief.id, { brief, score }); };
+    const tasks = [];
+    if (info.number) {
+      tasks.push((async () => {
+        const sets = await setListFor(lang);
+        const cand = sets.filter((x) => x.official === info.number.total).slice(0, 14);
+        const res = await Promise.allSettled(cand.map((x) => getJSON(`https://api.tcgdex.net/v2/${lang}/sets/${encodeURIComponent(x.id)}`, { retries: 0 })));
+        res.forEach((r, i) => {
+          if (r.status !== 'fulfilled' || !r.value) return;
+          for (const c of r.value.cards || []) {
+            if (sameNumber(c.localId, info.number.local)) add({ id: c.id, setId: cand[i].id, localId: String(c.localId), name: String(c.name || ''), image: c.image }, 3);
+          }
+        });
+      })());
+    }
+    if (info.name && info.name.length >= 3) {
+      tasks.push((async () => {
+        let briefs = await searchBriefs(lang, info.name).catch(() => []);
+        // Then the longest word, then its start: a misread ending ("Pikachulee") still matches "Pikach".
+        const longest = info.name.split(' ').sort((a, b) => b.length - a.length)[0] || '';
+        if (!briefs.length && longest.length >= 4 && longest !== info.name) briefs = await searchBriefs(lang, longest).catch(() => []);
+        if (!briefs.length && longest.length >= 7) briefs = await searchBriefs(lang, longest.slice(0, 6)).catch(() => []);
+        for (const b of briefs.slice(0, 400)) add(b, 1 + (info.number && sameNumber(b.localId, info.number.local) ? 2 : 0));
+      })());
+    }
+    await Promise.all(tasks);
+    const rank = new Map(((await setListFor(lang).catch(() => [])) || []).map((x, i) => [x.id, i]));
+    let list = [...found.values()].sort((a, b) => b.score - a.score || (rank.get(a.brief.setId) ?? 1e6) - (rank.get(b.brief.setId) ?? 1e6));
+    if (list.length && list[0].score >= 4) list = list.filter((x) => x.score >= 3); // name and number agree: drop weaker guesses
+    list = list.slice(0, 12);
+    const index = lang === 'ja' ? await jaSearchIndex() : null;
+    const cards = await mapLimit(list, 6, async (x) => {
+      const b = x.brief;
+      if (index && !b.enName) { const hit = index.byId.get(b.id); if (hit) { b.enName = hit.name; b.pid = hit.pid; } }
+      const d = await getJSON(`https://api.tcgdex.net/v2/${lang}/cards/${encodeURIComponent(b.id)}`);
+      return toSearchCard(lang, b, d);
+    });
+    return cards.filter(Boolean);
+  }
+
+  /* ---- Camera ---- */
+  const CAM = { stream: null };
+  async function startCamera() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('This browser can’t use the camera here.');
+    stopCamera();
+    CAM.stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1440 } } });
+    return CAM.stream;
+  }
+  function stopCamera() {
+    if (CAM.stream) { CAM.stream.getTracks().forEach((t) => t.stop()); CAM.stream = null; }
+  }
+  // The part of the video frame inside the card-shaped guide, at full resolution.
+  function captureGuide(video, box, guide) {
+    const vw = video.videoWidth, vh = video.videoHeight;
+    if (!vw || !vh) return null;
+    const br = box.getBoundingClientRect(), gr = guide.getBoundingClientRect();
+    const sc = Math.max(br.width / vw, br.height / vh); // the video is shown with object-fit: cover
+    const ox = (br.width - vw * sc) / 2, oy = (br.height - vh * sc) / 2;
+    const sx = (gr.left - br.left - ox) / sc, sy = (gr.top - br.top - oy) / sc, sw = gr.width / sc, sh = gr.height / sc;
+    const m = 0.03;
+    const x0 = Math.max(0, sx - sw * m), y0 = Math.max(0, sy - sh * m);
+    const x1 = Math.min(vw, sx + sw * (1 + m)), y1 = Math.min(vh, sy + sh * (1 + m));
+    const c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(x1 - x0));
+    c.height = Math.max(1, Math.round(y1 - y0));
+    c.getContext('2d').drawImage(video, x0, y0, x1 - x0, y1 - y0, 0, 0, c.width, c.height);
+    return c;
+  }
+  // In a photo, find the card: the large block that differs from the background at the edges.
+  function findCard(src) {
+    const k = 200 / Math.max(src.width, src.height);
+    const w = Math.max(8, Math.round(src.width * k)), hh = Math.max(8, Math.round(src.height * k));
+    const c = document.createElement('canvas');
+    c.width = w; c.height = hh;
+    const ctx = c.getContext('2d');
+    ctx.drawImage(src, 0, 0, w, hh);
+    const d = ctx.getImageData(0, 0, w, hh).data;
+    let r = 0, g = 0, b = 0, n = 0;
+    for (let y = 0; y < hh; y++) for (let x = 0; x < w; x++) {
+      if (x > 2 && x < w - 3 && y > 2 && y < hh - 3) continue;
+      const i = (y * w + x) * 4; r += d[i]; g += d[i + 1]; b += d[i + 2]; n++;
+    }
+    r /= n; g /= n; b /= n;
+    const differs = (x, y) => { const i = (y * w + x) * 4; return Math.abs(d[i] - r) + Math.abs(d[i + 1] - g) + Math.abs(d[i + 2] - b) > 70; };
+    const run = (len, other, test) => {
+      let best = [0, -1], cur = -1;
+      for (let a = 0; a < len; a++) {
+        let cnt = 0;
+        for (let o = 0; o < other; o++) if (test(a, o)) cnt++;
+        if (cnt > other * 0.3) { if (cur < 0) cur = a; if (a - cur > best[1] - best[0]) best = [cur, a]; } else cur = -1;
+      }
+      return best;
+    };
+    const [y0, y1] = run(hh, w, (y, x) => differs(x, y));
+    const [x0, x1] = run(w, hh, (x, y) => differs(x, y));
+    const bw = x1 - x0 + 1, bh = y1 - y0 + 1;
+    const aspect = bw / bh;
+    if (bw * bh < w * hh * 0.15 || aspect < 0.5 || aspect > 0.95) return null; // not clearly a card: use the whole photo
+    const m = 0.02;
+    return { x: Math.max(0, (x0 / k) - src.width * m), y: Math.max(0, (y0 / k) - src.height * m), w: Math.min(src.width, (bw / k) + src.width * m * 2), h: Math.min(src.height, (bh / k) + src.height * m * 2) };
+  }
+  // Crop a band of the card, enlarge it and stretch the contrast for the text reader.
+  function band(card, fy, fh, outW, invert = false) {
+    const sy = card.height * fy, sh = card.height * fh;
+    const c = document.createElement('canvas');
+    c.width = outW;
+    c.height = Math.max(1, Math.round(outW * sh / card.width));
+    const ctx = c.getContext('2d');
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(card, 0, sy, card.width, sh, 0, 0, c.width, c.height);
+    const img = ctx.getImageData(0, 0, c.width, c.height);
+    const p = img.data;
+    let min = 255, max = 0;
+    for (let i = 0; i < p.length; i += 4) { const v = 0.299 * p[i] + 0.587 * p[i + 1] + 0.114 * p[i + 2]; p[i] = v; if (v < min) min = v; if (v > max) max = v; }
+    const span = Math.max(1, max - min);
+    for (let i = 0; i < p.length; i += 4) { let v = ((p[i] - min) * 255) / span; if (invert) v = 255 - v; p[i] = p[i + 1] = p[i + 2] = v; }
+    ctx.putImageData(img, 0, 0);
+    return c;
+  }
+  function parseNumber(text) {
+    let best = null;
+    for (const m of String(text || '').matchAll(/(\d{1,3})\s*[/|lI\\]\s*(\d{2,3})(?!\d)/g)) {
+      const local = parseInt(m[1], 10), total = parseInt(m[2], 10);
+      if (!total || total < 10 || local < 1 || local > total + 200) continue;
+      const score = (m[1].length === m[2].length ? 2 : 0) + (local <= total ? 1 : 0);
+      if (!best || score > best.score) best = { local, total, score };
+    }
+    return best ? { local: best.local, total: best.total } : null;
+  }
+  function parseName(text) {
+    const STOP = /\b(basic|stage\s*[12]|stage|evolves|from|put|trainer|supporter|item|stadium|tool|pok[eé]mon|energy|tera|ability|mega|evolution|hp|all|the|and|any|your|this|that|when|while|its|has|not|long|bench|prevent|damage|done|attacks?|both|opponent'?s?|card|cards|turn|during)\b/gi;
+    for (const line of String(text || '').split('\n')) {
+      const cleaned = line.replace(/\d+/g, ' ').replace(STOP, ' ').replace(/[^A-Za-zÀ-ÿ'’.\- ]/g, ' ').replace(/\s+/g, ' ').trim();
+      const words = cleaned.split(' ').map((x) => x.replace(/^[.'’-]+|[.'’-]+$/g, '')).filter((x) => x.length >= 3 || /^(ex|EX|GX|V|X|Y)$/.test(x)).slice(0, 4);
+      if (words.join('').replace(/[^A-Za-z]/g, '').length >= 4) return words.join(' ');
+    }
+    return '';
+  }
+  // Read the number (bottom of the card) and the name (top, English cards).
+  async function readCard(card, lang, onMsg) {
+    const worker = await ocrWorker();
+    onMsg('Reading the card number…');
+    await worker.setParameters({ tessedit_pageseg_mode: '11', tessedit_char_whitelist: '0123456789/' });
+    let number = parseNumber((await worker.recognize(band(card, 0.85, 0.15, 2400))).data.text);
+    // Full-art cards print the number in white over the artwork: try again with the colours flipped.
+    if (!number) number = parseNumber((await worker.recognize(band(card, 0.85, 0.15, 2400, true))).data.text);
+    let name = '';
+    await worker.setParameters({ tessedit_char_whitelist: '' });
+    if (lang === 'en') {
+      onMsg('Reading the card name…');
+      name = parseName((await worker.recognize(band(card, 0.0, 0.16, 1600))).data.text);
+    }
+    if (!number) {
+      onMsg('Taking a closer look…');
+      const full = (await worker.recognize(band(card, 0, 1, 1600))).data;
+      const info = parseCardText(ocrLines(full), card.height * (1600 / card.width), '', lang);
+      number = info.number;
+      if (!name) name = info.name;
+    }
+    return { number, name };
+  }
+
+  function openScanner() {
+    SCAN.token++;
+    SCAN.lang = state.lang || LS.get('lang', 'en') || 'en';
+    SCAN.preview = null;
+    $('#scanDlg').showModal();
+    showCamera();
+  }
+  async function showCamera() {
+    if (CAM.stream) { scanShow({ step: 'camera' }); return; }
+    scanShow({ step: 'camera-wait' });
+    try {
+      await startCamera();
+      if (!$('#scanDlg').open) { stopCamera(); return; }
+      scanShow({ step: 'camera' });
+    } catch (e) {
+      scanShow({ step: 'start', camError: e && e.name === 'NotAllowedError' ? 'Camera access was blocked, so use a photo instead (or allow the camera in your browser settings).' : '' });
+    }
+  }
+  function scanShow(view) { SCAN.view = view; renderScan(); }
+  function scanPatch(patch) { SCAN.view = Object.assign({}, SCAN.view, patch); renderScan(); }
+
+  async function scanCanvas(card) {
+    const token = ++SCAN.token;
+    const lang = SCAN.lang;
+    SCAN.preview = card.toDataURL('image/jpeg', 0.8);
+    scanShow({ step: 'working', msg: SCAN.workerP ? 'Reading the card…' : 'Downloading the text reader (first time only, about 5 MB)…' });
+    SCAN.onLog = (m) => {
+      if (token !== SCAN.token || !m || !m.status) return;
+      if (/loading|initializ/i.test(m.status) && m.progress < 1) scanPatch({ msg: `Getting the text reader ready… ${Math.round((m.progress || 0) * 100)}%` });
+    };
+    try {
+      const info = await readCard(card, lang, (msg) => { if (token === SCAN.token) scanPatch({ msg }); });
+      if (token !== SCAN.token) return;
+      await findMatches(info, token);
+    } catch (e) {
+      if (token === SCAN.token) scanShow({ step: 'error', msg: e && e.message ? e.message : String(e) });
+    }
+  }
+  async function runScan(file) {
+    try {
+      const photo = await fileToCanvas(file, 3000);
+      const box = findCard(photo);
+      scanCanvas(box ? cropCanvas(photo, box.x, box.y, box.w, box.h) : photo);
+    } catch (e) {
+      scanShow({ step: 'error', msg: e && e.message ? e.message : String(e) });
+    }
+  }
+  async function findMatches(info, token = ++SCAN.token) {
+    scanShow({ step: 'matching', info, msg: 'Looking for matching cards…' });
+    try {
+      const cands = await scanCandidates(SCAN.lang, info);
+      if (token !== SCAN.token) return;
+      scanShow({ step: 'results', info, cands });
+    } catch (e) {
+      if (token === SCAN.token) scanShow({ step: 'results', info, cands: [], error: e.message });
+    }
+  }
+  function parseNumberInput(v) {
+    const m = /(\d{1,3})\s*\/\s*(\d{1,3})/.exec(String(v || ''));
+    return m ? { local: parseInt(m[1], 10), total: parseInt(m[2], 10) } : null;
+  }
+
+  function renderScan() {
+    const v = SCAN.view;
+    const body = $('#scanBody');
+    const langSeg = h('div', { class: 'field' },
+      h('span', { class: 'label', text: 'Card language' }),
+      h('div', { class: 'seg', role: 'group', 'aria-label': 'Card language' },
+        ...[['en', 'English'], ['ja', 'Japanese']].map(([l, t]) => h('button', { type: 'button', 'aria-pressed': String(SCAN.lang === l), onclick: () => { SCAN.lang = l; renderScan(); }, text: t }))));
+    const photoBtns = (primary) => [
+      h('button', { class: 'btn' + (primary ? ' primary' : ''), type: 'button', onclick: () => $('#scanCamera').click(), text: '📷 Take a photo' }),
+      h('button', { class: 'btn', type: 'button', onclick: () => $('#scanFile').click(), text: 'Choose a photo' })];
+    if (v.step === 'camera-wait') {
+      fill(body, h('div', { class: 'scan-status' }, h('span', { class: 'spinner', 'aria-hidden': 'true' }), h('span', { text: 'Starting the camera…' })));
+      return;
+    }
+    if (v.step === 'camera') {
+      const video = h('video', { playsinline: true, muted: true, autoplay: true, 'aria-label': 'Camera view' });
+      const guide = h('div', { class: 'cam-guide', 'aria-hidden': 'true' });
+      const box = h('div', { class: 'cam-box' }, video, guide, h('div', { class: 'cam-hint', text: 'Line the card up inside the frame' }));
+      video.srcObject = CAM.stream;
+      video.muted = true;
+      video.play().catch(() => {});
+      const capture = () => {
+        const c = captureGuide(video, box, guide);
+        if (c) scanCanvas(c);
+      };
+      fill(body, langSeg, box,
+        h('div', { class: 'scan-actions' }, h('button', { class: 'btn primary', type: 'button', onclick: capture, text: 'Capture' })),
+        h('p', { class: 'scan-note' }, 'Hold the card flat, fill the frame, and avoid glare. Photos stay on your device. ',
+          h('button', { class: 'open-set', type: 'button', onclick: () => { stopCamera(); scanShow({ step: 'start' }); }, text: 'Use a photo instead' })));
+      return;
+    }
+    if (v.step === 'start') {
+      fill(body,
+        langSeg,
+        v.camError ? h('p', { class: 'scan-note', text: v.camError }) : null,
+        h('ul', { class: 'scan-tips' },
+          h('li', { text: 'Lay the card flat in good light.' }),
+          h('li', { text: 'Hold the phone straight above it so the card fills most of the photo, upright.' }),
+          h('li', { text: 'Tilt a little to avoid glare on shiny cards.' })),
+        h('div', { class: 'scan-actions' }, ...photoBtns(true)),
+        h('p', { class: 'scan-note', text: 'The app reads the card number and name, then shows the matching cards for you to pick. Your photo stays on your device. The text reader downloads once (about 5 MB).' }));
+      return;
+    }
+    const preview = SCAN.preview ? h('img', { src: SCAN.preview, alt: 'Your scan' }) : null;
+    if (v.step === 'working' || v.step === 'matching') {
+      fill(body, h('div', { class: 'scan-preview' }, preview, h('div', { class: 'scan-status' }, h('span', { class: 'spinner', 'aria-hidden': 'true' }), h('span', { text: v.msg || 'Working…' }))));
+      return;
+    }
+    const next = () => (navigator.mediaDevices && navigator.mediaDevices.getUserMedia ? showCamera() : scanShow({ step: 'start' }));
+    if (v.step === 'error') {
+      fill(body,
+        h('div', { class: 'scan-preview' }, preview, h('div', { class: 'scan-status', text: v.msg })),
+        h('div', { class: 'scan-actions' }, h('button', { class: 'btn primary', type: 'button', onclick: next, text: 'Try again' })));
+      return;
+    }
+    // Results: what was read (editable) and the matching cards.
+    const info = v.info || { number: null, name: '' };
+    const nameIn = h('input', { class: 'input', id: 'scanName', type: 'text', value: info.name || '', placeholder: SCAN.lang === 'ja' ? 'e.g. Charizard (optional)' : 'e.g. Pikachu ex', autocomplete: 'off' });
+    const numIn = h('input', { class: 'input', id: 'scanNum', type: 'text', inputmode: 'numeric', value: info.number ? `${info.number.local}/${info.number.total}` : '', placeholder: 'e.g. 238/191', autocomplete: 'off' });
+    const again = () => findMatches({ name: nameIn.value.trim(), number: parseNumberInput(numIn.value) });
+    for (const el of [nameIn, numIn]) el.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); again(); } });
+    const read = h('div', { class: 'scan-read' },
+      h('div', { class: 'field' }, h('label', { for: 'scanName', text: SCAN.lang === 'ja' ? 'English name' : 'Name' }), nameIn),
+      h('div', { class: 'field' }, h('label', { for: 'scanNum', text: 'Number' }), numIn),
+      h('button', { class: 'btn', type: 'button', onclick: again, text: 'Find' }));
+    const headline = info.number || info.name
+      ? `Read: ${[info.name, info.number ? `${info.number.local}/${info.number.total}` : ''].filter(Boolean).join(' · ')}. Fix it below if it's wrong.`
+      : 'Couldn’t read the card clearly. Type the number printed at the bottom (like 238/191) and tap Find, or scan again.';
+    const cands = v.cands || [];
+    const list = cands.length
+      ? h('div', { class: 'cands' }, cands.map((c) => scanCandidateRow(c)))
+      : h('p', { class: 'scan-note', text: v.error ? `Search failed: ${v.error}` : (info.number || info.name ? 'No matching cards. Check the name and number, then tap Find.' : '') });
+    fill(body,
+      h('div', { class: 'scan-preview' }, preview, h('div', null, langSeg)),
+      h('p', { class: 'scan-note', text: headline }),
+      read,
+      cands.length ? h('div', { class: 'label', text: cands.length > 1 ? `Tap Add on your card (${cands.length} possible matches)` : 'Tap Add if this is your card' }) : null,
+      list,
+      h('div', { class: 'scan-actions' },
+        h('button', { class: 'btn primary', type: 'button', onclick: next, text: 'Scan next card' }),
+        info.name ? h('button', { class: 'btn', type: 'button', onclick: () => { $('#scanDlg').close(); goSearch(nameIn.value.trim() || info.name, SCAN.lang); }, text: 'Search by name instead' }) : null));
+  }
+  function scanCandidateRow(card) {
+    const lang = SCAN.lang;
+    const pi = priceInfo(card);
+    const actions = h('div', { class: 'cand-actions' });
+    const draw = () => {
+      const e = Coll.get(lang, card.id);
+      fill(actions, 
+        h('span', { class: 'c-price', text: pi ? fmt(pi.usd) : 'No price' }),
+        e ? h('button', { class: 'own-btn on', type: 'button', title: 'Add another copy', onclick: () => { Coll.add(card, lang, null); afterCollectionChange(); toast(`You now have ${Coll.get(lang, card.id).qty} × ${fullName(card)}`); draw(); }, text: `✓ ${e.qty}` })
+          : h('button', { class: 'btn primary', type: 'button', style: 'height:34px', onclick: () => { Coll.add(card, lang, null); afterCollectionChange(); toast(`Added ${fullName(card)}`, () => Coll.remove(Coll.key(lang, card.id))); draw(); }, text: '＋ Add' }));
+    };
+    draw();
+    const img = card.img ? h('img', { src: card.img, alt: '', loading: 'lazy', referrerpolicy: 'no-referrer' }) : h('span', { class: 'ph-box', text: 'No image' });
+    return h('div', { class: 'cand' },
+      img,
+      h('div', null,
+        h('div', { class: 'c-name' }, card.name, card.enName && card.enName !== card.name ? h('span', { class: 'en-name', text: ` (${card.enName})` }) : null),
+        h('div', { class: 'c-sub', text: `${card.setEnName || card.setName} · #${card.number}${card.rarity ? ' · ' + card.rarity : ''}` })),
+      actions);
+  }
+  // Run a search from elsewhere (e.g. the scanner), switching language if needed.
+  async function goSearch(q, lang) {
+    if (COLL.tab !== 'sets') showTab('sets');
+    if (state.lang !== lang) await chooseLanguage(lang);
+    $('#gsInput').value = q;
+    runSearch(q);
+  }
+
   /* ---------- Card dialog ---------- */
-  function openCard(card) {
+  function openCard(card, ctx) {
     if (!card) return;
+    ctx = ctx || { lang: card.lang || state.lang, set: card.setName ? null : state.set };
     const dlg = $('#cardDlg');
     $('#cardDlgTitle').textContent = `#${card.number}`;
     const img = $('#cardDlgImg');
@@ -2195,8 +3243,23 @@ footer p { margin: 4px 0; }
     }
     add('Rarity', card.rarity);
     if (card.setName) add('Set', card.setName + (card.setEnName && card.setEnName !== card.setName ? ` (${card.setEnName})` : ''));
-    else add('Set', state.set.name + (enSetName(state.set) ? ` (${enSetName(state.set)})` : ''));
-    $('#cardDlgInfo').replaceChildren(h('h3', null, card.name, card.enName && card.enName !== card.name ? h('span', { class: 'en-name', text: ` (${card.enName})` }) : null), h('dl', { class: 'kv' }, kv), linkBtns(card));
+    else if (state.set) add('Set', state.set.name + (enSetName(state.set) ? ` (${enSetName(state.set)})` : ''));
+    const collBox = h('div', { class: 'dlg-coll' });
+    const drawColl = () => {
+      const key = Coll.key(ctx.lang, card.id);
+      const e = Coll.items[key];
+      if (!e) {
+        fill(collBox, h('button', { class: 'btn primary', type: 'button', text: '＋ Add to my collection', onclick: () => { Coll.add(card, ctx.lang, ctx.set); afterCollectionChange(); drawColl(); } }));
+        return;
+      }
+      const opts = variantOptions(e);
+      fill(collBox, 
+        h('span', { class: 'dlg-coll-label', text: '✓ In my collection' }),
+        qtyStepper(e.qty || 1, (q) => { if (q <= 0) Coll.remove(key); else e.qty = q; afterCollectionChange(); drawColl(); }),
+        opts.length > 1 ? variantSelect(e, opts, () => { afterCollectionChange(); drawColl(); }) : null);
+    };
+    drawColl();
+    fill($('#cardDlgInfo'), h('h3', null, card.name, card.enName && card.enName !== card.name ? h('span', { class: 'en-name', text: ` (${card.enName})` }) : null), h('dl', { class: 'kv' }, kv), linkBtns(card, ctx.lang), collBox);
     dlg.showModal();
   }
   $('#cardDlgClose').addEventListener('click', () => $('#cardDlg').close());
@@ -2275,6 +3338,7 @@ footer p { margin: 4px 0; }
 
   /* ---------- Events ---------- */
   function showWelcome() {
+    setTabUI('sets');
     state.reqId++;
     state.lang = null; state.set = null; state.cards = [];
     setBusy(false);
@@ -2290,6 +3354,32 @@ footer p { margin: 4px 0; }
   $('#setSelect').addEventListener('change', (e) => { closeSearch(); selectSet(e.target.value); });
   $('#gsForm').addEventListener('submit', (e) => { e.preventDefault(); $('#gsInput').blur(); runSearch($('#gsInput').value); });
   $('#gsBack').addEventListener('click', () => { closeSearch(); window.scrollTo({ top: 0 }); });
+  $$('#tabs button').forEach((b) => b.addEventListener('click', () => showTab(b.dataset.tab)));
+  $('#ownFilter').addEventListener('change', (e) => { state.ownFilter = e.target.value; renderList(); });
+  $('#scanBtn').addEventListener('click', openScanner);
+  $('#collScan').addEventListener('click', openScanner);
+  $('#scanClose').addEventListener('click', () => { $('#scanDlg').close(); });
+  $('#scanDlg').addEventListener('close', () => { SCAN.token++; stopCamera(); });
+  for (const id of ['#scanCamera', '#scanFile']) {
+    $(id).addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      e.target.value = '';
+      if (!file) return;
+      stopCamera();
+      if (!$('#scanDlg').open) $('#scanDlg').showModal();
+      runScan(file);
+    });
+  }
+  $('#collCurrency').addEventListener('change', (e) => { state.currency = e.target.value; LS.set('currency', state.currency); renderCollection(); });
+  $('#collPrice').addEventListener('change', (e) => { state.priceType = e.target.value; LS.set('priceType', state.priceType); recordCollHistory(); renderCollection(); });
+  $('#collSort').addEventListener('change', (e) => { COLL.sort = e.target.value; LS.set('collSort', COLL.sort); renderCollection(); });
+  $('#collLang').addEventListener('change', (e) => { COLL.lang = e.target.value; renderCollection(); });
+  let collSearchT;
+  $('#collSearch').addEventListener('input', (e) => { clearTimeout(collSearchT); collSearchT = setTimeout(() => { COLL.q = e.target.value; renderCollection(); }, 120); });
+  $('#collRefresh').addEventListener('click', () => { loadRates(true); refreshCollection({ force: true }); });
+  $('#collExport').addEventListener('click', exportCollection);
+  $('#collImport').addEventListener('click', () => $('#importFile').click());
+  $('#importFile').addEventListener('change', (e) => { const f = e.target.files && e.target.files[0]; e.target.value = ''; if (f) importCollection(f); });
   $('#gsMore').addEventListener('click', () => { SEARCH.shown += PAGE; loadSearchDetails(SEARCH.token); });
   $('#gsSort').addEventListener('change', (e) => {
     SEARCH.sort = e.target.value;
@@ -2323,13 +3413,14 @@ footer p { margin: 4px 0; }
   window.addEventListener('scroll', hideTip, { passive: true });
 
   /* ---------- Start ---------- */
+  renderTabCount();
   loadRates();
   const fromHash = readHash();
   if (fromHash) chooseLanguage(fromHash.lang, { setId: fromHash.setId, src: fromHash.src });
   else showWelcome();
 
   // Exposed for debugging in the browser console.
-  window.__pst = { state, PROVIDERS };
+  window.__pst = { state, PROVIDERS, Coll, SCAN, parseCardText };
 })();
 </script>
 </body>
